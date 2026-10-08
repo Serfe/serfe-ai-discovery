@@ -28,12 +28,13 @@ When API Catalog publication is enabled in the settings, the homepage additional
 - Published WordPress posts.
 - Published WordPress pages.
 - Published WooCommerce products that meet the plugin's exposure rules, including their public WooCommerce descriptions, price, and availability.
+- Selected public, publicly queryable Custom Post Types, enabled one by one.
 
 Drafts, private content, archives, feeds, embeds, and unsupported post types are not exposed.
 
 ## Usage
 
-After activation, go to **Settings → Serfe AI Discovery**, enable Markdown, and select the supported content types. Then open each post, page, or WooCommerce product that should have a Markdown version and enable its **Serfe AI Discovery** checkbox. All publication settings and items are disabled by default.
+After activation, go to **Settings → Serfe AI Discovery**, enable Markdown, and select the supported content types. Then open each eligible item and enable its **Serfe AI Discovery** checkbox. All publication settings and items are disabled by default.
 
 Request the `.md` version of an enabled public URL:
 

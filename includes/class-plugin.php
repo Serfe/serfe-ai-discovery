@@ -70,12 +70,11 @@ final class Plugin {
 
 		$post = get_queried_object();
 		switch ( $post->post_type ) {
-			case 'post':
-			case 'page':
-				$this->response->markdown( $this->blog_generator->generate( $post ), $this->router->is_accept_negotiated(), get_permalink( $post ) );
-				break;
 			case 'product':
 				$this->response->markdown( $this->product_generator->generate( $post ), $this->router->is_accept_negotiated(), get_permalink( $post ) );
+				break;
+			default:
+				$this->response->markdown( $this->blog_generator->generate( $post ), $this->router->is_accept_negotiated(), get_permalink( $post ) );
 				break;
 		}
 

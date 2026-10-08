@@ -65,6 +65,14 @@ function get_option( $option, $default = false ) {
 	return isset( $GLOBALS['discovery_test_options'][ $option ] ) ? $GLOBALS['discovery_test_options'][ $option ] : $default;
 }
 
+function post_type_exists( $type ) {
+	return in_array( $type, array( 'post', 'page', 'product', 'book' ), true );
+}
+
+function get_post_types( $args, $output ) {
+	return array( 'post', 'page', 'book' );
+}
+
 function wp_parse_args( $args, $defaults ) {
 	return array_merge( $defaults, $args );
 }
@@ -148,6 +156,14 @@ $assert_same( false, $discovery->current_content_has_markdown(), 'Requires post-
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_post_types'] = array( 'post', 'page', 'product' );
 $GLOBALS['discovery_test_context']['post'] = new WP_Post( 5, 'attachment' );
 $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects unsupported post type' );
+$GLOBALS['discovery_test_context']['post'] = new WP_Post( 6, 'book' );
+$GLOBALS['discovery_test_enabled_items'][6] = '1';
+$assert_same( false, $discovery->current_content_has_markdown(), 'Public CPT still requires type opt-in' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_post_types'][] = 'book';
+$assert_same( true, $discovery->current_content_has_markdown(), 'Exposes enabled public CPT item' );
+$GLOBALS['discovery_test_context']['publicly_viewable'] = false;
+$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects restricted CPT item' );
+$GLOBALS['discovery_test_context']['publicly_viewable'] = true;
 $GLOBALS['discovery_test_context']['post'] = new WP_Post( 6, 'post', 'draft' );
 $GLOBALS['discovery_test_enabled_items'][6] = '1';
 $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects unpublished post' );

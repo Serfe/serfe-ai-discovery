@@ -22,6 +22,14 @@ function get_option( $key, $default = false ) {
 	return isset( $GLOBALS['test_options'][ $key ] ) ? $GLOBALS['test_options'][ $key ] : $default;
 }
 
+function post_type_exists( $type ) {
+	return in_array( $type, array( 'post', 'page', 'product', 'book', 'private_record' ), true );
+}
+
+function get_post_types( $args, $output ) {
+	return array( 'post', 'page', 'book' );
+}
+
 function wp_parse_args( $args, $defaults ) {
 	return array_merge( $defaults, $args );
 }
@@ -74,18 +82,21 @@ $assert_same( false, Settings::item_enabled( 10 ), 'Default disables each item' 
 
 $clean = $settings->sanitize( array(
 	'markdown_enabled' => '1',
-	'enabled_post_types' => array( 'post', 'post', 'private', array( 'page' ) ),
+	'enabled_post_types' => array( 'post', 'post', 'book', 'private_record', array( 'page' ) ),
 	'api_catalog_enabled' => '1',
 ) );
-$assert_same( array( 'post' ), $clean['enabled_post_types'], 'Rejects unsupported and malformed post types' );
+$assert_same( array( 'post', 'book' ), $clean['enabled_post_types'], 'Allows public CPT and rejects unsupported types' );
 $GLOBALS['test_options'][ Settings::OPTION ] = $clean;
 $assert_same( true, Settings::markdown_enabled_for( 'post' ), 'Enables selected post type' );
+$assert_same( true, Settings::markdown_enabled_for( 'book' ), 'Enables selected public CPT' );
 $assert_same( false, Settings::markdown_enabled_for( 'page' ), 'Keeps unselected post type disabled' );
 $assert_same( true, Settings::api_catalog_enabled(), 'Enables API Catalog only when selected' );
 
 $_POST = array( Settings::NONCE_NAME => 'valid', 'serfe_ai_discovery_item_enabled' => '1' );
 $settings->save_item_choice( 10, new WP_Post( 'post' ) );
 $assert_same( true, Settings::item_enabled( 10 ), 'Saves authorized item opt-in' );
+$settings->save_item_choice( 11, new WP_Post( 'book' ) );
+$assert_same( true, Settings::item_enabled( 11 ), 'Saves public CPT opt-in' );
 
 $_POST[ Settings::NONCE_NAME ] = 'invalid';
 unset( $_POST['serfe_ai_discovery_item_enabled'] );

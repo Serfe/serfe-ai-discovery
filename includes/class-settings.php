@@ -48,7 +48,22 @@ final class Settings {
 		$choices = self::choices();
 		return 1 === (int) $choices['markdown_enabled']
 			&& is_array( $choices['enabled_post_types'] )
+			&& in_array( $post_type, self::supported_post_types(), true )
 			&& in_array( $post_type, $choices['enabled_post_types'], true );
+	}
+
+	/** @return array<int, string> Public types supported for individual Markdown pages. */
+	public static function supported_post_types() {
+		$types = array( 'post', 'page' );
+		if ( post_type_exists( 'product' ) ) {
+			$types[] = 'product';
+		}
+		foreach ( get_post_types( array( 'public' => true, 'publicly_queryable' => true ), 'names' ) as $type ) {
+			if ( ! in_array( $type, array( 'attachment', 'post', 'page', 'product' ), true ) ) {
+				$types[] = $type;
+			}
+		}
+		return array_values( array_unique( $types ) );
 	}
 
 	/** @param int $post_id Post ID. @return bool */
@@ -70,8 +85,9 @@ final class Settings {
 			: array();
 
 		$allowed_types = array();
+		$supported = self::supported_post_types();
 		foreach ( $types as $type ) {
-			if ( is_string( $type ) && in_array( $type, array( 'post', 'page', 'product' ), true ) ) {
+			if ( is_string( $type ) && in_array( $type, $supported, true ) ) {
 				$allowed_types[] = $type;
 			}
 		}
@@ -112,15 +128,9 @@ final class Settings {
 	/** Render currently supported singular post types. */
 	public function render_types_field() {
 		$choices = self::choices();
-		$types = array(
-			'post' => __( 'Posts', 'serfe-ai-discovery' ),
-			'page' => __( 'Pages', 'serfe-ai-discovery' ),
-			'product' => __( 'WooCommerce products', 'serfe-ai-discovery' ),
-		);
-		foreach ( $types as $type => $label ) {
-			if ( 'product' === $type && ! post_type_exists( 'product' ) ) {
-				continue;
-			}
+		foreach ( self::supported_post_types() as $type ) {
+			$object = get_post_type_object( $type );
+			$label = $object && isset( $object->labels->name ) ? $object->labels->name : $type;
 			printf( '<label><input type="checkbox" name="%s[enabled_post_types][]" value="%s" %s> %s</label><br>', esc_attr( self::OPTION ), esc_attr( $type ), checked( in_array( $type, $choices['enabled_post_types'], true ), true, false ), esc_html( $label ) );
 		}
 	}
@@ -145,7 +155,7 @@ final class Settings {
 
 	/** Add a separate choice to each supported content editor. */
 	public function register_item_boxes() {
-		foreach ( array( 'post', 'page', 'product' ) as $type ) {
+		foreach ( self::supported_post_types() as $type ) {
 			if ( post_type_exists( $type ) ) {
 				add_meta_box( 'serfe_ai_discovery_markdown', __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), array( $this, 'render_item_box' ), $type, 'side' );
 			}
@@ -160,7 +170,7 @@ final class Settings {
 
 	/** @param int $post_id Saved post ID. @param \WP_Post $post Saved post. */
 	public function save_item_choice( $post_id, $post ) {
-		if ( ! in_array( $post->post_type, array( 'post', 'page', 'product' ), true )
+		if ( ! in_array( $post->post_type, self::supported_post_types(), true )
 			|| ! isset( $_POST[ self::NONCE_NAME ] )
 			|| ! is_string( $_POST[ self::NONCE_NAME ] )
 			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ self::NONCE_NAME ] ) ), self::NONCE_ACTION )

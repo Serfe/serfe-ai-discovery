@@ -102,7 +102,7 @@ final class Discovery {
 			return false;
 		}
 
-		if ( in_array( $post->post_type, array( 'post', 'page' ), true ) ) {
+		if ( 'product' !== $post->post_type ) {
 			return true;
 		}
 

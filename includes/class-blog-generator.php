@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/** Generates the Markdown representation of a standard post or page. */
+/** Generates the Markdown representation of public editorial content. */
 final class Blog_Generator {
 	/** @var Html_To_Markdown */
 	private $converter;
