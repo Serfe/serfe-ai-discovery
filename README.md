@@ -40,14 +40,14 @@ After activation, go to **Settings → Serfe AI Discovery**, enable Markdown, an
 Request the `.md` version of an enabled public URL:
 
 ```text
-https://wordpress.localhost/privacy-policy.md
-https://wordpress.localhost/hello-world.md
+https://example.com/privacy-policy.md
+https://example.com/hello-world.md
 ```
 
 Agents can request the canonical HTML URL directly through content negotiation while browsers continue receiving HTML by default:
 
 ```bash
-curl -H 'Accept: text/markdown' https://wordpress.localhost/privacy-policy/
+curl -H 'Accept: text/markdown' https://example.com/privacy-policy/
 ```
 
 Negotiated Markdown responses include `Vary: Accept` and `X-Markdown-Tokens`, a deterministic estimate used when no model tokenizer is installed. Markdown responses use `Cache-Control: private, no-store` until cache behavior has been validated across supported hosts and CDNs.
