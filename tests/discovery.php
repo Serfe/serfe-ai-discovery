@@ -89,6 +89,18 @@ function get_post_types( $args, $output ) {
 	return array( 'post', 'page', 'book' );
 }
 
+function get_post_type_object( $type ) {
+	return (object) array( 'public' => true, 'publicly_queryable' => true, 'has_archive' => in_array( $type, array( 'book', 'product' ), true ) );
+}
+
+function taxonomy_exists( $taxonomy ) {
+	return in_array( $taxonomy, array( 'product_cat', 'product_tag' ), true );
+}
+
+function get_taxonomy( $taxonomy ) {
+	return taxonomy_exists( $taxonomy ) ? (object) array( 'public' => true, 'publicly_queryable' => true ) : null;
+}
+
 function wp_parse_args( $args, $defaults ) {
 	return array_merge( $defaults, $args );
 }

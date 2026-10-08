@@ -14,9 +14,11 @@ final class Settings {
 	const NONCE_NAME = 'serfe_ai_discovery_item_nonce';
 	const GROUP = 'serfe_ai_discovery';
 	const PAGE = 'serfe-ai-discovery';
+	const SCHEMA_VERSION = 2;
 
 	/** Register the settings screen and per-item opt-in. */
 	public function register_hooks() {
+		add_action( 'admin_init', array( $this, 'migrate_legacy_option' ), 5 );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_menu', array( $this, 'register_page' ) );
 		add_action( 'add_meta_boxes', array( $this, 'register_item_boxes' ) );
@@ -26,19 +28,44 @@ final class Settings {
 	/** @return array<string, mixed> */
 	public static function choices() {
 		$stored = get_option( self::OPTION, array() );
-		$choices = wp_parse_args( is_array( $stored ) ? $stored : array(), self::defaults() );
-		if ( ! is_array( $choices['enabled_post_types'] ) ) {
-			$choices['enabled_post_types'] = array();
+		$stored = is_array( $stored ) ? $stored : array();
+		if ( ! isset( $stored['schema_version'] ) || (int) $stored['schema_version'] < self::SCHEMA_VERSION ) {
+			$stored = self::migrate_legacy( $stored );
 		}
+		$choices = wp_parse_args( $stored, self::defaults() );
+		$choices['detail_post_types'] = is_array( $choices['detail_post_types'] ) ? $choices['detail_post_types'] : array();
+		$choices['enabled_archives'] = is_array( $choices['enabled_archives'] ) ? $choices['enabled_archives'] : array();
 		return $choices;
+	}
+
+	/** Persist the safe migration when an administrator next loads WordPress. */
+	public function migrate_legacy_option() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		$stored = get_option( self::OPTION, false );
+		if ( is_array( $stored ) && ( ! isset( $stored['schema_version'] ) || (int) $stored['schema_version'] < self::SCHEMA_VERSION ) ) {
+			update_option( self::OPTION, self::migrate_legacy( $stored ) );
+		}
+	}
+
+	/** @param array<string, mixed> $stored Previous option. @return array<string, mixed> */
+	private static function migrate_legacy( $stored ) {
+		$settings = new self();
+		return $settings->sanitize( array(
+			'markdown_enabled' => isset( $stored['markdown_enabled'] ) ? $stored['markdown_enabled'] : 0,
+			'detail_post_types' => isset( $stored['enabled_post_types'] ) ? $stored['enabled_post_types'] : array(),
+			'api_catalog_enabled' => isset( $stored['api_catalog_enabled'] ) ? $stored['api_catalog_enabled'] : 0,
+		) );
 	}
 
 	/** @return array<string, mixed> */
 	private static function defaults() {
 		return array(
-			'schema_version'      => 1,
+			'schema_version'      => self::SCHEMA_VERSION,
 			'markdown_enabled'   => 0,
-			'enabled_post_types' => array(),
+			'detail_post_types' => array(),
+			'enabled_archives'  => array(),
 			'api_catalog_enabled' => 0,
 		);
 	}
@@ -47,9 +74,16 @@ final class Settings {
 	public static function markdown_enabled_for( $post_type ) {
 		$choices = self::choices();
 		return 1 === (int) $choices['markdown_enabled']
-			&& is_array( $choices['enabled_post_types'] )
 			&& in_array( $post_type, self::supported_post_types(), true )
-			&& in_array( $post_type, $choices['enabled_post_types'], true );
+			&& in_array( $post_type, $choices['detail_post_types'], true );
+	}
+
+	/** @param string $archive Archive post type or supported product taxonomy. @return bool */
+	public static function archive_enabled_for( $archive ) {
+		$choices = self::choices();
+		return 1 === (int) $choices['markdown_enabled']
+			&& in_array( $archive, self::supported_archive_keys(), true )
+			&& in_array( $archive, $choices['enabled_archives'], true );
 	}
 
 	/** @return array<int, string> Public types supported for individual Markdown pages. */
@@ -66,6 +100,26 @@ final class Settings {
 		return array_values( array_unique( $types ) );
 	}
 
+	/** @return array<int, string> Public archive keys available for opt-in. */
+	public static function supported_archive_keys() {
+		$archives = array();
+		foreach ( self::supported_post_types() as $type ) {
+			$object = get_post_type_object( $type );
+			if ( $object && ! empty( $object->public ) && ! empty( $object->publicly_queryable ) && ! empty( $object->has_archive ) ) {
+				$archives[] = $type;
+			}
+		}
+		if ( post_type_exists( 'product' ) ) {
+			foreach ( array( 'product_cat', 'product_tag' ) as $taxonomy ) {
+				$object = taxonomy_exists( $taxonomy ) ? get_taxonomy( $taxonomy ) : null;
+				if ( $object && ! empty( $object->public ) && ! empty( $object->publicly_queryable ) ) {
+					$archives[] = $taxonomy;
+				}
+			}
+		}
+		return $archives;
+	}
+
 	/** @param int $post_id Post ID. @return bool */
 	public static function item_enabled( $post_id ) {
 		return '1' === get_post_meta( $post_id, self::ITEM_META, true );
@@ -80,8 +134,11 @@ final class Settings {
 	/** @param mixed $input Submitted setting. @return array<string, mixed> */
 	public function sanitize( $input ) {
 		$input = is_array( $input ) ? $input : array();
-		$types = isset( $input['enabled_post_types'] ) && is_array( $input['enabled_post_types'] )
-			? $input['enabled_post_types']
+		$types = isset( $input['detail_post_types'] ) && is_array( $input['detail_post_types'] )
+			? $input['detail_post_types']
+			: array();
+		$archives = isset( $input['enabled_archives'] ) && is_array( $input['enabled_archives'] )
+			? $input['enabled_archives']
 			: array();
 
 		$allowed_types = array();
@@ -91,12 +148,20 @@ final class Settings {
 				$allowed_types[] = $type;
 			}
 		}
+		$allowed_archives = array();
+		$supported_archives = self::supported_archive_keys();
+		foreach ( $archives as $archive ) {
+			if ( is_string( $archive ) && in_array( $archive, $supported_archives, true ) ) {
+				$allowed_archives[] = $archive;
+			}
+		}
 
 		return array(
-			'schema_version'      => 1,
-			'markdown_enabled'   => isset( $input['markdown_enabled'] ) && '1' === $input['markdown_enabled'] ? 1 : 0,
-			'enabled_post_types' => array_values( array_unique( $allowed_types ) ),
-			'api_catalog_enabled' => isset( $input['api_catalog_enabled'] ) && '1' === $input['api_catalog_enabled'] ? 1 : 0,
+			'schema_version'      => self::SCHEMA_VERSION,
+			'markdown_enabled'   => isset( $input['markdown_enabled'] ) && in_array( $input['markdown_enabled'], array( '1', 1 ), true ) ? 1 : 0,
+			'detail_post_types' => array_values( array_unique( $allowed_types ) ),
+			'enabled_archives'  => array_values( array_unique( $allowed_archives ) ),
+			'api_catalog_enabled' => isset( $input['api_catalog_enabled'] ) && in_array( $input['api_catalog_enabled'], array( '1', 1 ), true ) ? 1 : 0,
 		);
 	}
 
@@ -105,7 +170,8 @@ final class Settings {
 		register_setting( self::GROUP, self::OPTION, array( 'sanitize_callback' => array( $this, 'sanitize' ) ) );
 		add_settings_section( 'serfe_ai_discovery_publication', __( 'Public discovery', 'serfe-ai-discovery' ), array( $this, 'render_section' ), self::PAGE );
 		add_settings_field( 'markdown_enabled', __( 'Markdown', 'serfe-ai-discovery' ), array( $this, 'render_markdown_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
-		add_settings_field( 'enabled_post_types', __( 'Content types', 'serfe-ai-discovery' ), array( $this, 'render_types_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
+		add_settings_field( 'detail_post_types', __( 'Individual content', 'serfe-ai-discovery' ), array( $this, 'render_types_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
+		add_settings_field( 'enabled_archives', __( 'Public archives', 'serfe-ai-discovery' ), array( $this, 'render_archives_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
 		add_settings_field( 'api_catalog_enabled', __( 'API Catalog', 'serfe-ai-discovery' ), array( $this, 'render_catalog_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
 	}
 
@@ -122,7 +188,7 @@ final class Settings {
 	/** Render the Markdown master switch. */
 	public function render_markdown_field() {
 		$choices = self::choices();
-		printf( '<label><input type="checkbox" name="%s[markdown_enabled]" value="1" %s> %s</label>', esc_attr( self::OPTION ), checked( 1, $choices['markdown_enabled'], false ), esc_html__( 'Enable Markdown for selected items', 'serfe-ai-discovery' ) );
+		printf( '<label><input type="checkbox" name="%s[markdown_enabled]" value="1" %s> %s</label>', esc_attr( self::OPTION ), checked( 1, $choices['markdown_enabled'], false ), esc_html__( 'Enable Markdown for selected content', 'serfe-ai-discovery' ) );
 	}
 
 	/** Render currently supported singular post types. */
@@ -131,8 +197,25 @@ final class Settings {
 		foreach ( self::supported_post_types() as $type ) {
 			$object = get_post_type_object( $type );
 			$label = $object && isset( $object->labels->name ) ? $object->labels->name : $type;
-			printf( '<label><input type="checkbox" name="%s[enabled_post_types][]" value="%s" %s> %s</label><br>', esc_attr( self::OPTION ), esc_attr( $type ), checked( in_array( $type, $choices['enabled_post_types'], true ), true, false ), esc_html( $label ) );
+			printf( '<label><input type="checkbox" name="%s[detail_post_types][]" value="%s" %s> %s</label><br>', esc_attr( self::OPTION ), esc_attr( $type ), checked( in_array( $type, $choices['detail_post_types'], true ), true, false ), esc_html( $label ) );
 		}
+	}
+
+	/** Render independent choices for public post-type and product-taxonomy archives. */
+	public function render_archives_field() {
+		$choices = self::choices();
+		foreach ( self::supported_archive_keys() as $archive ) {
+			if ( 'product_cat' === $archive ) {
+				$label = __( 'Product categories', 'serfe-ai-discovery' );
+			} elseif ( 'product_tag' === $archive ) {
+				$label = __( 'Product tags', 'serfe-ai-discovery' );
+			} else {
+				$object = get_post_type_object( $archive );
+				$label = $object && isset( $object->labels->name ) ? $object->labels->name : $archive;
+			}
+			printf( '<label><input type="checkbox" name="%s[enabled_archives][]" value="%s" %s> %s</label><br>', esc_attr( self::OPTION ), esc_attr( $archive ), checked( in_array( $archive, $choices['enabled_archives'], true ), true, false ), esc_html( $label ) );
+		}
+		echo '<p class="description">' . esc_html__( 'Archive choices are saved but archive Markdown is not yet available in this build.', 'serfe-ai-discovery' ) . '</p>';
 	}
 
 	/** Render the API Catalog switch. */

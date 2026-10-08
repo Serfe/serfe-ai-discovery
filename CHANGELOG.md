@@ -12,12 +12,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added an opt-in switch for the public API Catalog.
 - Added opt-in Markdown for individual public, publicly queryable Custom Post Types.
 - Added the GPLv2-or-later license file and plugin header metadata.
+- Added separate, default-off choices for public post-type archives and WooCommerce product categories and tags.
 
 ### Changed
 
 - Markdown and alternate links are disabled until both the content type and item are enabled.
 - Markdown responses now include a canonical Link header and use a no-store cache policy.
 - Product Markdown now uses WooCommerce's public short and full descriptions, visible variations, and the site's configured currency.
+- Migrated v1 settings to v2 without enabling any archive; existing individual-content choices remain in effect.
 
 ### Removed
 

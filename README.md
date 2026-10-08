@@ -37,6 +37,8 @@ Editorial Markdown uses saved static content. Items containing shortcodes, unkno
 
 After activation, go to **Settings → Serfe AI Discovery**, enable Markdown, and select the supported content types. Then open each eligible item and enable its **Serfe AI Discovery** checkbox. All publication settings and items are disabled by default.
 
+The settings store individual content types and public archives separately. Existing settings from schema v1 retain their individual-content selections when migrated to schema v2; all archive selections start disabled. Archive choices can be saved now, but archive Markdown is not served in this build.
+
 Request the `.md` version of an enabled public URL:
 
 ```text
