@@ -1,0 +1,191 @@
+<?php
+
+define( 'ABSPATH', dirname( __DIR__ ) . '/' );
+
+require_once dirname( __DIR__ ) . '/includes/class-product-generator.php';
+require_once dirname( __DIR__ ) . '/includes/class-settings.php';
+require_once dirname( __DIR__ ) . '/includes/class-discovery.php';
+
+use Serfe\AI_Discovery\Discovery;
+use Serfe\AI_Discovery\Product_Generator;
+use Serfe\AI_Discovery\Settings;
+
+final class WP_Post {
+	public $ID;
+	public $post_type;
+	public $post_status;
+	public $post_password = '';
+
+	public function __construct( $id, $post_type, $post_status = 'publish' ) {
+		$this->ID          = $id;
+		$this->post_type   = $post_type;
+		$this->post_status = $post_status;
+	}
+}
+
+final class Test_Product {
+	private $visibility;
+	private $price;
+
+	public function __construct( $visibility, $price ) {
+		$this->visibility = $visibility;
+		$this->price      = $price;
+	}
+
+	public function get_catalog_visibility() {
+		return $this->visibility;
+	}
+
+	public function get_price() {
+		return $this->price;
+	}
+}
+
+function is_singular() {
+	return $GLOBALS['discovery_test_context']['singular'];
+}
+
+function is_feed() {
+	return $GLOBALS['discovery_test_context']['feed'];
+}
+
+function is_embed() {
+	return $GLOBALS['discovery_test_context']['embed'];
+}
+
+function is_user_logged_in() {
+	return $GLOBALS['discovery_test_context']['logged_in'];
+}
+
+function is_post_publicly_viewable( $post ) {
+	return $GLOBALS['discovery_test_context']['publicly_viewable'];
+}
+
+function get_option( $option, $default = false ) {
+	return isset( $GLOBALS['discovery_test_options'][ $option ] ) ? $GLOBALS['discovery_test_options'][ $option ] : $default;
+}
+
+function wp_parse_args( $args, $defaults ) {
+	return array_merge( $defaults, $args );
+}
+
+function get_post_meta( $post_id, $key, $single ) {
+	return isset( $GLOBALS['discovery_test_enabled_items'][ $post_id ] ) ? $GLOBALS['discovery_test_enabled_items'][ $post_id ] : '';
+}
+
+function get_queried_object() {
+	return $GLOBALS['discovery_test_context']['post'];
+}
+
+function wc_get_product( $product_id ) {
+	return isset( $GLOBALS['discovery_test_products'][ $product_id ] ) ? $GLOBALS['discovery_test_products'][ $product_id ] : null;
+}
+
+function apply_filters( $hook, $value ) {
+	if ( 'serfe_ai_discovery_product_exposable' === $hook && ! empty( $GLOBALS['discovery_test_force_product_exposable'] ) ) {
+		return true;
+	}
+	return $value;
+}
+
+$GLOBALS['discovery_test_context'] = array(
+	'singular' => true,
+	'feed'     => false,
+	'embed'    => false,
+	'logged_in' => false,
+	'publicly_viewable' => true,
+	'post'     => null,
+);
+$GLOBALS['discovery_test_options'] = array();
+$GLOBALS['discovery_test_enabled_items'] = array();
+$GLOBALS['discovery_test_products'] = array(
+	2 => new Test_Product( 'visible', '10' ),
+	3 => new Test_Product( 'hidden', '10' ),
+	4 => new Test_Product( 'catalog', '' ),
+);
+
+$failures = array();
+$tests    = 0;
+$assert_same = function ( $expected, $actual, $name ) use ( &$failures, &$tests ) {
+	$tests++;
+	if ( $expected !== $actual ) {
+		$failures[] = $name . ': expected ' . var_export( $expected, true ) . ', got ' . var_export( $actual, true );
+	}
+};
+
+$discovery = new Discovery( new Product_Generator() );
+$GLOBALS['discovery_test_context']['post'] = new WP_Post( 1, 'post' );
+$assert_same( false, $discovery->current_content_has_markdown(), 'Keeps Markdown disabled by default' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ] = array( 'markdown_enabled' => 1, 'enabled_post_types' => array( 'post', 'page', 'product' ) );
+$assert_same( false, $discovery->current_content_has_markdown(), 'Requires item-level opt-in' );
+$GLOBALS['discovery_test_enabled_items'][1] = '1';
+$assert_same( true, $discovery->current_content_has_markdown(), 'Exposes published blog post' );
+$GLOBALS['discovery_test_context']['logged_in'] = true;
+$assert_same( false, $discovery->current_content_has_markdown(), 'Never exposes Markdown to a logged-in visitor' );
+$GLOBALS['discovery_test_context']['logged_in'] = false;
+$GLOBALS['discovery_test_context']['publicly_viewable'] = false;
+$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects content that WordPress does not regard as public' );
+$GLOBALS['discovery_test_context']['publicly_viewable'] = true;
+$GLOBALS['discovery_test_context']['post']->post_password = 'protected';
+$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects password-protected content' );
+$GLOBALS['discovery_test_context']['post']->post_password = '';
+$GLOBALS['discovery_test_enabled_items'][2] = '1';
+$GLOBALS['discovery_test_context']['post'] = new WP_Post( 2, 'product' );
+$assert_same( true, $discovery->current_content_has_markdown(), 'Exposes eligible product' );
+$GLOBALS['discovery_test_context']['post'] = new WP_Post( 3, 'product' );
+$GLOBALS['discovery_test_enabled_items'][3] = '1';
+$GLOBALS['discovery_test_force_product_exposable'] = true;
+$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects hidden product' );
+$GLOBALS['discovery_test_force_product_exposable'] = false;
+$GLOBALS['discovery_test_context']['post'] = new WP_Post( 4, 'product' );
+$GLOBALS['discovery_test_enabled_items'][4] = '1';
+$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects product without price' );
+$GLOBALS['discovery_test_context']['post'] = new WP_Post( 5, 'page' );
+$GLOBALS['discovery_test_enabled_items'][5] = '1';
+$assert_same( true, $discovery->current_content_has_markdown(), 'Exposes published page' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_post_types'] = array( 'post', 'product' );
+$assert_same( false, $discovery->current_content_has_markdown(), 'Requires post-type opt-in' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_post_types'] = array( 'post', 'page', 'product' );
+$GLOBALS['discovery_test_context']['post'] = new WP_Post( 5, 'attachment' );
+$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects unsupported post type' );
+$GLOBALS['discovery_test_context']['post'] = new WP_Post( 6, 'post', 'draft' );
+$GLOBALS['discovery_test_enabled_items'][6] = '1';
+$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects unpublished post' );
+$GLOBALS['discovery_test_context']['post'] = new WP_Post( 1, 'post' );
+$GLOBALS['discovery_test_context']['feed'] = true;
+$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects feed' );
+$GLOBALS['discovery_test_context']['feed']  = false;
+$GLOBALS['discovery_test_context']['embed'] = true;
+$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects embed' );
+$GLOBALS['discovery_test_context']['embed']    = false;
+$GLOBALS['discovery_test_context']['singular'] = false;
+$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects archive' );
+$assert_same( true, Discovery::is_api_catalog_request( '/.well-known/api-catalog' ), 'Detects the API catalog URI' );
+$assert_same( true, Discovery::is_api_catalog_request( '/.well-known/api-catalog/?source=agent' ), 'Allows API catalog query strings' );
+$assert_same( false, Discovery::is_api_catalog_request( '/.well-known/other' ), 'Rejects other well-known URIs' );
+$assert_same( 'https://serfe.test/.md', Discovery::markdown_url( 'https://serfe.test/' ), 'Builds the homepage Markdown URL without changing the host' );
+$assert_same(
+	array(
+		'linkset' => array(
+			array(
+				'anchor' => 'https://serfe.test/.well-known/api-catalog',
+				'item'   => array(
+					array(
+						'href'  => 'https://serfe.test/wp-json/',
+						'type'  => 'application/json',
+						'title' => 'WordPress REST API',
+					),
+				),
+			),
+		),
+	),
+	Discovery::api_catalog_document( 'https://serfe.test/.well-known/api-catalog', 'https://serfe.test/wp-json/' ),
+	'Builds an RFC 9727 Linkset API catalog'
+);
+
+if ( $failures ) {
+	fwrite( STDERR, implode( "\n", $failures ) . "\n" );
+	exit( 1 );
+}
+
+echo "All {$tests} discovery tests passed.\n";

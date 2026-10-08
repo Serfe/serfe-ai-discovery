@@ -1,0 +1,130 @@
+# Serfe AI Discovery
+
+Expose published WordPress content as clean Markdown for AI agents and other Markdown consumers.
+
+## What it does
+
+Appending `.md` to an eligible canonical URL, or requesting that URL with `Accept: text/markdown`, returns its Markdown representation with `Content-Type: text/markdown; charset=utf-8`.
+
+For example:
+
+```text
+https://example.com/privacy-policy/    → HTML
+https://example.com/privacy-policy.md  → Markdown
+```
+
+Eligible HTML pages also announce their Markdown version through both mechanisms below:
+
+- `<link rel="alternate" type="text/markdown">` in the document head.
+- An HTTP `Link` response header with `rel="alternate"` and `type="text/markdown"`.
+
+When API Catalog publication is enabled in the settings, the homepage additionally advertises machine-readable service discovery resources using RFC 8288 Link headers:
+
+- `rel="api-catalog"` points to `/.well-known/api-catalog`, an RFC 9727 Linkset catalog.
+- `rel="service-desc"` points to the WordPress REST API index.
+
+## Supported content
+
+- Published WordPress posts.
+- Published WordPress pages.
+- Published WooCommerce products that meet the plugin's exposure rules, including their public WooCommerce descriptions, price, and availability.
+
+Drafts, private content, archives, feeds, embeds, and unsupported post types are not exposed.
+
+## Usage
+
+After activation, go to **Settings → Serfe AI Discovery**, enable Markdown, and select the supported content types. Then open each post, page, or WooCommerce product that should have a Markdown version and enable its **Serfe AI Discovery** checkbox. All publication settings and items are disabled by default.
+
+Request the `.md` version of an enabled public URL:
+
+```text
+https://wordpress.localhost/privacy-policy.md
+https://wordpress.localhost/hello-world.md
+```
+
+Agents can request the canonical HTML URL directly through content negotiation while browsers continue receiving HTML by default:
+
+```bash
+curl -H 'Accept: text/markdown' https://wordpress.localhost/privacy-policy/
+```
+
+Negotiated Markdown responses include `Vary: Accept` and `X-Markdown-Tokens`, a deterministic estimate used when no model tokenizer is installed. Markdown responses use `Cache-Control: private, no-store` until cache behavior has been validated across supported hosts and CDNs.
+
+The Markdown response includes YAML front matter such as title, canonical URL, language when available, publication date, and excerpt when available.
+
+## Agent readiness
+
+Under **Tools → Agent Readiness**, administrators can run local, read-only capability checks. The panel checks the live public response for `robots.txt`, a sitemap, the RFC 9727 API catalog, Markdown negotiation, OAuth Protected Resource Metadata, and an Agent Skills index. It uses no third-party scanner and caches results for five minutes; use **Run checks again** to clear the cache.
+
+MCP and Agentic Commerce are never inferred from a plugin name or a static card. An implementation must register its real service through these filters:
+
+```php
+add_filter( 'serfe_agent_readiness_mcp', function () {
+    return array(
+        'endpoint'   => 'https://example.com/mcp',
+        'health_url' => 'https://example.com/mcp/health',
+    );
+} );
+
+add_filter( 'serfe_agent_readiness_oauth_protected_resource', function () {
+    return array(
+        'metadata_url' => 'https://example.com/.well-known/oauth-protected-resource',
+    );
+} );
+
+add_filter( 'serfe_agent_readiness_agentic_commerce', function () {
+    return array(
+        'endpoint'   => 'https://example.com/agentic-commerce',
+        'health_url' => 'https://example.com/agentic-commerce/health',
+    );
+} );
+```
+
+A `health_url` is optional but required for a green check: it must be a read-only endpoint that returns a 2xx response. OAuth is shown as not applicable when the site has no declared protected agent resource; public content does not need OAuth.
+The footer contains two complete local PNG assets: the blue Serfe logo for light surfaces (the default) and the white logo for dark surfaces. Each image retains its native aspect ratio; the footer merely selects one or the other. A theme integration can choose the dark surface with:
+
+```php
+add_filter( 'serfe_ai_discovery_footer_surface', function () {
+    return 'dark';
+} );
+```
+
+
+
+## Installation
+
+1. In WordPress, go to **Plugins → Add New → Upload Plugin**.
+2. Upload the Serfe AI Discovery ZIP package.
+3. Activate the plugin.
+4. Enable Markdown for a content type and an individual item in **Settings → Serfe AI Discovery** and the item editor.
+5. Visit that item's URL ending in `.md` to verify the response.
+
+## Safety and routing
+
+The plugin never treats the following internal paths as Markdown content routes:
+
+- `/wp-admin`
+- `/wp-json`
+- `/wp-content`
+- `/wp-includes`
+- `/xmlrpc.php`
+
+Markdown is generated only for published, eligible singular content. Markdown responses include `X-Robots-Tag: noindex, follow`.
+
+## Development
+
+The test suite is self-contained and covers routing, discovery, Markdown generation, and WooCommerce product output.
+
+```bash
+php tests/run.php
+php tests/discovery.php
+php tests/product-generator.php
+php tests/readiness.php
+php tests/settings.php
+```
+
+Run the tests with the project's configured PHP container when a local PHP runtime is unavailable.
+
+## Version
+
+Current internal version: `1.0.10`. See [CHANGELOG.md](CHANGELOG.md) for changes.
