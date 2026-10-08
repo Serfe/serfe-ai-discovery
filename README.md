@@ -55,7 +55,7 @@ The Markdown response includes YAML front matter such as title, canonical URL, l
 
 ## Agent readiness
 
-Under **Tools → Agent Readiness**, administrators can run local, read-only capability checks. The panel checks the live public response for `robots.txt`, a sitemap, the RFC 9727 API catalog, Markdown negotiation, OAuth Protected Resource Metadata, and an Agent Skills index. It uses no third-party scanner and caches results for five minutes; use **Run checks again** to clear the cache.
+Under **Tools → Agent Readiness**, administrators can start local, read-only capability checks. Opening the page does not send HTTP requests. Selecting **Run checks again** checks the live public response for `robots.txt`, a sitemap, the RFC 9727 API catalog, Markdown negotiation, OAuth Protected Resource Metadata, and an Agent Skills index. It uses no third-party scanner and caches results for five minutes.
 
 MCP and Agentic Commerce are never inferred from a plugin name or a static card. An implementation must register its real service through these filters:
 
@@ -129,3 +129,7 @@ Run the tests with the project's configured PHP container when a local PHP runti
 ## Version
 
 Current internal version: `1.0.10`. See [CHANGELOG.md](CHANGELOG.md) for changes.
+
+## License
+
+The plugin source is licensed under GPL version 2 or any later version. See [LICENSE](LICENSE). The Serfe name and logos remain subject to their trademark rights.

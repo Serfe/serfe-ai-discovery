@@ -96,6 +96,7 @@ final class Readiness {
 
 		check_admin_referer( 'serfe_ai_discovery_readiness_refresh' );
 		delete_transient( self::CACHE_KEY );
+		$this->inspect( true );
 		$redirect_url = add_query_arg(
 			array(
 				'page'      => 'serfe-agent-readiness',
@@ -113,7 +114,10 @@ final class Readiness {
 			return;
 		}
 
-		$report         = $this->inspect();
+		$report         = get_transient( self::CACHE_KEY );
+		if ( ! is_array( $report ) || ! isset( $report['checks'], $report['checked_at'] ) ) {
+			$report = array( 'checks' => array(), 'checked_at' => '' );
+		}
 		$footer_surface = apply_filters( 'serfe_ai_discovery_footer_surface', 'light' );
 		$footer_surface = $footer_surface === 'dark' ? 'dark' : 'light';
 		$logo_blue      = SERFE_AI_DISCOVERY_URL . 'assets/serfe-logo-blue.png';
@@ -127,12 +131,13 @@ final class Readiness {
 				<p><?php esc_html_e( 'Each validated capability strengthens a reliable path to your public content, catalog, and services. Completing the applicable items improves discoverability, reduces integration friction, and creates a stronger technical foundation for future agent experiences.', 'serfe-ai-discovery' ); ?></p>
 				<p style="margin-bottom: 0;"><?php esc_html_e( 'Use this dashboard to prioritize improvements without compromising intentional security boundaries: private workflows remain private, and a capability is only marked ready when a real implementation is present.', 'serfe-ai-discovery' ); ?></p>
 			</div>
-			<p class="description"><?php esc_html_e( 'Checks run locally and are cached for five minutes. A warning means the local loopback request could not be completed, not that the capability is absent.', 'serfe-ai-discovery' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Checks run only when you select Run checks, then the result is cached for five minutes. A warning means the local loopback request could not be completed, not that the capability is absent.', 'serfe-ai-discovery' ); ?></p>
 
 			<?php if ( isset( $_GET['refreshed'] ) ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Checks refreshed.', 'serfe-ai-discovery' ); ?></p></div>
 			<?php endif; ?>
 
+			<?php if ( $report['checks'] ) : ?>
 			<table class="widefat striped" style="max-width: 1000px; margin-top: 16px;">
 				<thead><tr>
 					<th scope="col" style="width: 52px;"><?php esc_html_e( 'Status', 'serfe-ai-discovery' ); ?></th>
@@ -154,6 +159,7 @@ final class Readiness {
 					<?php endforeach; ?>
 				</tbody>
 			</table>
+			<?php endif; ?>
 
 			<p class="description" style="margin-top: 14px;">
 				<?php esc_html_e( '✅ validated · ❌ not configured or not available · ⚠ could not be verified locally · — not applicable to the current site.', 'serfe-ai-discovery' ); ?>
@@ -163,7 +169,9 @@ final class Readiness {
 				<?php wp_nonce_field( 'serfe_ai_discovery_readiness_refresh' ); ?>
 				<?php submit_button( __( 'Run checks again', 'serfe-ai-discovery' ), 'secondary', 'submit', false ); ?>
 			</form>
-			<p class="description"><?php echo esc_html( sprintf( __( 'Last checked: %s', 'serfe-ai-discovery' ), $report['checked_at'] ) ); ?></p>
+			<?php if ( $report['checked_at'] !== '' ) : ?>
+				<p class="description"><?php echo esc_html( sprintf( __( 'Last checked: %s', 'serfe-ai-discovery' ), $report['checked_at'] ) ); ?></p>
+			<?php endif; ?>
 
 			<div class="serfe-readiness-footer" data-serfe-surface="<?php echo esc_attr( $footer_surface ); ?>">
 				<a class="serfe-readiness-footer__link" href="https://www.serfe.com" target="_blank" rel="noopener noreferrer" aria-label="<?php esc_attr_e( 'Visit Serfe', 'serfe-ai-discovery' ); ?>">
@@ -404,10 +412,19 @@ final class Readiness {
 
 	/** @return array{ok: bool, code: int, body: string, content_type: string, detail: string} */
 	private function get( $url, $headers = array() ) {
+		if ( ! self::is_same_origin_url( $url ) ) {
+			return array(
+				'ok'           => false,
+				'code'         => 0,
+				'body'         => '',
+				'content_type' => '',
+				'detail'       => __( 'Only this site can be checked.', 'serfe-ai-discovery' ),
+			);
+		}
 		$request_url = esc_url_raw( $url );
 		$args        = array(
 			'timeout'             => 5,
-			'redirection'         => 2,
+			'redirection'         => 0,
 			'limit_response_size' => 524288,
 			'headers'             => $headers,
 		);
@@ -447,6 +464,27 @@ final class Readiness {
 			'content_type' => (string) wp_remote_retrieve_header( $response, 'content-type' ),
 			'detail'       => '',
 		);
+	}
+
+	/** @param string $url Candidate URL. @return bool */
+	public static function is_same_origin_url( $url ) {
+		$home = wp_parse_url( home_url( '/' ) );
+		$parts = wp_parse_url( $url );
+		if ( ! is_array( $home ) || ! is_array( $parts )
+			|| ! isset( $home['scheme'], $home['host'], $parts['scheme'], $parts['host'] )
+			|| isset( $parts['user'] ) || isset( $parts['pass'] ) ) {
+			return false;
+		}
+		$home_scheme = strtolower( $home['scheme'] );
+		$scheme = strtolower( $parts['scheme'] );
+		if ( ! in_array( $scheme, array( 'http', 'https' ), true )
+			|| $scheme !== $home_scheme
+			|| strtolower( $parts['host'] ) !== strtolower( $home['host'] ) ) {
+			return false;
+		}
+		$default_port = 'https' === $scheme ? 443 : 80;
+		return (int) ( isset( $parts['port'] ) ? $parts['port'] : $default_port )
+			=== (int) ( isset( $home['port'] ) ? $home['port'] : $default_port );
 	}
 
 	/** @return bool */
@@ -552,4 +590,3 @@ final class Readiness {
 		return array( 'valid' => true, 'count' => count( $index['skills'] ), 'detail' => '' );
 	}
 }
-

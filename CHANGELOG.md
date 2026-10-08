@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added administrator settings and per-item controls for Markdown publication.
 - Added an opt-in switch for the public API Catalog.
 - Added opt-in Markdown for individual public, publicly queryable Custom Post Types.
+- Added the GPLv2-or-later license file and plugin header metadata.
 
 ### Changed
 
@@ -25,6 +26,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Security
 
+- Agent Readiness now sends same-site validation requests only after an administrator explicitly starts a check.
+- Agent Readiness rejects external validation URLs and does not follow redirects.
 - Blocked Markdown for authenticated visitors, password-protected items, and content that WordPress does not consider publicly viewable.
 - Added `X-Content-Type-Options: nosniff` to Markdown responses.
 - Prevented product extension filters from making hidden or unpriced products public.
