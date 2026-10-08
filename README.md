@@ -39,6 +39,8 @@ After activation, go to **Settings → Serfe AI Discovery**, enable Markdown, an
 
 The settings store individual content types and public archives separately. Existing settings from schema v1 retain their individual-content selections when migrated to schema v2; all archive selections start disabled. Archive choices can be saved now, but archive Markdown is not served in this build.
 
+The settings also let administrators exclude entire content types, exact site URL paths, and public taxonomy terms such as `category:123` or `product_cat:456`. Enter one path or taxonomy term per line. Exclusions take priority over content and item opt-ins.
+
 Request the `.md` version of an enabled public URL:
 
 ```text

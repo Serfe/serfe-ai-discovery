@@ -35,6 +35,9 @@ final class Settings {
 		$choices = wp_parse_args( $stored, self::defaults() );
 		$choices['detail_post_types'] = is_array( $choices['detail_post_types'] ) ? $choices['detail_post_types'] : array();
 		$choices['enabled_archives'] = is_array( $choices['enabled_archives'] ) ? $choices['enabled_archives'] : array();
+		foreach ( array( 'blocked_post_types', 'blocked_paths', 'blocked_terms' ) as $key ) {
+			$choices[ $key ] = is_array( $choices[ $key ] ) ? $choices[ $key ] : array();
+		}
 		return $choices;
 	}
 
@@ -66,6 +69,9 @@ final class Settings {
 			'markdown_enabled'   => 0,
 			'detail_post_types' => array(),
 			'enabled_archives'  => array(),
+			'blocked_post_types' => array(),
+			'blocked_paths' => array(),
+			'blocked_terms' => array(),
 			'api_catalog_enabled' => 0,
 		);
 	}
@@ -131,6 +137,39 @@ final class Settings {
 		return 1 === (int) $choices['api_catalog_enabled'];
 	}
 
+	/** Normalize a site-relative path or same-origin URL for exact matching. */
+	public static function normalize_blocked_path( $value ) {
+		if ( ! is_string( $value ) ) {
+			return '';
+		}
+		$value = trim( $value );
+		if ( '' === $value || preg_match( '/[\x00-\x1F\x7F]/', $value ) || 0 === strpos( $value, '//' ) ) {
+			return '';
+		}
+		if ( 0 === strpos( $value, '/' ) ) {
+			$path = $value;
+		} else {
+			$url = wp_parse_url( $value );
+			$home = wp_parse_url( home_url( '/' ) );
+			if ( ! is_array( $url ) || ! is_array( $home ) || empty( $url['scheme'] ) || ! in_array( strtolower( $url['scheme'] ), array( 'http', 'https' ), true )
+				|| empty( $url['host'] ) || empty( $home['host'] ) || strtolower( $url['host'] ) !== strtolower( $home['host'] )
+				|| ( isset( $url['port'] ) ? (int) $url['port'] : null ) !== ( isset( $home['port'] ) ? (int) $home['port'] : null )
+				|| isset( $url['user'] ) || isset( $url['pass'] ) || isset( $url['query'] ) || isset( $url['fragment'] ) ) {
+				return '';
+			}
+			$path = isset( $url['path'] ) ? $url['path'] : '/';
+		}
+		if ( '' === $path || '/' !== $path[0] || false !== strpbrk( $path, '?#\\' ) || preg_match( '/[\x00-\x1F\x7F]/', rawurldecode( $path ) ) ) {
+			return '';
+		}
+		$decoded = rawurldecode( $path );
+		if ( false !== strpos( $decoded, '\\' ) || false !== strpos( $decoded, '?' ) || false !== strpos( $decoded, '#' )
+			|| preg_match( '~(?:^|/)\.{1,2}(?:/|$)~', $decoded ) ) {
+			return '';
+		}
+		return '/' === $path ? '/' : rtrim( $path, '/' );
+	}
+
 	/** @param mixed $input Submitted setting. @return array<string, mixed> */
 	public function sanitize( $input ) {
 		$input = is_array( $input ) ? $input : array();
@@ -140,6 +179,7 @@ final class Settings {
 		$archives = isset( $input['enabled_archives'] ) && is_array( $input['enabled_archives'] )
 			? $input['enabled_archives']
 			: array();
+		$blocked_types = isset( $input['blocked_post_types'] ) && is_array( $input['blocked_post_types'] ) ? $input['blocked_post_types'] : array();
 
 		$allowed_types = array();
 		$supported = self::supported_post_types();
@@ -155,12 +195,43 @@ final class Settings {
 				$allowed_archives[] = $archive;
 			}
 		}
+		$allowed_blocked_types = array();
+		foreach ( $blocked_types as $type ) {
+			if ( is_string( $type ) && in_array( $type, $supported, true ) ) {
+				$allowed_blocked_types[] = $type;
+			}
+		}
+		$blocked_paths = array();
+		$path_lines = isset( $input['blocked_paths'] ) && is_string( $input['blocked_paths'] ) ? preg_split( '/\r\n|\r|\n/', $input['blocked_paths'] ) : array();
+		foreach ( array_slice( $path_lines, 0, 100 ) as $line ) {
+			$path = self::normalize_blocked_path( $line );
+			if ( '' !== $path ) {
+				$blocked_paths[] = $path;
+			}
+		}
+		$blocked_terms = array();
+		$term_lines = isset( $input['blocked_terms'] ) && is_string( $input['blocked_terms'] ) ? preg_split( '/\r\n|\r|\n/', $input['blocked_terms'] ) : array();
+		foreach ( array_slice( $term_lines, 0, 100 ) as $line ) {
+			$key = trim( $line );
+			if ( ! preg_match( '/^([a-z][a-z0-9_]*)\:([1-9][0-9]*)$/', $key, $parts ) ) {
+				continue;
+			}
+			$taxonomy = $parts[1];
+			$term_id = (int) $parts[2];
+			$object = taxonomy_exists( $taxonomy ) ? get_taxonomy( $taxonomy ) : null;
+			if ( $term_id > 0 && $object && ! empty( $object->public ) && ! empty( $object->publicly_queryable ) && term_exists( $term_id, $taxonomy ) ) {
+				$blocked_terms[] = $taxonomy . ':' . $term_id;
+			}
+		}
 
 		return array(
 			'schema_version'      => self::SCHEMA_VERSION,
 			'markdown_enabled'   => isset( $input['markdown_enabled'] ) && in_array( $input['markdown_enabled'], array( '1', 1 ), true ) ? 1 : 0,
 			'detail_post_types' => array_values( array_unique( $allowed_types ) ),
 			'enabled_archives'  => array_values( array_unique( $allowed_archives ) ),
+			'blocked_post_types' => array_values( array_unique( $allowed_blocked_types ) ),
+			'blocked_paths' => array_values( array_unique( $blocked_paths ) ),
+			'blocked_terms' => array_values( array_unique( $blocked_terms ) ),
 			'api_catalog_enabled' => isset( $input['api_catalog_enabled'] ) && in_array( $input['api_catalog_enabled'], array( '1', 1 ), true ) ? 1 : 0,
 		);
 	}
@@ -172,6 +243,9 @@ final class Settings {
 		add_settings_field( 'markdown_enabled', __( 'Markdown', 'serfe-ai-discovery' ), array( $this, 'render_markdown_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
 		add_settings_field( 'detail_post_types', __( 'Individual content', 'serfe-ai-discovery' ), array( $this, 'render_types_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
 		add_settings_field( 'enabled_archives', __( 'Public archives', 'serfe-ai-discovery' ), array( $this, 'render_archives_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
+		add_settings_field( 'blocked_post_types', __( 'Excluded content types', 'serfe-ai-discovery' ), array( $this, 'render_blocked_types_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
+		add_settings_field( 'blocked_paths', __( 'Excluded URL paths', 'serfe-ai-discovery' ), array( $this, 'render_blocked_paths_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
+		add_settings_field( 'blocked_terms', __( 'Excluded categories and terms', 'serfe-ai-discovery' ), array( $this, 'render_blocked_terms_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
 		add_settings_field( 'api_catalog_enabled', __( 'API Catalog', 'serfe-ai-discovery' ), array( $this, 'render_catalog_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
 	}
 
@@ -222,6 +296,30 @@ final class Settings {
 	public function render_catalog_field() {
 		$choices = self::choices();
 		printf( '<label><input type="checkbox" name="%s[api_catalog_enabled]" value="1" %s> %s</label>', esc_attr( self::OPTION ), checked( 1, $choices['api_catalog_enabled'], false ), esc_html__( 'Publish a catalog of the public WordPress REST API', 'serfe-ai-discovery' ) );
+	}
+
+	/** Render content types that must never have Markdown. */
+	public function render_blocked_types_field() {
+		$choices = self::choices();
+		foreach ( self::supported_post_types() as $type ) {
+			$object = get_post_type_object( $type );
+			$label = $object && isset( $object->labels->name ) ? $object->labels->name : $type;
+			printf( '<label><input type="checkbox" name="%s[blocked_post_types][]" value="%s" %s> %s</label><br>', esc_attr( self::OPTION ), esc_attr( $type ), checked( in_array( $type, $choices['blocked_post_types'], true ), true, false ), esc_html( $label ) );
+		}
+	}
+
+	/** Render exact paths to exclude, one per line. */
+	public function render_blocked_paths_field() {
+		$choices = self::choices();
+		printf( '<textarea name="%s[blocked_paths]" rows="5" cols="55">%s</textarea>', esc_attr( self::OPTION ), esc_textarea( implode( "\n", $choices['blocked_paths'] ) ) );
+		echo '<p class="description">' . esc_html__( 'One exact site path per line, such as /private-page/. Same-site full URLs are also accepted.', 'serfe-ai-discovery' ) . '</p>';
+	}
+
+	/** Render public taxonomy terms to exclude, one taxonomy and ID per line. */
+	public function render_blocked_terms_field() {
+		$choices = self::choices();
+		printf( '<textarea name="%s[blocked_terms]" rows="5" cols="55">%s</textarea>', esc_attr( self::OPTION ), esc_textarea( implode( "\n", $choices['blocked_terms'] ) ) );
+		echo '<p class="description">' . esc_html__( 'One public taxonomy and term ID per line, such as category:123 or product_cat:456. Matching items will not have Markdown.', 'serfe-ai-discovery' ) . '</p>';
 	}
 
 	/** Render the settings form. */

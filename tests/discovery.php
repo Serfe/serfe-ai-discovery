@@ -4,6 +4,7 @@ define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 
 require_once dirname( __DIR__ ) . '/includes/class-product-generator.php';
 require_once dirname( __DIR__ ) . '/includes/class-settings.php';
+require_once dirname( __DIR__ ) . '/includes/class-exclusions.php';
 require_once dirname( __DIR__ ) . '/includes/class-editorial-content.php';
 require_once dirname( __DIR__ ) . '/includes/class-discovery.php';
 
@@ -105,6 +106,22 @@ function wp_parse_args( $args, $defaults ) {
 	return array_merge( $defaults, $args );
 }
 
+function get_permalink( $post ) {
+	return 'https://example.com/item-' . $post->ID . '/';
+}
+
+function home_url( $path = '' ) {
+	return 'https://example.com' . $path;
+}
+
+function wp_parse_url( $url ) {
+	return parse_url( $url );
+}
+
+function has_term( $term_id, $taxonomy, $post ) {
+	return isset( $GLOBALS['discovery_test_terms'][ $post->ID ] ) && in_array( $taxonomy . ':' . $term_id, $GLOBALS['discovery_test_terms'][ $post->ID ], true );
+}
+
 function get_post_meta( $post_id, $key, $single ) {
 	return isset( $GLOBALS['discovery_test_enabled_items'][ $post_id ] ) ? $GLOBALS['discovery_test_enabled_items'][ $post_id ] : '';
 }
@@ -154,6 +171,7 @@ $GLOBALS['discovery_test_context'] = array(
 );
 $GLOBALS['discovery_test_options'] = array();
 $GLOBALS['discovery_test_enabled_items'] = array();
+$GLOBALS['discovery_test_terms'] = array();
 $GLOBALS['discovery_test_wc_pages'] = array();
 $GLOBALS['discovery_test_wc_conditions'] = array();
 $GLOBALS['discovery_test_products'] = array(
@@ -178,6 +196,23 @@ $GLOBALS['discovery_test_options'][ Settings::OPTION ] = array( 'markdown_enable
 $assert_same( false, $discovery->current_content_has_markdown(), 'Requires item-level opt-in' );
 $GLOBALS['discovery_test_enabled_items'][1] = '1';
 $assert_same( true, $discovery->current_content_has_markdown(), 'Exposes published blog post' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ] = array(
+	'schema_version' => 2,
+	'markdown_enabled' => 1,
+	'detail_post_types' => array( 'post', 'page', 'product' ),
+	'blocked_post_types' => array( 'post' ),
+	'blocked_paths' => array(),
+	'blocked_terms' => array(),
+);
+$assert_same( false, $discovery->current_content_has_markdown(), 'Excluded type overrides item opt-in' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_post_types'] = array();
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_paths'] = array( '/item-1' );
+$assert_same( false, $discovery->current_content_has_markdown(), 'Excluded path overrides item opt-in' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_paths'] = array();
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_terms'] = array( 'category:123' );
+$GLOBALS['discovery_test_terms'][1] = array( 'category:123' );
+$assert_same( false, $discovery->current_content_has_markdown(), 'Excluded category overrides item opt-in' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_terms'] = array();
 $GLOBALS['discovery_test_context']['post']->post_content = '[account_data]';
 $assert_same( false, $discovery->current_content_has_markdown(), 'Does not expose opted-in shortcode content' );
 $GLOBALS['discovery_test_context']['post']->post_content = '';
@@ -214,15 +249,15 @@ foreach ( array( 'cart', 'checkout', 'account', 'endpoint' ) as $wc_condition ) 
 	$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects opted-in WooCommerce ' . $wc_condition . ' context' );
 	unset( $GLOBALS['discovery_test_wc_conditions'][ $wc_condition ] );
 }
-$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_post_types'] = array( 'post', 'product' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['detail_post_types'] = array( 'post', 'product' );
 $assert_same( false, $discovery->current_content_has_markdown(), 'Requires post-type opt-in' );
-$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_post_types'] = array( 'post', 'page', 'product' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['detail_post_types'] = array( 'post', 'page', 'product' );
 $GLOBALS['discovery_test_context']['post'] = new WP_Post( 5, 'attachment' );
 $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects unsupported post type' );
 $GLOBALS['discovery_test_context']['post'] = new WP_Post( 6, 'book' );
 $GLOBALS['discovery_test_enabled_items'][6] = '1';
 $assert_same( false, $discovery->current_content_has_markdown(), 'Public CPT still requires type opt-in' );
-$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_post_types'][] = 'book';
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['detail_post_types'][] = 'book';
 $assert_same( true, $discovery->current_content_has_markdown(), 'Exposes enabled public CPT item' );
 $GLOBALS['discovery_test_context']['publicly_viewable'] = false;
 $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects restricted CPT item' );

@@ -98,6 +98,7 @@ final class Discovery {
 			|| ! empty( $post->post_password )
 			|| ! is_post_publicly_viewable( $post )
 			|| self::is_sensitive_woocommerce_page( $post )
+			|| Exclusions::blocks( $post )
 			|| ! Settings::markdown_enabled_for( $post->post_type )
 			|| ! Settings::item_enabled( $post->ID ) ) {
 			return false;

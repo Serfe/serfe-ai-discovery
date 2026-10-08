@@ -53,6 +53,18 @@ function get_taxonomy( $taxonomy ) {
 	return taxonomy_exists( $taxonomy ) ? (object) array( 'public' => true, 'publicly_queryable' => true ) : null;
 }
 
+function term_exists( $term_id, $taxonomy ) {
+	return in_array( $term_id, array( 123, 456 ), true ) ? $term_id : null;
+}
+
+function home_url( $path = '' ) {
+	return 'https://example.com' . $path;
+}
+
+function wp_parse_url( $url ) {
+	return parse_url( $url );
+}
+
 function wp_parse_args( $args, $defaults ) {
 	return array_merge( $defaults, $args );
 }
@@ -114,6 +126,16 @@ $clean = $settings->sanitize( array(
 $assert_same( 2, $clean['schema_version'], 'Stores versioned settings' );
 $assert_same( array( 'post', 'book' ), $clean['detail_post_types'], 'Allows public CPT and rejects unsupported detail types' );
 $assert_same( array( 'book', 'product', 'product_cat', 'product_tag' ), $clean['enabled_archives'], 'Allows public archives and rejects unsupported archive keys' );
+$exclusions = $settings->sanitize( array(
+	'blocked_post_types' => array( 'book', 'book', 'private_record' ),
+	'blocked_paths' => "/private-page/\nhttps://example.com/private-page/\nhttps://external.test/private/\n/../secrets\n/path?query=1",
+	'blocked_terms' => "product_cat:456\nproduct_cat:456\nproduct_cat:999\nprivate_tax:123",
+) );
+$assert_same( array( 'book' ), $exclusions['blocked_post_types'], 'Validates excluded content types' );
+$assert_same( array( '/private-page' ), $exclusions['blocked_paths'], 'Keeps only valid, same-site unique paths' );
+$assert_same( array( 'product_cat:456' ), $exclusions['blocked_terms'], 'Keeps only existing public terms' );
+$assert_same( '', Settings::normalize_blocked_path( 'https://example.com/path?query=1' ), 'Rejects URL query in exact path exclusion' );
+$assert_same( '', Settings::normalize_blocked_path( '//external.test/path' ), 'Rejects protocol-relative URL' );
 $GLOBALS['test_options'][ Settings::OPTION ] = $clean;
 $assert_same( true, Settings::markdown_enabled_for( 'post' ), 'Enables selected post type' );
 $assert_same( true, Settings::markdown_enabled_for( 'book' ), 'Enables selected public CPT' );
