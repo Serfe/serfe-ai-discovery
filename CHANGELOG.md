@@ -31,6 +31,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Blocked Markdown for authenticated visitors, password-protected items, and content that WordPress does not consider publicly viewable.
 - Added `X-Content-Type-Options: nosniff` to Markdown responses.
 - Prevented product extension filters from making hidden or unpriced products public.
+- Blocked Markdown on WooCommerce cart, checkout, account, payment, and order endpoints even when a page is opted in.
 
 ## [1.0.10] - 2026-09-24
 

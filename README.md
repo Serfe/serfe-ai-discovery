@@ -30,7 +30,7 @@ When API Catalog publication is enabled in the settings, the homepage additional
 - Published WooCommerce products that meet the plugin's exposure rules, including their public WooCommerce descriptions, price, and availability.
 - Selected public, publicly queryable Custom Post Types, enabled one by one.
 
-Drafts, private content, archives, feeds, embeds, and unsupported post types are not exposed.
+Drafts, private content, WooCommerce cart, checkout and account pages, archives, feeds, embeds, and unsupported post types are not exposed.
 
 ## Usage
 

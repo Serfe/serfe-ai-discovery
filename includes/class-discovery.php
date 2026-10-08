@@ -97,6 +97,7 @@ final class Discovery {
 			|| $post->post_status !== 'publish'
 			|| ! empty( $post->post_password )
 			|| ! is_post_publicly_viewable( $post )
+			|| self::is_sensitive_woocommerce_page( $post )
 			|| ! Settings::markdown_enabled_for( $post->post_type )
 			|| ! Settings::item_enabled( $post->ID ) ) {
 			return false;
@@ -107,6 +108,29 @@ final class Discovery {
 		}
 
 		return $post->post_type === 'product' && $this->product_generator->is_exposable( $post->ID );
+	}
+
+	/** @param \WP_Post $post Queried post. @return bool */
+	private static function is_sensitive_woocommerce_page( $post ) {
+		if ( 'page' !== $post->post_type ) {
+			return false;
+		}
+
+		if ( function_exists( 'wc_get_page_id' ) ) {
+			foreach ( array( 'cart', 'checkout', 'myaccount', 'pay', 'view_order' ) as $page ) {
+				if ( (int) wc_get_page_id( $page ) === (int) $post->ID ) {
+					return true;
+				}
+			}
+		}
+
+		foreach ( array( 'is_cart', 'is_checkout', 'is_account_page', 'is_wc_endpoint_url' ) as $condition ) {
+			if ( function_exists( $condition ) && call_user_func( $condition ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/** Print the Markdown alternate link for eligible HTML content. */

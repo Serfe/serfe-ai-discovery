@@ -89,6 +89,26 @@ function wc_get_product( $product_id ) {
 	return isset( $GLOBALS['discovery_test_products'][ $product_id ] ) ? $GLOBALS['discovery_test_products'][ $product_id ] : null;
 }
 
+function wc_get_page_id( $page ) {
+	return isset( $GLOBALS['discovery_test_wc_pages'][ $page ] ) ? $GLOBALS['discovery_test_wc_pages'][ $page ] : -1;
+}
+
+function is_cart() {
+	return ! empty( $GLOBALS['discovery_test_wc_conditions']['cart'] );
+}
+
+function is_checkout() {
+	return ! empty( $GLOBALS['discovery_test_wc_conditions']['checkout'] );
+}
+
+function is_account_page() {
+	return ! empty( $GLOBALS['discovery_test_wc_conditions']['account'] );
+}
+
+function is_wc_endpoint_url() {
+	return ! empty( $GLOBALS['discovery_test_wc_conditions']['endpoint'] );
+}
+
 function apply_filters( $hook, $value ) {
 	if ( 'serfe_ai_discovery_product_exposable' === $hook && ! empty( $GLOBALS['discovery_test_force_product_exposable'] ) ) {
 		return true;
@@ -106,6 +126,8 @@ $GLOBALS['discovery_test_context'] = array(
 );
 $GLOBALS['discovery_test_options'] = array();
 $GLOBALS['discovery_test_enabled_items'] = array();
+$GLOBALS['discovery_test_wc_pages'] = array();
+$GLOBALS['discovery_test_wc_conditions'] = array();
 $GLOBALS['discovery_test_products'] = array(
 	2 => new Test_Product( 'visible', '10' ),
 	3 => new Test_Product( 'hidden', '10' ),
@@ -151,6 +173,16 @@ $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects produc
 $GLOBALS['discovery_test_context']['post'] = new WP_Post( 5, 'page' );
 $GLOBALS['discovery_test_enabled_items'][5] = '1';
 $assert_same( true, $discovery->current_content_has_markdown(), 'Exposes published page' );
+foreach ( array( 'cart', 'checkout', 'myaccount', 'pay', 'view_order' ) as $wc_page ) {
+	$GLOBALS['discovery_test_wc_pages'][ $wc_page ] = 5;
+	$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects opted-in WooCommerce ' . $wc_page . ' page' );
+	unset( $GLOBALS['discovery_test_wc_pages'][ $wc_page ] );
+}
+foreach ( array( 'cart', 'checkout', 'account', 'endpoint' ) as $wc_condition ) {
+	$GLOBALS['discovery_test_wc_conditions'][ $wc_condition ] = true;
+	$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects opted-in WooCommerce ' . $wc_condition . ' context' );
+	unset( $GLOBALS['discovery_test_wc_conditions'][ $wc_condition ] );
+}
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_post_types'] = array( 'post', 'product' );
 $assert_same( false, $discovery->current_content_has_markdown(), 'Requires post-type opt-in' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_post_types'] = array( 'post', 'page', 'product' );
