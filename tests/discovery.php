@@ -4,6 +4,7 @@ define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 
 require_once dirname( __DIR__ ) . '/includes/class-product-generator.php';
 require_once dirname( __DIR__ ) . '/includes/class-settings.php';
+require_once dirname( __DIR__ ) . '/includes/class-editorial-content.php';
 require_once dirname( __DIR__ ) . '/includes/class-discovery.php';
 
 use Serfe\AI_Discovery\Discovery;
@@ -15,12 +16,27 @@ final class WP_Post {
 	public $post_type;
 	public $post_status;
 	public $post_password = '';
+	public $post_content = '';
 
 	public function __construct( $id, $post_type, $post_status = 'publish' ) {
 		$this->ID          = $id;
 		$this->post_type   = $post_type;
 		$this->post_status = $post_status;
 	}
+}
+
+final class WP_Block_Type_Registry {
+	public static function get_instance() {
+		return new self();
+	}
+
+	public function get_registered( $name ) {
+		return null;
+	}
+}
+
+function parse_blocks( $content ) {
+	return array();
 }
 
 final class Test_Product {
@@ -150,6 +166,9 @@ $GLOBALS['discovery_test_options'][ Settings::OPTION ] = array( 'markdown_enable
 $assert_same( false, $discovery->current_content_has_markdown(), 'Requires item-level opt-in' );
 $GLOBALS['discovery_test_enabled_items'][1] = '1';
 $assert_same( true, $discovery->current_content_has_markdown(), 'Exposes published blog post' );
+$GLOBALS['discovery_test_context']['post']->post_content = '[account_data]';
+$assert_same( false, $discovery->current_content_has_markdown(), 'Does not expose opted-in shortcode content' );
+$GLOBALS['discovery_test_context']['post']->post_content = '';
 $GLOBALS['discovery_test_context']['logged_in'] = true;
 $assert_same( false, $discovery->current_content_has_markdown(), 'Never exposes Markdown to a logged-in visitor' );
 $GLOBALS['discovery_test_context']['logged_in'] = false;

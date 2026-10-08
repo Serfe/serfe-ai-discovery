@@ -44,6 +44,7 @@ $converter = new Html_To_Markdown();
 $html      = '<h2>Title</h2><p>Hello <strong>world</strong>.</p><ul><li>One</li><li>Two</li></ul><script>secret()</script>';
 $expected  = "## Title\n\nHello **world**.\n\n- One\n- Two";
 $assert_same( $expected, $converter->convert( $html ), 'Converts HTML and removes scripts' );
+$assert_same( 'Public', $converter->convert( '<p>Public</p><p hidden>Hidden</p><div aria-hidden="true">Private</div><p style="display:none">Gone</p><form><input value="secret"><button>Pay</button></form>' ), 'Skips hidden content and forms' );
 $assert_same( '[Link](https://example.com) and `code`', $converter->convert( '<p><a href="https://example.com">Link</a> and <code>code</code></p>' ), 'Converts links and code' );
 $table_html = '<table><thead><tr><th>Service</th><th>Option</th></tr></thead><tbody><tr><td>WordPress</td><td><strong>Managed</strong></td></tr></tbody></table>';
 $table_md   = "| Service | Option |\n| --- | --- |\n| WordPress | **Managed** |";

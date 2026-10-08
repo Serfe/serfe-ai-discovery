@@ -18,11 +18,11 @@ final class Blog_Generator {
 	/** @param \WP_Post $post Post. @return string */
 	public function generate( $post ) {
 		$lang    = get_bloginfo( 'language' );
-		$title   = get_the_title( $post );
+		$title   = (string) $post->post_title;
 		$url     = get_permalink( $post );
 		$date    = get_the_date( 'c', $post );
-		$excerpt = has_excerpt( $post ) ? get_the_excerpt( $post ) : '';
-		$html    = apply_filters( 'the_content', $post->post_content );
+		$excerpt = (string) $post->post_excerpt;
+		$html    = (string) $post->post_content;
 
 		$front  = "---\n";
 		$front .= 'title: ' . Markdown::yaml_scalar( $title ) . "\n";

@@ -104,7 +104,7 @@ final class Discovery {
 		}
 
 		if ( 'product' !== $post->post_type ) {
-			return true;
+			return Editorial_Content::is_static( $post );
 		}
 
 		return $post->post_type === 'product' && $this->product_generator->is_exposable( $post->ID );

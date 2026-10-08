@@ -31,6 +31,7 @@ When API Catalog publication is enabled in the settings, the homepage additional
 - Selected public, publicly queryable Custom Post Types, enabled one by one.
 
 Drafts, private content, WooCommerce cart, checkout and account pages, archives, feeds, embeds, and unsupported post types are not exposed.
+Editorial Markdown uses saved static content. Items containing shortcodes, unknown blocks, or dynamically rendered blocks are not eligible; content filters are not run for Markdown.
 
 ## Usage
 
@@ -119,6 +120,7 @@ The test suite is self-contained and covers routing, discovery, Markdown generat
 ```bash
 php tests/run.php
 php tests/discovery.php
+php tests/editorial-content.php
 php tests/product-generator.php
 php tests/readiness.php
 php tests/settings.php

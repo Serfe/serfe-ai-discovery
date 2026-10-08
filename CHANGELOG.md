@@ -32,6 +32,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added `X-Content-Type-Options: nosniff` to Markdown responses.
 - Prevented product extension filters from making hidden or unpriced products public.
 - Blocked Markdown on WooCommerce cart, checkout, account, payment, and order endpoints even when a page is opted in.
+- Limited editorial Markdown to saved static content; shortcodes and dynamic or unknown blocks cannot be published through Markdown.
+- Removed hidden elements and forms from HTML-to-Markdown conversion.
 
 ## [1.0.10] - 2026-09-24
 

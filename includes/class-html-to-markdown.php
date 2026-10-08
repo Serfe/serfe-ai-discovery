@@ -49,6 +49,12 @@ final class Html_To_Markdown {
 		}
 
 		$tag   = strtolower( $node->nodeName );
+		if ( $node->hasAttribute( 'hidden' )
+			|| strtolower( $node->getAttribute( 'aria-hidden' ) ) === 'true'
+			|| preg_match( '/(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*hidden)\s*(?:;|$)/i', $node->getAttribute( 'style' ) )
+			|| in_array( $tag, array( 'form', 'button', 'select', 'textarea', 'template' ), true ) ) {
+			return '';
+		}
 		$inner = $this->walk( $node->childNodes );
 
 		switch ( $tag ) {
