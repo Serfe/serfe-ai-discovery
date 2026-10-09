@@ -1,0 +1,26 @@
+name: Feature request
+description: Suggest a public-content or discovery improvement
+title: "feat: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not post vulnerabilities or private site data. Read [SECURITY.md](https://github.com/Serfe-com/serfe-wordpress-ai-discovery/blob/trunk/SECURITY.md) for private security reporting.
+  - type: textarea
+    id: need
+    attributes:
+      label: What problem would this solve?
+      description: Describe the public-content or discovery need and who benefits.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Suggested behavior
+      description: Explain how the feature would work, including opt-in and public-content boundaries.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Mention existing WordPress or plugin features that might address the need.

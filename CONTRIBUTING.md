@@ -29,6 +29,6 @@ For routing or response changes, also test an opted-in item on a disposable or l
 
 ## Submit a change
 
-Use a [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) message. Update [CHANGELOG.md](CHANGELOG.md) for user-visible changes. Explain how the change was tested and any WordPress, WooCommerce, cache, or Custom Post Type configuration that matters. Do not include private vulnerability details in a public issue or change discussion.
+Use a [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) message. Update [CHANGELOG.md](CHANGELOG.md) for user-visible changes. Explain how the change was tested and any WordPress, WooCommerce, cache, or Custom Post Type configuration that matters. See [SUPPORT.md](SUPPORT.md) for community channels and [SECURITY.md](SECURITY.md) for private vulnerability reporting. Do not include private vulnerability details in a public issue or change discussion.
 
 The source checks workflow runs PHP syntax, the self-contained tests, WordPress-Extra coding standards, PHPStan level 2, and a development-dependency audit. WordPress integration, the full WordPress coding standard, deeper static analysis, security scanning, and release packaging require separate validation before publication.

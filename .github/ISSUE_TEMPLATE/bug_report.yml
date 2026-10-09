@@ -1,0 +1,40 @@
+name: Bug report
+description: Report a reproducible problem with Serfe AI Discovery
+title: "bug: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not report vulnerabilities here. Read [SECURITY.md](https://github.com/Serfe-com/serfe-wordpress-ai-discovery/blob/trunk/SECURITY.md) for private reporting. Remove credentials, customer data, and private URLs before submitting.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the actual behavior and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include an eligible public URL pattern and the relevant opt-in settings, without private data.
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Plugin, WordPress, PHP, and WooCommerce versions when applicable.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Permalinks, cache/CDN, subdirectory install, and public Custom Post Types when relevant.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: HTTP status and headers, logs, or screenshots with secrets and personal data removed.

@@ -126,6 +126,7 @@ Markdown is generated only for published, eligible singular content. Markdown re
 
 The test suite is self-contained and covers routing, discovery, Markdown generation, and WooCommerce product output.
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution and local verification guidelines.
+See [SUPPORT.md](SUPPORT.md) for community support channels. Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 
 ```bash
 php tests/run.php
