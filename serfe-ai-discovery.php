@@ -30,6 +30,7 @@ require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-settings.php';
 require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-exclusions.php';
 require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-discovery.php';
 require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-readiness.php';
+require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-discovery-files.php';
 require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-plugin.php';
 
 Serfe\AI_Discovery\Plugin::instance()->boot();
