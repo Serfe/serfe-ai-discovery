@@ -30,14 +30,14 @@ When API Catalog publication is enabled in the settings, the homepage additional
 - Published WooCommerce products that meet the plugin's exposure rules, including their public WooCommerce descriptions, price, and availability.
 - Selected public, publicly queryable Custom Post Types, enabled one by one.
 
-Drafts, private content, WooCommerce cart, checkout and account pages, archives, feeds, embeds, and unsupported post types are not exposed.
+Drafts, private content, WooCommerce cart, checkout and account pages, feeds, embeds, and unsupported post types are not exposed. Public Custom Post Type archives can be enabled separately; WooCommerce catalog archives remain unavailable.
 Editorial Markdown uses saved static content. Items containing shortcodes, unknown blocks, or dynamically rendered blocks are not eligible; content filters are not run for Markdown.
 
 ## Usage
 
 After activation, go to **Settings → Serfe AI Discovery**, enable Markdown, and select the supported content types. Then open each eligible item and enable its **Serfe AI Discovery** checkbox. All publication settings and items are disabled by default.
 
-The settings store individual content types and public archives separately. Existing settings from schema v1 retain their individual-content selections when migrated to schema v2; all archive selections start disabled. Archive choices can be saved now, but archive Markdown is not served in this build.
+The settings store individual content types and public archives separately. Existing settings from schema v1 retain their individual-content selections when migrated to schema v2; all archive selections start disabled. Enabled public Custom Post Type archives list only published, publicly viewable items approved with the item checkbox. WooCommerce catalog choices can be saved now, but their Markdown is not served in this build.
 
 The settings also let administrators exclude entire content types, exact site URL paths, and public taxonomy terms such as `category:123` or `product_cat:456`. Enter one path or taxonomy term per line. Exclusions take priority over content and item opt-ins.
 

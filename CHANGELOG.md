@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Added opt-in Markdown for public Custom Post Type archives and their pagination, listing only individually approved public items.
 - Added administrator settings and per-item controls for Markdown publication.
 - Added an opt-in switch for the public API Catalog.
 - Added opt-in Markdown for individual public, publicly queryable Custom Post Types.

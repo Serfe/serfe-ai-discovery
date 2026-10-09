@@ -297,7 +297,7 @@ final class Settings {
 			}
 			printf( '<label><input type="checkbox" name="%s[enabled_archives][]" value="%s" %s> %s</label><br>', esc_attr( self::OPTION ), esc_attr( $archive ), checked( in_array( $archive, $choices['enabled_archives'], true ), true, false ), esc_html( $label ) );
 		}
-		echo '<p class="description">' . esc_html__( 'Archive choices are saved but archive Markdown is not yet available in this build.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Public Custom Post Type archives list only individually approved items. WooCommerce catalog archives are not yet available in this build.', 'serfe-ai-discovery' ) . '</p>';
 	}
 
 	/** Render the API Catalog switch. */

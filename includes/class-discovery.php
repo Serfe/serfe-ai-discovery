@@ -112,6 +112,31 @@ final class Discovery {
 		return 'product' === $post->post_type && $this->product_generator->is_exposable( $post->ID );
 	}
 
+	/** Return an enabled public Custom Post Type archive and its canonical page URL. */
+	public function current_archive_context() {
+		if ( ! is_post_type_archive() || is_404() || is_feed() || is_embed() || is_search() || is_user_logged_in() ) {
+			return null;
+		}
+		$object = get_queried_object();
+		if ( ! ( $object instanceof \WP_Post_Type ) || 'product' === $object->name || ! Settings::archive_enabled_for( $object->name ) ) {
+			return null;
+		}
+		$type = get_post_type_object( $object->name );
+		if ( ! $type || ! $type->public || ! $type->publicly_queryable || ! $type->has_archive ) {
+			return null;
+		}
+		$page = max( 1, (int) get_query_var( 'paged' ) );
+		$url  = 1 === $page ? get_post_type_archive_link( $type->name ) : get_pagenum_link( $page, false );
+		if ( ! is_string( $url ) || '' === $url || Exclusions::blocks_archive( $type->name, $url ) ) {
+			return null;
+		}
+		return array(
+			'type' => $type->name,
+			'page' => $page,
+			'url'  => $url,
+		);
+	}
+
 	/** @param \WP_Post $post Queried post. @return bool */
 	private static function is_sensitive_woocommerce_page( $post ) {
 		if ( 'page' !== $post->post_type ) {
@@ -137,11 +162,12 @@ final class Discovery {
 
 	/** Print the Markdown alternate link for eligible HTML content. */
 	public function render_html_alternate() {
-		if ( ! $this->current_content_has_markdown() ) {
+		$url = $this->current_markdown_url();
+		if ( '' === $url ) {
 			return;
 		}
 
-		printf( '<link rel="alternate" type="text/markdown" href="%s" />' . "\n", esc_url( $this->current_markdown_url() ) );
+		printf( '<link rel="alternate" type="text/markdown" href="%s" />' . "\n", esc_url( $url ) );
 	}
 
 	/**
@@ -153,17 +179,22 @@ final class Discovery {
 	 * Markdown responses exit at dispatcher priority 0 and never reach this hook.
 	 */
 	public function send_http_link_header() {
-		if ( headers_sent() || ! $this->current_content_has_markdown() ) {
+		$url = $this->current_markdown_url();
+		if ( headers_sent() || '' === $url ) {
 			return;
 		}
 
-		header( sprintf( 'Link: <%s>; rel="alternate"; type="text/markdown"', sanitize_url( $this->current_markdown_url() ) ), false );
+		header( sprintf( 'Link: <%s>; rel="alternate"; type="text/markdown"', sanitize_url( $url ) ), false );
 		header( 'Vary: Accept', false );
 	}
 
 	/** @return string */
 	private function current_markdown_url() {
-		return self::markdown_url( get_permalink( get_queried_object_id() ) );
+		if ( $this->current_content_has_markdown() ) {
+			return self::markdown_url( get_permalink( get_queried_object_id() ) );
+		}
+		$archive = $this->current_archive_context();
+		return $archive ? self::markdown_url( $archive['url'] ) : '';
 	}
 
 	/**

@@ -20,6 +20,8 @@ final class Plugin {
 	private $blog_generator;
 	/** @var Product_Generator */
 	private $product_generator;
+	/** @var Archive_Generator */
+	private $archive_generator;
 	/** @var Discovery */
 	private $discovery;
 	/** @var Readiness */
@@ -40,6 +42,7 @@ final class Plugin {
 		$this->response          = new Response();
 		$this->blog_generator    = new Blog_Generator( new Html_To_Markdown() );
 		$this->product_generator = new Product_Generator();
+		$this->archive_generator = new Archive_Generator();
 		$this->discovery         = new Discovery( $this->product_generator );
 		$this->readiness         = new Readiness();
 		$this->settings          = new Settings();
@@ -62,6 +65,14 @@ final class Plugin {
 	public function dispatch() {
 		if ( ! $this->router->is_markdown_request() ) {
 			return;
+		}
+		$archive = $this->discovery->current_archive_context();
+		if ( $archive ) {
+			global $wp_query;
+			if ( ! ( $wp_query instanceof \WP_Query ) ) {
+				$this->response->not_found();
+			}
+			$this->response->markdown( $this->archive_generator->generate( $archive['type'], $archive['url'], $archive['page'], (int) $wp_query->max_num_pages, $wp_query->posts ), $this->router->is_accept_negotiated(), $archive['url'] );
 		}
 
 		if ( ! $this->discovery->current_content_has_markdown() ) {

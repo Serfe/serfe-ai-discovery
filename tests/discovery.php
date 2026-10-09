@@ -26,6 +26,14 @@ final class WP_Post {
 	}
 }
 
+final class WP_Post_Type {
+	public $name;
+
+	public function __construct( $name ) {
+		$this->name = $name;
+	}
+}
+
 final class WP_Block_Type_Registry {
 	public static function get_instance() {
 		return new self();
@@ -62,6 +70,30 @@ function is_singular() {
 	return $GLOBALS['discovery_test_context']['singular'];
 }
 
+function is_post_type_archive() {
+	return ! empty( $GLOBALS['discovery_test_context']['archive'] );
+}
+
+function is_404() {
+	return ! empty( $GLOBALS['discovery_test_context']['not_found'] );
+}
+
+function is_search() {
+	return ! empty( $GLOBALS['discovery_test_context']['search'] );
+}
+
+function get_query_var( $key ) {
+	return isset( $GLOBALS['discovery_test_context'][ $key ] ) ? $GLOBALS['discovery_test_context'][ $key ] : 0;
+}
+
+function get_post_type_archive_link( $type ) {
+	return 'https://example.com/' . $type . '/';
+}
+
+function get_pagenum_link( $page, $escape = true ) {
+	return 'https://example.com/book/page/' . $page . '/';
+}
+
 function is_feed() {
 	return $GLOBALS['discovery_test_context']['feed'];
 }
@@ -91,7 +123,7 @@ function get_post_types( $args, $output ) {
 }
 
 function get_post_type_object( $type ) {
-	return (object) array( 'public' => true, 'publicly_queryable' => true, 'has_archive' => in_array( $type, array( 'book', 'product' ), true ) );
+	return (object) array( 'name' => $type, 'public' => true, 'publicly_queryable' => true, 'has_archive' => in_array( $type, array( 'book', 'product' ), true ) );
 }
 
 function taxonomy_exists( $taxonomy ) {
@@ -163,6 +195,7 @@ function apply_filters( $hook, $value ) {
 
 $GLOBALS['discovery_test_context'] = array(
 	'singular' => true,
+	'archive'  => false,
 	'feed'     => false,
 	'embed'    => false,
 	'logged_in' => false,
@@ -274,6 +307,30 @@ $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects embed'
 $GLOBALS['discovery_test_context']['embed']    = false;
 $GLOBALS['discovery_test_context']['singular'] = false;
 $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects archive' );
+$GLOBALS['discovery_test_context']['archive'] = true;
+$GLOBALS['discovery_test_context']['post'] = new WP_Post_Type( 'book' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array( 'book' );
+$assert_same( array( 'type' => 'book', 'page' => 1, 'url' => 'https://example.com/book/' ), $discovery->current_archive_context(), 'Allows opted-in public CPT archive' );
+$GLOBALS['discovery_test_context']['paged'] = 2;
+$assert_same( array( 'type' => 'book', 'page' => 2, 'url' => 'https://example.com/book/page/2/' ), $discovery->current_archive_context(), 'Allows opted-in archive pagination' );
+$GLOBALS['discovery_test_context']['paged'] = 0;
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_paths'] = array( '/book' );
+$assert_same( null, $discovery->current_archive_context(), 'Blocked archive path overrides opt-in' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_paths'] = array();
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_post_types'] = array( 'book' );
+$assert_same( null, $discovery->current_archive_context(), 'Blocked archive type overrides opt-in' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_post_types'] = array();
+$GLOBALS['discovery_test_context']['logged_in'] = true;
+$assert_same( null, $discovery->current_archive_context(), 'Rejects archive for authenticated visitor' );
+$GLOBALS['discovery_test_context']['logged_in'] = false;
+$GLOBALS['discovery_test_context']['not_found'] = true;
+$assert_same( null, $discovery->current_archive_context(), 'Rejects 404 archive' );
+$GLOBALS['discovery_test_context']['not_found'] = false;
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array();
+$assert_same( null, $discovery->current_archive_context(), 'Archive requires independent opt-in' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array( 'product' );
+$GLOBALS['discovery_test_context']['post'] = new WP_Post_Type( 'product' );
+$assert_same( null, $discovery->current_archive_context(), 'Product archives remain unavailable in this stage' );
 $assert_same( true, Discovery::is_api_catalog_request( '/.well-known/api-catalog' ), 'Detects the API catalog URI' );
 $assert_same( true, Discovery::is_api_catalog_request( '/.well-known/api-catalog/?source=agent' ), 'Allows API catalog query strings' );
 $assert_same( false, Discovery::is_api_catalog_request( '/.well-known/other' ), 'Rejects other well-known URIs' );
