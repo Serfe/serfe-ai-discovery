@@ -31,6 +31,9 @@ $assert_same( false, Request_Router::is_markdown_uri( '/es/product/' ), 'Ignores
 $assert_same( false, Request_Router::is_markdown_uri( '/wp-json/example.md' ), 'Ignores internal URL' );
 $assert_same( true, Request_Router::is_negotiable_uri( '/privacy-policy/' ), 'Allows public canonical URLs for negotiation' );
 $assert_same( false, Request_Router::is_negotiable_uri( '/wp-json/wp/v2/posts' ), 'Does not negotiate internal REST URLs' );
+$assert_same( false, Request_Router::is_negotiable_uri( '/blog/wp-json/wp/v2/posts' ), 'Does not negotiate REST URLs under a site prefix' );
+$assert_same( false, Request_Router::is_markdown_uri( '/blog/wp-admin/post.md' ), 'Does not rewrite admin URLs under a site prefix' );
+$assert_same( true, Request_Router::is_negotiable_uri( '/blog/wp-json-guide/' ), 'Allows similarly named public paths' );
 $assert_same( true, Request_Router::accepts_markdown( 'text/html, text/markdown; q=0.9' ), 'Detects Markdown in Accept header' );
 $assert_same( false, Request_Router::accepts_markdown( 'text/html, text/markdown; q=0' ), 'Honours an unacceptable Markdown quality value' );
 $assert_same( false, Request_Router::accepts_markdown( 'text/html, application/json' ), 'Keeps HTML as default without Markdown Accept header' );

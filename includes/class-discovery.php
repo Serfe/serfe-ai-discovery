@@ -61,7 +61,8 @@ final class Discovery {
 
 	/** @param string $uri Request URI. @return bool */
 	public static function is_api_catalog_request( $uri ) {
-		return rtrim( (string) parse_url( (string) $uri, PHP_URL_PATH ), '/' ) === self::API_CATALOG_PATH;
+		$expected_path = (string) parse_url( home_url( self::API_CATALOG_PATH ), PHP_URL_PATH );
+		return rtrim( (string) parse_url( (string) $uri, PHP_URL_PATH ), '/' ) === rtrim( $expected_path, '/' );
 	}
 
 	/** @return array<string, array<int, array<string, mixed>>> */
@@ -157,6 +158,7 @@ final class Discovery {
 		}
 
 		header( sprintf( 'Link: <%s>; rel="alternate"; type="text/markdown"', sanitize_url( $this->current_markdown_url() ) ), false );
+		header( 'Vary: Accept', false );
 	}
 
 	/** @return string */

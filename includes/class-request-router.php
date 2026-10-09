@@ -62,13 +62,7 @@ final class Request_Router {
 			return false;
 		}
 
-		foreach ( array( '/wp-admin', '/wp-json', '/wp-content', '/wp-includes', '/xmlrpc.php' ) as $skip ) {
-			if ( strpos( $path, $skip ) === 0 ) {
-				return false;
-			}
-		}
-
-		return true;
+		return ! preg_match( '~(?:^|/)(?:wp-admin|wp-json|wp-content|wp-includes)(?:/|$)|(?:^|/)xmlrpc\.php(?:/|$)~', $path );
 	}
 
 	/** @param string $accept Accept header. @return bool */

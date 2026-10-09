@@ -111,7 +111,7 @@ function get_permalink( $post ) {
 }
 
 function home_url( $path = '' ) {
-	return 'https://example.com' . $path;
+	return ( isset( $GLOBALS['discovery_test_home_url'] ) ? $GLOBALS['discovery_test_home_url'] : 'https://example.com' ) . $path;
 }
 
 function wp_parse_url( $url ) {
@@ -277,6 +277,10 @@ $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects archiv
 $assert_same( true, Discovery::is_api_catalog_request( '/.well-known/api-catalog' ), 'Detects the API catalog URI' );
 $assert_same( true, Discovery::is_api_catalog_request( '/.well-known/api-catalog/?source=agent' ), 'Allows API catalog query strings' );
 $assert_same( false, Discovery::is_api_catalog_request( '/.well-known/other' ), 'Rejects other well-known URIs' );
+$GLOBALS['discovery_test_home_url'] = 'https://example.com/blog';
+$assert_same( true, Discovery::is_api_catalog_request( '/blog/.well-known/api-catalog' ), 'Detects API catalog under a site prefix' );
+$assert_same( false, Discovery::is_api_catalog_request( '/.well-known/api-catalog' ), 'Rejects catalog outside configured site prefix' );
+unset( $GLOBALS['discovery_test_home_url'] );
 $assert_same( 'https://serfe.test/.md', Discovery::markdown_url( 'https://serfe.test/' ), 'Builds the homepage Markdown URL without changing the host' );
 $assert_same(
 	array(

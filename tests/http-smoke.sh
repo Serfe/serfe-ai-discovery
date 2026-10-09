@@ -35,6 +35,7 @@ require_header() {
 
 fetch html "$canonical_url"
 require_header html '^Content-Type: text/html;'
+require_header html '^Vary: Accept'
 require_header html '^Link: <[^>]+\.md>; rel="alternate"; type="text/markdown"'
 grep -Eiq '<link rel="alternate" type="text/markdown"' "$tmp_dir/html.body" || { echo 'HTML alternate element missing' >&2; exit 1; }
 
@@ -54,6 +55,7 @@ cmp -s "$tmp_dir/explicit.body" "$tmp_dir/negotiated.body" || { echo 'Markdown r
 
 fetch html_after "$canonical_url"
 require_header html_after '^Content-Type: text/html;'
+require_header html_after '^Vary: Accept'
 grep -Eiq '<!doctype html' "$tmp_dir/html_after.body" || { echo 'HTML was not served after Markdown requests' >&2; exit 1; }
 
 echo 'HTTP smoke checks passed: HTML, explicit Markdown, negotiated Markdown, and HTML after Markdown.'
