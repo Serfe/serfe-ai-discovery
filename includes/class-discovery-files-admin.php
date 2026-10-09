@@ -32,14 +32,16 @@ final class Discovery_Files_Admin {
 			wp_die( esc_html__( 'You are not allowed to manage discovery files.', 'serfe-ai-discovery' ) );
 		}
 		check_admin_referer( self::ACTION );
-		$name = isset( $_POST['file'] ) && is_string( $_POST['file'] ) ? wp_unslash( $_POST['file'] ) : '';
-		$mode = isset( $_POST['mode'] ) && is_string( $_POST['mode'] ) ? wp_unslash( $_POST['mode'] ) : '';
+		$name = isset( $_POST['file'] ) && is_string( $_POST['file'] ) ? sanitize_text_field( wp_unslash( $_POST['file'] ) ) : '';
+		$mode = isset( $_POST['mode'] ) && is_string( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : '';
 		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) || ! in_array( $mode, array( 'publish', 'restore', 'template', 'validate' ), true ) || ( 'template' === $mode && 'llms.txt' !== $name ) ) {
 			wp_die( esc_html__( 'Invalid discovery file action.', 'serfe-ai-discovery' ) );
 		}
+		// Preserve approved plain text exactly; Discovery_Files::normalize_content() validates it before publication.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitizing would change robots.txt or llms.txt policy content.
 		$candidate = isset( $_POST['content'] ) && is_string( $_POST['content'] ) ? wp_unslash( $_POST['content'] ) : '';
 		$expected  = isset( $_POST['checksum'] ) && is_string( $_POST['checksum'] ) ? sanitize_text_field( wp_unslash( $_POST['checksum'] ) ) : '';
-		$takeover  = isset( $_POST['takeover'] ) && is_string( $_POST['takeover'] ) && '1' === wp_unslash( $_POST['takeover'] );
+		$takeover  = isset( $_POST['takeover'] ) && is_string( $_POST['takeover'] ) && '1' === sanitize_text_field( wp_unslash( $_POST['takeover'] ) );
 		if ( 'restore' === $mode ) {
 			$state = Discovery_Files::inspect( $name );
 			if ( is_array( $state ) && is_string( $state['backup'] ) ) {

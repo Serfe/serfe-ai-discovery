@@ -49,6 +49,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Security
 
+- Sanitized file-action controls before validation while preserving discovery-file text for strict content validation.
 - Added a guarded public-root file publication service with fixed filenames, UTF-8 validation, atomic replacement, previous-version backups, and checksum-based takeover checks.
 - Ignored catalog child objects that are not WooCommerce product variations before reading variation-only properties.
 - Verified the Agent Readiness refresh notice with a nonce and sanitized the request's `Accept` header before negotiation.
