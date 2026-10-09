@@ -158,10 +158,6 @@ final class Markdown_Cache {
 
 	/** @param mixed $meta_id Meta IDs. @param int $object_id Post ID. @param string $meta_key Meta key. */
 	public function meta_changed( $meta_id, $object_id, $meta_key ) {
-		if ( Settings::ITEM_META === $meta_key ) {
-			self::invalidate( 'opt_in' );
-			return;
-		}
 		if ( is_string( $meta_key ) && 0 === strpos( $meta_key, '_edit_' ) ) {
 			return;
 		}

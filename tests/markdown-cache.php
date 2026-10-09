@@ -99,17 +99,15 @@ $cache->meta_changed( 1, 10, 'unrelated_post_meta' );
 $assert_same( 2, Markdown_Cache::state()['generation'], 'Unrelated editorial metadata does not invalidate Markdown' );
 $cache->meta_changed( 1, 20, '_price' );
 $assert_same( 3, Markdown_Cache::state()['generation'], 'Product price metadata invalidates Markdown' );
-$cache->meta_changed( 1, 10, Settings::ITEM_META );
-$assert_same( 4, Markdown_Cache::state()['generation'], 'Item approval changes invalidate Markdown' );
 
 $cache->option_changed( '_transient_example' );
 $cache->option_changed( 'cron' );
 $cache->option_changed( 'woocommerce_db_version' );
-$assert_same( 4, Markdown_Cache::state()['generation'], 'Transients and unrelated options do not invalidate Markdown' );
+$assert_same( 3, Markdown_Cache::state()['generation'], 'Transients and unrelated options do not invalidate Markdown' );
 $cache->option_changed( Settings::OPTION );
 $assert_same( 'settings', Markdown_Cache::state()['reason'], 'Plugin settings changes invalidate Markdown' );
 $cache->option_changed( 'woocommerce_currency' );
-$assert_same( 6, Markdown_Cache::state()['generation'], 'Store currency changes invalidate Markdown' );
+$assert_same( 5, Markdown_Cache::state()['generation'], 'Store currency changes invalidate Markdown' );
 
 $large = Markdown_Cache::remember(
 	'post',

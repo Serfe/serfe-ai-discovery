@@ -304,17 +304,14 @@ $discovery = new Discovery( new Product_Generator() );
 $GLOBALS['discovery_test_context']['post'] = new WP_Post( 1, 'post' );
 $assert_same( false, $discovery->current_content_has_markdown(), 'Keeps Markdown disabled by default' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ] = array( 'markdown_enabled' => 1, 'enabled_post_types' => array( 'post', 'page', 'product' ) );
-$assert_same( false, $discovery->current_content_has_markdown(), 'Requires item-level opt-in' );
+$assert_same( true, $discovery->current_content_has_markdown(), 'Publishes public content after Markdown is enabled' );
 $GLOBALS['discovery_test_enabled_items'][1] = '1';
 $assert_same( true, $discovery->current_content_has_markdown(), 'Exposes published blog post' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ] = array(
-	'schema_version' => 2,
+	'schema_version' => 3,
 	'markdown_enabled' => 1,
-	'markdown_all_content' => 0,
-	'detail_post_types' => array( 'post', 'page', 'product' ),
 	'blocked_post_types' => array( 'post' ),
 	'blocked_paths' => array(),
-	'blocked_terms' => array(),
 );
 $assert_same( false, $discovery->current_content_has_markdown(), 'Excluded type overrides item opt-in' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_post_types'] = array();
@@ -323,10 +320,10 @@ $assert_same( false, $discovery->current_content_has_markdown(), 'Excluded path 
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_paths'] = array();
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_terms'] = array( 'category:123' );
 $GLOBALS['discovery_test_terms'][1] = array( 'category:123' );
-$assert_same( false, $discovery->current_content_has_markdown(), 'Excluded category overrides item opt-in' );
+$assert_same( true, $discovery->current_content_has_markdown(), 'Ignores retired term exclusions' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_terms'] = array();
-$GLOBALS['discovery_test_context']['post']->post_content = '[account_data]';
-$assert_same( false, $discovery->current_content_has_markdown(), 'Does not expose opted-in shortcode content' );
+$GLOBALS['discovery_test_context']['post']->post_content = '<p>Account data</p>';
+$assert_same( true, $discovery->current_content_has_markdown(), 'Publishes static content under the global setting' );
 $GLOBALS['discovery_test_context']['post']->post_content = '';
 $GLOBALS['discovery_test_context']['logged_in'] = true;
 $assert_same( false, $discovery->current_content_has_markdown(), 'Never exposes Markdown to a logged-in visitor' );
@@ -365,13 +362,13 @@ foreach ( array( 'cart', 'checkout', 'account', 'endpoint' ) as $wc_condition ) 
 	unset( $GLOBALS['discovery_test_wc_conditions'][ $wc_condition ] );
 }
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['detail_post_types'] = array( 'post', 'product' );
-$assert_same( false, $discovery->current_content_has_markdown(), 'Requires post-type opt-in' );
+$assert_same( true, $discovery->current_content_has_markdown(), 'Publishes all supported public content types' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['detail_post_types'] = array( 'post', 'page', 'product' );
 $GLOBALS['discovery_test_context']['post'] = new WP_Post( 5, 'attachment' );
 $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects unsupported post type' );
 $GLOBALS['discovery_test_context']['post'] = new WP_Post( 6, 'book' );
 $GLOBALS['discovery_test_enabled_items'][6] = '1';
-$assert_same( false, $discovery->current_content_has_markdown(), 'Public CPT still requires type opt-in' );
+$assert_same( true, $discovery->current_content_has_markdown(), 'Publishes public Custom Post Types' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['detail_post_types'][] = 'book';
 $assert_same( true, $discovery->current_content_has_markdown(), 'Exposes enabled public CPT item' );
 $GLOBALS['discovery_test_context']['publicly_viewable'] = false;
@@ -400,7 +397,7 @@ $GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_paths'] = array(
 $assert_same( null, $discovery->current_archive_context(), 'Blocked Posts page path overrides publication' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_paths'] = array();
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['detail_post_types'] = array( 'page', 'product' );
-$assert_same( null, $discovery->current_archive_context(), 'Posts page archive follows the Posts setting when granular publication is used' );
+$assert_same( array( 'type' => 'post', 'page' => 1, 'url' => 'https://example.com/blog/' ), $discovery->current_archive_context(), 'Posts page archive follows the global Markdown setting' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['detail_post_types'] = array( 'post', 'page', 'product', 'book' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['markdown_all_content'] = 1;
 $assert_same( array( 'type' => 'post', 'page' => 1, 'url' => 'https://example.com/blog/' ), $discovery->current_archive_context(), 'Publishes the Posts page archive with full publication enabled' );
@@ -414,7 +411,7 @@ $GLOBALS['discovery_test_context']['paged'] = 2;
 $assert_same( array( 'type' => 'post', 'page' => 2, 'url' => 'https://example.com/category/news/page/2/', 'term' => $category, 'archive_type' => 'category' ), $discovery->current_archive_context(), 'Publishes post category pagination through the Posts setting' );
 $GLOBALS['discovery_test_context']['paged'] = 0;
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_terms'] = array( 'category:123' );
-$assert_same( null, $discovery->current_archive_context(), 'Blocked post category overrides the Posts setting' );
+$assert_same( array( 'type' => 'post', 'page' => 1, 'url' => 'https://example.com/category/news/', 'term' => $category, 'archive_type' => 'category' ), $discovery->current_archive_context(), 'Ignores retired term exclusions for post categories' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_terms'] = array();
 $GLOBALS['discovery_test_context']['category'] = false;
 $GLOBALS['discovery_test_context']['tax'] = true;
@@ -442,7 +439,7 @@ $GLOBALS['discovery_test_context']['not_found'] = true;
 $assert_same( null, $discovery->current_archive_context(), 'Rejects 404 archive' );
 $GLOBALS['discovery_test_context']['not_found'] = false;
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array();
-$assert_same( null, $discovery->current_archive_context(), 'Archive requires independent opt-in' );
+$assert_same( array( 'type' => 'book', 'page' => 1, 'url' => 'https://example.com/book/' ), $discovery->current_archive_context(), 'Publishes supported public archives with Markdown enabled' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array( 'product' );
 $GLOBALS['discovery_test_context']['post'] = new WP_Post_Type( 'product' );
 $assert_same( null, $discovery->current_archive_context(), 'Product archive requires WooCommerce shop context' );
@@ -459,7 +456,7 @@ $GLOBALS['discovery_test_context']['post'] = $term;
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array( 'product_cat' );
 $assert_same( array( 'type' => 'product_cat', 'page' => 1, 'url' => 'https://example.com/product-category/widgets/', 'term' => $term ), $discovery->current_archive_context(), 'Allows enabled product category independently of shop' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_terms'] = array( 'product_cat:123' );
-$assert_same( null, $discovery->current_archive_context(), 'Blocked category overrides archive opt-in' );
+$assert_same( array( 'type' => 'product_cat', 'page' => 1, 'url' => 'https://example.com/product-category/widgets/', 'term' => $term ), $discovery->current_archive_context(), 'Ignores retired term exclusions for product categories' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_terms'] = array();
 $GLOBALS['discovery_test_context']['product_cat'] = false;
 $GLOBALS['discovery_test_context']['product_tag'] = true;

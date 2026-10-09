@@ -15,21 +15,23 @@ final class Editorial_Content {
 		}
 
 		$content = (string) $post->post_content;
+		if ( preg_match( '/\[[a-zA-Z0-9_-]+(?:\s+[^\]]*)?\]/', $content ) ) {
+			return false;
+		}
+
 		return self::blocks_are_static( parse_blocks( $content ) );
 	}
 
 	/** @param array<int, array<string, mixed>> $blocks Parsed WordPress blocks. @return bool */
 	private static function blocks_are_static( $blocks ) {
-		$prohibited_blocks = array(
-			'core/loginout',
-			'woocommerce/cart',
-			'woocommerce/checkout',
-			'woocommerce/my-account',
-		);
+		$registry = \WP_Block_Type_Registry::get_instance();
 
 		foreach ( $blocks as $block ) {
-			if ( ! empty( $block['blockName'] ) && in_array( $block['blockName'], $prohibited_blocks, true ) ) {
-				return false;
+			if ( ! empty( $block['blockName'] ) ) {
+				$type = $registry->get_registered( $block['blockName'] );
+				if ( ! $type || $type->is_dynamic() ) {
+					return false;
+				}
 			}
 			if ( ! empty( $block['innerBlocks'] ) && ! self::blocks_are_static( $block['innerBlocks'] ) ) {
 				return false;

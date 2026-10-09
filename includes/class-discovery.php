@@ -110,8 +110,7 @@ final class Discovery {
 			|| ! is_post_publicly_viewable( $post )
 			|| self::is_sensitive_woocommerce_page( $post )
 			|| Exclusions::blocks( $post )
-			|| ! Settings::markdown_enabled_for( $post->post_type )
-			|| ! Settings::item_enabled( $post->ID ) ) {
+			|| ! Settings::markdown_enabled_for( $post->post_type ) ) {
 			return false;
 		}
 
@@ -147,8 +146,7 @@ final class Discovery {
 			$term     = get_queried_object();
 			$taxonomy = $term instanceof \WP_Term ? get_taxonomy( $term->taxonomy ) : null;
 			if ( ! ( $term instanceof \WP_Term ) || ! $taxonomy || empty( $taxonomy->public ) || empty( $taxonomy->publicly_queryable )
-				|| ! in_array( 'post', (array) $taxonomy->object_type, true ) || ! Settings::archive_enabled_for( 'post' )
-				|| Exclusions::blocks_term( $term->taxonomy, $term->term_id ) ) {
+				|| ! in_array( 'post', (array) $taxonomy->object_type, true ) || ! Settings::archive_enabled_for( 'post' ) ) {
 				return null;
 			}
 			$url = 1 === $page ? get_term_link( $term ) : get_pagenum_link( $page, false );
@@ -186,7 +184,7 @@ final class Discovery {
 			$term   = get_queried_object();
 			$object = taxonomy_exists( $taxonomy ) ? get_taxonomy( $taxonomy ) : null;
 			if ( ! ( $term instanceof \WP_Term ) || $taxonomy !== $term->taxonomy || ! $object || ! $object->public || ! $object->publicly_queryable
-				|| ! Settings::archive_enabled_for( $taxonomy ) || Exclusions::blocks_term( $taxonomy, $term->term_id ) ) {
+				|| ! Settings::archive_enabled_for( $taxonomy ) ) {
 				return null;
 			}
 			$url = 1 === $page ? get_term_link( $term ) : get_pagenum_link( $page, false );

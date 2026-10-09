@@ -9,21 +9,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 /** Administrator choices for public discovery features. */
 final class Settings {
 	const OPTION         = 'serfe_ai_discovery_settings';
-	const ITEM_META      = '_serfe_ai_discovery_markdown_enabled';
-	const NONCE_ACTION   = 'serfe_ai_discovery_save_item';
-	const NONCE_NAME     = 'serfe_ai_discovery_item_nonce';
 	const GROUP          = 'serfe_ai_discovery';
 	const PAGE           = 'serfe-ai-discovery';
-	const SCHEMA_VERSION = 2;
+	const SCHEMA_VERSION = 3;
 
-	/** Register the settings screen and per-item opt-in. */
+	/** Register the settings screen and its actions. */
 	public function register_hooks() {
 		add_action( 'admin_init', array( $this, 'migrate_legacy_option' ), 5 );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_menu', array( $this, 'register_page' ) );
-		add_action( 'add_meta_boxes', array( $this, 'register_item_boxes' ) );
-		add_action( 'save_post', array( $this, 'save_item_choice' ), 10, 2 );
 		add_action( 'admin_post_serfe_ai_discovery_markdown_cache', array( $this, 'regenerate_markdown_cache' ) );
+		add_action( 'admin_post_serfe_ai_discovery_api_catalog', array( $this, 'update_api_catalog' ) );
 	}
 
 	/** Discard every generated Markdown document after an explicit administrator action. */
@@ -46,6 +42,30 @@ final class Settings {
 		exit;
 	}
 
+	/** Enable or disable API Catalog publication from its dedicated settings tab. */
+	public function update_api_catalog() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to manage the API Catalog.', 'serfe-ai-discovery' ) );
+		}
+		check_admin_referer( 'serfe_ai_discovery_api_catalog' );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by check_admin_referer() above.
+		$action                         = isset( $_POST['serfe_ai_discovery_api_catalog_action'] ) ? sanitize_key( wp_unslash( $_POST['serfe_ai_discovery_api_catalog_action'] ) ) : '';
+		$choices                        = self::choices();
+		$choices['api_catalog_enabled'] = 'enable' === $action ? 1 : 0;
+		update_option( self::OPTION, $choices );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'            => self::PAGE,
+					'tab'             => 'api-catalog',
+					'catalog-updated' => $choices['api_catalog_enabled'] ? 'enabled' : 'disabled',
+				),
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
+	}
+
 	/** @return array<string, mixed> */
 	public static function choices() {
 		$stored = get_option( self::OPTION, array() );
@@ -53,10 +73,8 @@ final class Settings {
 		if ( ! isset( $stored['schema_version'] ) || (int) $stored['schema_version'] < self::SCHEMA_VERSION ) {
 			$stored = self::migrate_legacy( $stored );
 		}
-		$choices                      = wp_parse_args( $stored, self::defaults() );
-		$choices['detail_post_types'] = is_array( $choices['detail_post_types'] ) ? $choices['detail_post_types'] : array();
-		$choices['enabled_archives']  = is_array( $choices['enabled_archives'] ) ? $choices['enabled_archives'] : array();
-		foreach ( array( 'blocked_post_types', 'blocked_paths', 'blocked_terms' ) as $key ) {
+		$choices = wp_parse_args( $stored, self::defaults() );
+		foreach ( array( 'blocked_post_types', 'blocked_paths' ) as $key ) {
 			$choices[ $key ] = is_array( $choices[ $key ] ) ? $choices[ $key ] : array();
 		}
 		return $choices;
@@ -79,7 +97,8 @@ final class Settings {
 		return $settings->sanitize(
 			array(
 				'markdown_enabled'    => isset( $stored['markdown_enabled'] ) ? $stored['markdown_enabled'] : 0,
-				'detail_post_types'   => isset( $stored['enabled_post_types'] ) ? $stored['enabled_post_types'] : array(),
+				'blocked_post_types'  => isset( $stored['blocked_post_types'] ) ? $stored['blocked_post_types'] : array(),
+				'blocked_paths'       => isset( $stored['blocked_paths'] ) ? implode( "\n", (array) $stored['blocked_paths'] ) : '',
 				'api_catalog_enabled' => isset( $stored['api_catalog_enabled'] ) ? $stored['api_catalog_enabled'] : 0,
 			)
 		);
@@ -88,15 +107,11 @@ final class Settings {
 	/** @return array<string, mixed> */
 	private static function defaults() {
 		return array(
-			'schema_version'       => self::SCHEMA_VERSION,
-			'markdown_enabled'     => 0,
-			'markdown_all_content' => 1,
-			'detail_post_types'    => array(),
-			'enabled_archives'     => array(),
-			'blocked_post_types'   => array(),
-			'blocked_paths'        => array(),
-			'blocked_terms'        => array(),
-			'api_catalog_enabled'  => 0,
+			'schema_version'      => self::SCHEMA_VERSION,
+			'markdown_enabled'    => 0,
+			'blocked_post_types'  => array(),
+			'blocked_paths'       => array(),
+			'api_catalog_enabled' => 0,
 		);
 	}
 
@@ -109,10 +124,7 @@ final class Settings {
 		if ( in_array( $post_type, $choices['blocked_post_types'], true ) ) {
 			return false;
 		}
-		if ( 1 === (int) $choices['markdown_all_content'] ) {
-			return true;
-		}
-		return in_array( $post_type, $choices['detail_post_types'], true );
+		return true;
 	}
 
 	/** @param string $archive Archive post type or supported product taxonomy. @return bool */
@@ -120,17 +132,11 @@ final class Settings {
 		if ( 'post' === $archive ) {
 			return self::markdown_enabled_for( 'post' );
 		}
-		$choices = self::choices();
-		if ( 1 !== (int) $choices['markdown_enabled'] || ! in_array( $archive, self::supported_archive_keys(), true ) ) {
+		if ( ! in_array( $archive, self::supported_archive_keys(), true ) ) {
 			return false;
 		}
-		if ( in_array( $archive, $choices['blocked_post_types'], true ) ) {
-			return false;
-		}
-		if ( 1 === (int) $choices['markdown_all_content'] ) {
-			return true;
-		}
-		return in_array( $archive, $choices['enabled_archives'], true );
+		$type = in_array( $archive, array( 'product_cat', 'product_tag' ), true ) ? 'product' : $archive;
+		return self::markdown_enabled_for( $type );
 	}
 
 	/** @return array<int, string> Public types supported for individual Markdown pages. */
@@ -171,11 +177,6 @@ final class Settings {
 			}
 		}
 		return $archives;
-	}
-
-	/** @param int $post_id Post ID. @return bool */
-	public static function item_enabled( $post_id ) {
-		return '0' !== get_post_meta( $post_id, self::ITEM_META, true );
 	}
 
 	/** @return bool */
@@ -220,28 +221,11 @@ final class Settings {
 	/** @param mixed $input Submitted setting. @return array<string, mixed> */
 	public function sanitize( $input ) {
 		$input         = is_array( $input ) ? $input : array();
-		$types         = isset( $input['detail_post_types'] ) && is_array( $input['detail_post_types'] )
-			? $input['detail_post_types']
-			: array();
-		$archives      = isset( $input['enabled_archives'] ) && is_array( $input['enabled_archives'] )
-			? $input['enabled_archives']
-			: array();
+		$current       = get_option( self::OPTION, array() );
+		$current       = is_array( $current ) ? $current : array();
 		$blocked_types = isset( $input['blocked_post_types'] ) && is_array( $input['blocked_post_types'] ) ? $input['blocked_post_types'] : array();
 
-		$allowed_types = array();
-		$supported     = self::supported_post_types();
-		foreach ( $types as $type ) {
-			if ( is_string( $type ) && in_array( $type, $supported, true ) ) {
-				$allowed_types[] = $type;
-			}
-		}
-		$allowed_archives   = array();
-		$supported_archives = self::supported_archive_keys();
-		foreach ( $archives as $archive ) {
-			if ( is_string( $archive ) && in_array( $archive, $supported_archives, true ) ) {
-				$allowed_archives[] = $archive;
-			}
-		}
+		$supported             = self::supported_post_types();
 		$allowed_blocked_types = array();
 		foreach ( $blocked_types as $type ) {
 			if ( is_string( $type ) && in_array( $type, $supported, true ) ) {
@@ -256,31 +240,14 @@ final class Settings {
 				$blocked_paths[] = $path;
 			}
 		}
-		$blocked_terms = array();
-		$term_lines    = isset( $input['blocked_terms'] ) && is_string( $input['blocked_terms'] ) ? preg_split( '/\r\n|\r|\n/', $input['blocked_terms'] ) : array();
-		foreach ( array_slice( $term_lines, 0, 100 ) as $line ) {
-			$key = trim( $line );
-			if ( ! preg_match( '/^([a-z][a-z0-9_]*)\:([1-9][0-9]*)$/', $key, $parts ) ) {
-				continue;
-			}
-			$taxonomy = $parts[1];
-			$term_id  = (int) $parts[2];
-			$object   = taxonomy_exists( $taxonomy ) ? get_taxonomy( $taxonomy ) : null;
-			if ( $term_id > 0 && $object && ! empty( $object->public ) && ! empty( $object->publicly_queryable ) && term_exists( $term_id, $taxonomy ) ) {
-				$blocked_terms[] = $taxonomy . ':' . $term_id;
-			}
-		}
-
 		return array(
-			'schema_version'       => self::SCHEMA_VERSION,
-			'markdown_enabled'     => isset( $input['markdown_enabled'] ) && in_array( $input['markdown_enabled'], array( '1', 1 ), true ) ? 1 : 0,
-			'markdown_all_content' => 1,
-			'detail_post_types'    => array_values( array_unique( $allowed_types ) ),
-			'enabled_archives'     => array_values( array_unique( $allowed_archives ) ),
-			'blocked_post_types'   => array_values( array_unique( $allowed_blocked_types ) ),
-			'blocked_paths'        => array_values( array_unique( $blocked_paths ) ),
-			'blocked_terms'        => array_values( array_unique( $blocked_terms ) ),
-			'api_catalog_enabled'  => isset( $input['api_catalog_enabled'] ) && in_array( $input['api_catalog_enabled'], array( '1', 1 ), true ) ? 1 : 0,
+			'schema_version'      => self::SCHEMA_VERSION,
+			'markdown_enabled'    => isset( $input['markdown_enabled'] ) && in_array( $input['markdown_enabled'], array( '1', 1 ), true ) ? 1 : 0,
+			'blocked_post_types'  => array_values( array_unique( $allowed_blocked_types ) ),
+			'blocked_paths'       => array_values( array_unique( $blocked_paths ) ),
+			'api_catalog_enabled' => isset( $input['api_catalog_enabled'] )
+				? ( in_array( $input['api_catalog_enabled'], array( '1', 1 ), true ) ? 1 : 0 )
+				: ( isset( $current['api_catalog_enabled'] ) ? (int) $current['api_catalog_enabled'] : 0 ),
 		);
 	}
 
@@ -289,14 +256,10 @@ final class Settings {
 		register_setting( self::GROUP, self::OPTION, array( 'sanitize_callback' => array( $this, 'sanitize' ) ) );
 		add_settings_section( 'serfe_ai_discovery_publication', __( 'General publication settings', 'serfe-ai-discovery' ), array( $this, 'render_section' ), self::PAGE );
 		add_settings_field( 'markdown_enabled', __( 'Markdown negotiation', 'serfe-ai-discovery' ), array( $this, 'render_markdown_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
-		add_settings_field( 'api_catalog_enabled', __( 'API Catalog', 'serfe-ai-discovery' ), array( $this, 'render_catalog_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
 
-		add_settings_section( 'serfe_ai_discovery_advanced', __( 'Advanced Settings (Filter or Exclude Specific Content Types)', 'serfe-ai-discovery' ), array( $this, 'render_advanced_section' ), self::PAGE );
-		add_settings_field( 'detail_post_types', __( 'Individual content', 'serfe-ai-discovery' ), array( $this, 'render_types_field' ), self::PAGE, 'serfe_ai_discovery_advanced' );
-		add_settings_field( 'enabled_archives', __( 'Public archives', 'serfe-ai-discovery' ), array( $this, 'render_archives_field' ), self::PAGE, 'serfe_ai_discovery_advanced' );
+		add_settings_section( 'serfe_ai_discovery_advanced', __( 'Advanced Settings', 'serfe-ai-discovery' ), array( $this, 'render_advanced_section' ), self::PAGE );
 		add_settings_field( 'blocked_post_types', __( 'Excluded content types', 'serfe-ai-discovery' ), array( $this, 'render_blocked_types_field' ), self::PAGE, 'serfe_ai_discovery_advanced' );
 		add_settings_field( 'blocked_paths', __( 'Excluded URL paths', 'serfe-ai-discovery' ), array( $this, 'render_blocked_paths_field' ), self::PAGE, 'serfe_ai_discovery_advanced' );
-		add_settings_field( 'blocked_terms', __( 'Excluded categories and terms', 'serfe-ai-discovery' ), array( $this, 'render_blocked_terms_field' ), self::PAGE, 'serfe_ai_discovery_advanced' );
 	}
 
 	/** Add Serfe WordPress AI Discovery as a top-level admin menu. */
@@ -317,14 +280,14 @@ final class Settings {
 	/** Explain advanced filtering options within a collapsible details wrapper. */
 	public function render_advanced_section() {
 		$choices    = self::choices();
-		$has_custom = ! empty( $choices['blocked_post_types'] ) || ! empty( $choices['blocked_paths'] ) || ! empty( $choices['blocked_terms'] ) || ! empty( $choices['detail_post_types'] );
+		$has_custom = ! empty( $choices['blocked_post_types'] ) || ! empty( $choices['blocked_paths'] );
 		$open_attr  = $has_custom ? 'open' : '';
 		printf(
 			'<details %s style="margin-top: 24px; padding: 12px 16px; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px;"><summary style="font-size: 1.1em; font-weight: 600; cursor: pointer; color: #1d2327;">%s</summary>',
 			esc_attr( $open_attr ),
-			esc_html__( 'Advanced Settings (Filter or Exclude Specific Content Types)', 'serfe-ai-discovery' )
+			esc_html__( 'Advanced Settings', 'serfe-ai-discovery' )
 		);
-		echo '<p style="margin-top: 8px; color: #646970;">' . esc_html__( 'Optional: Configure detailed inclusion/exclusion rules for specific post types, archives, or URL paths. By default, full support applies to all public content.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p style="margin-top: 8px; color: #646970;">' . esc_html__( 'Exclude public content types or exact URL paths. Markdown otherwise applies to all supported public content.', 'serfe-ai-discovery' ) . '</p>';
 	}
 
 	/** Render the Markdown master switch. */
@@ -335,41 +298,8 @@ final class Settings {
 			esc_attr( self::OPTION ),
 			checked( 1, $choices['markdown_enabled'], false ),
 			esc_html__( 'Enable Markdown content negotiation (Full support)', 'serfe-ai-discovery' ),
-			esc_html__( 'Single toggle: Enables Markdown negotiation for all public published content (Posts, Pages, Products, Custom Post Types) and public archives.', 'serfe-ai-discovery' )
+			esc_html__( 'Enables Markdown negotiation for all public published content (Posts, Pages, Products, Custom Post Types) and public archives.', 'serfe-ai-discovery' )
 		);
-	}
-
-	/** Render currently supported singular post types. */
-	public function render_types_field() {
-		$choices = self::choices();
-		foreach ( self::supported_post_types() as $type ) {
-			$object = get_post_type_object( $type );
-			$label  = $object && isset( $object->labels->name ) ? $object->labels->name : $type;
-			printf( '<label><input type="checkbox" name="%s[detail_post_types][]" value="%s" %s> %s</label><br>', esc_attr( self::OPTION ), esc_attr( $type ), checked( in_array( $type, $choices['detail_post_types'], true ), true, false ), esc_html( $label ) );
-		}
-	}
-
-	/** Render independent choices for public post-type and product-taxonomy archives. */
-	public function render_archives_field() {
-		$choices = self::choices();
-		foreach ( self::supported_archive_keys() as $archive ) {
-			if ( 'product_cat' === $archive ) {
-				$label = __( 'Product categories', 'serfe-ai-discovery' );
-			} elseif ( 'product_tag' === $archive ) {
-				$label = __( 'Product tags', 'serfe-ai-discovery' );
-			} else {
-				$object = get_post_type_object( $archive );
-				$label  = $object && isset( $object->labels->name ) ? $object->labels->name : $archive;
-			}
-			printf( '<label><input type="checkbox" name="%s[enabled_archives][]" value="%s" %s> %s</label><br>', esc_attr( self::OPTION ), esc_attr( $archive ), checked( in_array( $archive, $choices['enabled_archives'], true ), true, false ), esc_html( $label ) );
-		}
-		echo '<p class="description">' . esc_html__( 'Posts archives, categories, tags, and public post taxonomies follow the Posts choice above. Other enabled public archives list only individually approved items.', 'serfe-ai-discovery' ) . '</p>';
-	}
-
-	/** Render the API Catalog switch. */
-	public function render_catalog_field() {
-		$choices = self::choices();
-		printf( '<label><input type="checkbox" name="%s[api_catalog_enabled]" value="1" %s> %s</label>', esc_attr( self::OPTION ), checked( 1, $choices['api_catalog_enabled'], false ), esc_html__( 'Publish a catalog of the public WordPress REST API', 'serfe-ai-discovery' ) );
 	}
 
 	/** Render content types that must never have Markdown. */
@@ -389,25 +319,19 @@ final class Settings {
 		echo '<p class="description">' . esc_html__( 'One exact site path per line, such as /private-page/. Same-site full URLs are also accepted.', 'serfe-ai-discovery' ) . '</p>';
 	}
 
-	/** Render public taxonomy terms to exclude, one taxonomy and ID per line. */
-	public function render_blocked_terms_field() {
-		$choices = self::choices();
-		printf( '<textarea name="%s[blocked_terms]" rows="5" cols="55">%s</textarea>', esc_attr( self::OPTION ), esc_textarea( implode( "\n", $choices['blocked_terms'] ) ) );
-		echo '<p class="description">' . esc_html__( 'One public taxonomy and term ID per line, such as category:123 or product_cat:456. Matching items will not have Markdown.', 'serfe-ai-discovery' ) . '</p>';
-	}
-
 	/** Render the settings form. */
 	public function render_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 		$tabs = array(
-			'overview'  => __( 'Overview', 'serfe-ai-discovery' ),
-			'markdown'  => __( 'Markdown', 'serfe-ai-discovery' ),
-			'robots'    => __( 'Robots.txt', 'serfe-ai-discovery' ),
-			'llms'      => __( 'AI Files (llms.txt)', 'serfe-ai-discovery' ),
-			'discovery' => __( 'Discovery Checks', 'serfe-ai-discovery' ),
-			'help'      => __( 'Help & Support', 'serfe-ai-discovery' ),
+			'overview'    => __( 'Overview', 'serfe-ai-discovery' ),
+			'markdown'    => __( 'Markdown', 'serfe-ai-discovery' ),
+			'api-catalog' => __( 'API Catalog', 'serfe-ai-discovery' ),
+			'robots'      => __( 'Robots.txt', 'serfe-ai-discovery' ),
+			'llms'        => __( 'AI Files (llms.txt)', 'serfe-ai-discovery' ),
+			'discovery'   => __( 'Discovery Checks', 'serfe-ai-discovery' ),
+			'help'        => __( 'Help & Support', 'serfe-ai-discovery' ),
 		);
 		// The tab selects read-only output; no state changes occur from this query parameter.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only navigation.
@@ -436,6 +360,9 @@ final class Settings {
 				echo '</form>';
 				$this->render_markdown_urls();
 				break;
+			case 'api-catalog':
+				$this->render_api_catalog_tab();
+				break;
 			case 'robots':
 				( new Discovery_Files_Admin() )->render_robots_tab();
 				break;
@@ -460,7 +387,7 @@ final class Settings {
 	/** Explain Markdown publication before an administrator changes its switches. */
 	private function render_markdown_guidance() {
 		echo '<details style="margin: 16px 0;"><summary>' . esc_html__( 'About Markdown negotiation', 'serfe-ai-discovery' ) . '</summary>';
-		echo '<p>' . esc_html__( 'What it does: Returns an alternative Markdown representation of approved public content when a compatible client requests it.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'What it does: Returns an alternative Markdown representation of public content when a compatible client requests it.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Why it helps: Removes unnecessary presentation markup while browsers continue receiving HTML.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Important: HTML remains the canonical customer-facing version. Markdown availability does not guarantee crawler usage or AI citations.', 'serfe-ai-discovery' ) . '</p></details>';
 	}
@@ -475,7 +402,7 @@ final class Settings {
 		}
 		$discovery    = new Discovery( new Product_Generator() );
 		$rows         = array();
-		$target_types = ! empty( $choices['detail_post_types'] ) ? $choices['detail_post_types'] : self::supported_post_types();
+		$target_types = self::supported_post_types();
 		if ( ! empty( $target_types ) ) {
 			$posts = get_posts(
 				array(
@@ -495,14 +422,13 @@ final class Settings {
 				}
 			}
 		}
-		$enabled_archives = ! empty( $choices['enabled_archives'] ) ? $choices['enabled_archives'] : self::supported_archive_keys();
-		foreach ( $enabled_archives as $archive ) {
+		foreach ( self::supported_archive_keys() as $archive ) {
 			if ( in_array( $archive, array( 'product_cat', 'product_tag' ), true ) ) {
 				continue;
 			}
 			$url    = get_post_type_archive_link( $archive );
 			$object = get_post_type_object( $archive );
-			if ( is_string( $url ) && $object && ! Exclusions::blocks_archive( $archive, $url ) ) {
+			if ( is_string( $url ) && $object && self::archive_enabled_for( $archive ) && ! Exclusions::blocks_archive( $archive, $url ) ) {
 				/* translators: %s: post type plural label. */
 				$rows[] = array( sprintf( __( '%s archive', 'serfe-ai-discovery' ), $object->labels->name ), $url );
 			}
@@ -520,6 +446,29 @@ final class Settings {
 		echo '<p class="description">' . esc_html__( 'Shows the last 10 edited approved items.', 'serfe-ai-discovery' ) . '</p>';
 
 		$this->render_markdown_cache();
+	}
+
+	/** Render API Catalog status and a single state-changing action. */
+	private function render_api_catalog_tab() {
+		$enabled = self::api_catalog_enabled();
+		echo '<h2>' . esc_html__( 'API Catalog', 'serfe-ai-discovery' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Publish a catalog of the public WordPress REST API at the standard discovery URL.', 'serfe-ai-discovery' ) . '</p>';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only confirmation flag after a nonce-protected redirect.
+		if ( isset( $_GET['catalog-updated'] ) && in_array( $_GET['catalog-updated'], array( 'enabled', 'disabled' ), true ) ) {
+			echo '<div class="notice notice-success inline"><p>' . esc_html__( 'API Catalog publication updated.', 'serfe-ai-discovery' ) . '</p></div>';
+		}
+		if ( $enabled ) {
+			echo '<div class="notice notice-success inline"><p>' . esc_html__( 'API Catalog publication is enabled.', 'serfe-ai-discovery' ) . '</p></div>';
+			printf( '<p><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_url( home_url( '/.well-known/api-catalog' ) ), esc_html( home_url( '/.well-known/api-catalog' ) ) );
+		} else {
+			echo '<div class="notice notice-info inline"><p>' . esc_html__( 'API Catalog publication is disabled.', 'serfe-ai-discovery' ) . '</p></div>';
+		}
+		printf( '<form method="post" action="%s">', esc_url( admin_url( 'admin-post.php' ) ) );
+		echo '<input type="hidden" name="action" value="serfe_ai_discovery_api_catalog">';
+		wp_nonce_field( 'serfe_ai_discovery_api_catalog' );
+		printf( '<input type="hidden" name="serfe_ai_discovery_api_catalog_action" value="%s">', esc_attr( $enabled ? 'disable' : 'enable' ) );
+		submit_button( $enabled ? __( 'Disable API Catalog', 'serfe-ai-discovery' ) : __( 'Enable API Catalog', 'serfe-ai-discovery' ), $enabled ? 'secondary' : 'primary', 'submit', false, $enabled ? array( 'style' => 'color: #b32d2e; border-color: #b32d2e;' ) : array() );
+		echo '</form>';
 	}
 
 	/** Show the generated-content cache state and its explicit regeneration action. */
@@ -740,7 +689,7 @@ final class Settings {
 	private function render_discovery_tab() {
 		$choices = self::choices();
 		echo '<h2>' . esc_html__( 'Discovery resources', 'serfe-ai-discovery' ) . '</h2>';
-		printf( '<p>%s</p>', esc_html( 1 === (int) $choices['api_catalog_enabled'] ? __( 'API Catalog publication is enabled.', 'serfe-ai-discovery' ) : __( 'API Catalog publication is disabled. Its switch is currently on the Markdown tab.', 'serfe-ai-discovery' ) ) );
+		printf( '<p>%s</p>', esc_html( 1 === (int) $choices['api_catalog_enabled'] ? __( 'API Catalog publication is enabled.', 'serfe-ai-discovery' ) : __( 'API Catalog publication is disabled. Configure it in the API Catalog tab.', 'serfe-ai-discovery' ) ) );
 		echo '<p>' . esc_html__( 'The local checks inspect public responses only when you run them. A Server Card requires a validated MCP endpoint and is not available yet.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<details style="margin: 16px 0;"><summary>' . esc_html__( 'About XML Sitemaps', 'serfe-ai-discovery' ) . '</summary>';
 		echo '<p>' . esc_html__( 'What it does: Lists canonical public URLs in a machine-readable format.', 'serfe-ai-discovery' ) . '</p>';
@@ -772,38 +721,5 @@ final class Settings {
 			esc_attr( $link_style ),
 			esc_html__( 'Contact Serfe', 'serfe-ai-discovery' )
 		);
-	}
-
-	/** Add a separate choice to each supported content editor. */
-	public function register_item_boxes() {
-		foreach ( self::supported_post_types() as $type ) {
-			if ( post_type_exists( $type ) ) {
-				add_meta_box( 'serfe_ai_discovery_markdown', __( 'Serfe WordPress AI Discovery', 'serfe-ai-discovery' ), array( $this, 'render_item_box' ), $type, 'side' );
-			}
-		}
-	}
-
-	/** @param \WP_Post $post Edited content. */
-	public function render_item_box( $post ) {
-		wp_nonce_field( self::NONCE_ACTION, self::NONCE_NAME );
-		printf( '<label><input type="checkbox" name="serfe_ai_discovery_item_enabled" value="1" %s> %s</label>', checked( self::item_enabled( $post->ID ), true, false ), esc_html__( 'Allow Markdown when this content type is enabled', 'serfe-ai-discovery' ) );
-	}
-
-	/** @param int $post_id Saved post ID. @param \WP_Post $post Saved post. */
-	public function save_item_choice( $post_id, $post ) {
-		if ( ! in_array( $post->post_type, self::supported_post_types(), true )
-			|| ! isset( $_POST[ self::NONCE_NAME ] )
-			|| ! is_string( $_POST[ self::NONCE_NAME ] )
-			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ self::NONCE_NAME ] ) ), self::NONCE_ACTION )
-			|| ! current_user_can( 'edit_post', $post_id )
-			|| wp_is_post_revision( $post_id ) ) {
-			return;
-		}
-
-		if ( isset( $_POST['serfe_ai_discovery_item_enabled'] ) && '1' === $_POST['serfe_ai_discovery_item_enabled'] ) {
-			update_post_meta( $post_id, self::ITEM_META, '1' );
-		} else {
-			update_post_meta( $post_id, self::ITEM_META, '0' );
-		}
 	}
 }

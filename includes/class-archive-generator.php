@@ -27,7 +27,6 @@ final class Archive_Generator {
 				|| 'publish' !== $post->post_status
 				|| ! empty( $post->post_password )
 				|| ! is_post_publicly_viewable( $post )
-				|| ! Settings::item_enabled( $post->ID )
 				|| Exclusions::blocks( $post ) ) {
 				continue;
 			}

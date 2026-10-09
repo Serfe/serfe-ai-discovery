@@ -143,33 +143,24 @@ $settings = new Settings();
 $assert_same( false, Settings::markdown_enabled_for( 'post' ), 'Default disables Markdown' );
 $assert_same( false, Settings::archive_enabled_for( 'book' ), 'Default disables archives' );
 $assert_same( false, Settings::api_catalog_enabled(), 'Default disables API Catalog' );
-$assert_same( true, Settings::item_enabled( 10 ), 'Default enables each item' );
 
 $clean = $settings->sanitize( array(
-	'markdown_enabled' => '1',
-	'detail_post_types' => array( 'post', 'post', 'book', 'private_record', array( 'page' ) ),
-	'enabled_archives' => array( 'book', 'book', 'product', 'product_cat', 'product_tag', 'page', 'private_record', array( 'post' ) ),
+	'markdown_enabled'   => '1',
+	'blocked_post_types' => array( 'book', 'book', 'private_record', array( 'page' ) ),
+	'blocked_paths'      => "/private-page/\nhttps://example.com/private-page/\nhttps://external.test/private/\n/../secrets\n/path?query=1",
 	'api_catalog_enabled' => '1',
 ) );
-$assert_same( 2, $clean['schema_version'], 'Stores versioned settings' );
-$assert_same( array( 'post', 'book' ), $clean['detail_post_types'], 'Allows public CPT and rejects unsupported detail types' );
-$assert_same( array( 'book', 'product', 'product_cat', 'product_tag' ), $clean['enabled_archives'], 'Allows public archives and rejects unsupported archive keys' );
-$exclusions = $settings->sanitize( array(
-	'blocked_post_types' => array( 'book', 'book', 'private_record' ),
-	'blocked_paths' => "/private-page/\nhttps://example.com/private-page/\nhttps://external.test/private/\n/../secrets\n/path?query=1",
-	'blocked_terms' => "product_cat:456\nproduct_cat:456\nproduct_cat:999\nprivate_tax:123",
-) );
-$assert_same( array( 'book' ), $exclusions['blocked_post_types'], 'Validates excluded content types' );
-$assert_same( array( '/private-page' ), $exclusions['blocked_paths'], 'Keeps only valid, same-site unique paths' );
-$assert_same( array( 'product_cat:456' ), $exclusions['blocked_terms'], 'Keeps only existing public terms' );
+$assert_same( 3, $clean['schema_version'], 'Stores versioned settings' );
+$assert_same( array( 'book' ), $clean['blocked_post_types'], 'Validates excluded content types' );
+$assert_same( array( '/private-page' ), $clean['blocked_paths'], 'Keeps only valid, same-site unique paths' );
 $assert_same( '', Settings::normalize_blocked_path( 'https://example.com/path?query=1' ), 'Rejects URL query in exact path exclusion' );
 $assert_same( '', Settings::normalize_blocked_path( '//external.test/path' ), 'Rejects protocol-relative URL' );
 $GLOBALS['test_options'][ Settings::OPTION ] = $clean;
-$assert_same( true, Settings::markdown_enabled_for( 'post' ), 'Enables selected post type' );
-$assert_same( true, Settings::markdown_enabled_for( 'book' ), 'Enables selected public CPT' );
-$assert_same( false, Settings::markdown_enabled_for( 'page' ), 'Keeps unselected post type disabled' );
-$assert_same( true, Settings::archive_enabled_for( 'book' ), 'Enables selected CPT archive independently' );
-$assert_same( true, Settings::archive_enabled_for( 'product_cat' ), 'Enables selected product category archive' );
+$assert_same( true, Settings::markdown_enabled_for( 'post' ), 'Enables public posts' );
+$assert_same( true, Settings::markdown_enabled_for( 'page' ), 'Enables public pages' );
+$assert_same( false, Settings::markdown_enabled_for( 'book' ), 'Excludes selected public CPTs' );
+$assert_same( false, Settings::archive_enabled_for( 'book' ), 'Excludes matching CPT archives' );
+$assert_same( true, Settings::archive_enabled_for( 'product_cat' ), 'Enables product category archives with Markdown' );
 $assert_same( false, Settings::archive_enabled_for( 'page' ), 'Never enables a page archive' );
 $GLOBALS['test_woocommerce_inactive'] = true;
 $assert_same( false, Settings::archive_enabled_for( 'product' ), 'Product archive is unavailable without WooCommerce' );
@@ -178,52 +169,26 @@ $GLOBALS['test_woocommerce_inactive'] = false;
 $assert_same( true, Settings::api_catalog_enabled(), 'Enables API Catalog only when selected' );
 
 $GLOBALS['test_options'][ Settings::OPTION ] = array(
-	'schema_version' => 1,
+	'schema_version' => 2,
 	'markdown_enabled' => 1,
-	'enabled_post_types' => array( 'post', 'book', 'private_record' ),
+	'detail_post_types' => array( 'post', 'book' ),
+	'blocked_post_types' => array( 'book' ),
+	'blocked_paths' => array( '/legacy-path' ),
 	'api_catalog_enabled' => 1,
 );
-$assert_same( true, Settings::markdown_enabled_for( 'post' ), 'Legacy post detail stays enabled before migration' );
-$assert_same( false, Settings::archive_enabled_for( 'book' ), 'Legacy settings do not enable archives' );
+$assert_same( true, Settings::markdown_enabled_for( 'page' ), 'Legacy Markdown settings enable all public content before migration' );
+$assert_same( false, Settings::archive_enabled_for( 'book' ), 'Legacy exclusions apply before migration' );
 $GLOBALS['test_can_manage'] = false;
 $settings->migrate_legacy_option();
-$assert_same( 1, $GLOBALS['test_options'][ Settings::OPTION ]['schema_version'], 'User without manage_options cannot persist migration' );
+$assert_same( 2, $GLOBALS['test_options'][ Settings::OPTION ]['schema_version'], 'User without manage_options cannot persist migration' );
 $GLOBALS['test_can_manage'] = true;
 $settings->migrate_legacy_option();
 $migrated = $GLOBALS['test_options'][ Settings::OPTION ];
-$assert_same( 2, $migrated['schema_version'], 'Persists schema migration' );
-$assert_same( array( 'post', 'book' ), $migrated['detail_post_types'], 'Preserves supported legacy detail choices' );
-$assert_same( array(), $migrated['enabled_archives'], 'Migration leaves every archive off' );
+$assert_same( 3, $migrated['schema_version'], 'Persists schema migration' );
+$assert_same( array( 'book' ), $migrated['blocked_post_types'], 'Preserves excluded content types' );
+$assert_same( array( '/legacy-path' ), $migrated['blocked_paths'], 'Preserves excluded URL paths' );
 $assert_same( 1, $migrated['api_catalog_enabled'], 'Preserves legacy catalog choice' );
 $GLOBALS['test_options'][ Settings::OPTION ] = $clean;
-
-$_POST = array( Settings::NONCE_NAME => 'valid', 'serfe_ai_discovery_item_enabled' => '1' );
-$settings->save_item_choice( 10, new WP_Post( 'post' ) );
-$assert_same( true, Settings::item_enabled( 10 ), 'Saves authorized item opt-in' );
-$settings->save_item_choice( 11, new WP_Post( 'book' ) );
-$assert_same( true, Settings::item_enabled( 11 ), 'Saves public CPT opt-in' );
-
-$_POST[ Settings::NONCE_NAME ] = 'invalid';
-unset( $_POST['serfe_ai_discovery_item_enabled'] );
-$settings->save_item_choice( 10, new WP_Post( 'post' ) );
-$assert_same( true, Settings::item_enabled( 10 ), 'Rejects invalid nonce' );
-
-$_POST[ Settings::NONCE_NAME ] = 'valid';
-$GLOBALS['test_can_edit'] = false;
-$settings->save_item_choice( 10, new WP_Post( 'post' ) );
-$assert_same( true, Settings::item_enabled( 10 ), 'Rejects user without edit permission' );
-$GLOBALS['test_can_edit'] = true;
-
-$GLOBALS['test_is_revision'] = true;
-$settings->save_item_choice( 10, new WP_Post( 'post' ) );
-$assert_same( true, Settings::item_enabled( 10 ), 'Rejects revisions' );
-$GLOBALS['test_is_revision'] = false;
-
-$settings->save_item_choice( 10, new WP_Post( 'attachment' ) );
-$assert_same( true, Settings::item_enabled( 10 ), 'Rejects unsupported post type' );
-
-$settings->save_item_choice( 10, new WP_Post( 'post' ) );
-$assert_same( false, Settings::item_enabled( 10 ), 'Unchecking disables Markdown for item' );
 
 if ( ! function_exists( '__' ) ) {
 	function __( $text ) {
@@ -262,6 +227,11 @@ if ( ! function_exists( 'esc_url' ) ) {
 }
 if ( ! function_exists( 'wp_nonce_field' ) ) {
 	function wp_nonce_field() {}
+}
+if ( ! function_exists( 'submit_button' ) ) {
+	function submit_button( $text ) {
+		echo '<button type="submit">' . $text . '</button>';
+	}
 }
 if ( ! function_exists( 'admin_url' ) ) {
 	function admin_url( $path = '' ) {
@@ -305,18 +275,19 @@ if ( ! function_exists( 'add_query_arg' ) ) {
 	}
 }
 
-$_GET['tab'] = 'robots';
+$_GET['tab'] = 'api-catalog';
 ob_start();
 $settings->render_page();
-$robots_page = ob_get_clean();
-$assert_same( true, strpos( $robots_page, 'tab=robots' ) !== false, 'Nav tab includes Robots.txt' );
-$assert_same( true, strpos( $robots_page, 'tab=llms' ) !== false, 'Nav tab includes llms.txt' );
+$api_catalog_page = ob_get_clean();
+$assert_same( true, strpos( $api_catalog_page, 'tab=api-catalog' ) !== false, 'Nav tab includes API Catalog' );
+$assert_same( true, strpos( $api_catalog_page, 'Disable API Catalog' ) !== false, 'API Catalog tab renders its disable action when enabled' );
 
-$_GET['tab'] = 'llms';
+$GLOBALS['test_options'][ Settings::OPTION ]['api_catalog_enabled'] = 0;
+$_GET['tab'] = 'api-catalog';
 ob_start();
 $settings->render_page();
-$llms_page = ob_get_clean();
-$assert_same( true, strpos( $llms_page, 'tab=llms' ) !== false, 'Nav tab selects llms.txt' );
+$api_catalog_disabled_page = ob_get_clean();
+$assert_same( true, strpos( $api_catalog_disabled_page, 'Enable API Catalog' ) !== false, 'API Catalog tab renders its enable action when disabled' );
 
 $state_icon   = new ReflectionMethod( Settings::class, 'state_icon' );
 $check_state  = new ReflectionMethod( Settings::class, 'check_state' );

@@ -38,7 +38,7 @@ final class Catalog_Generator {
 		foreach ( $posts as $post ) {
 			if ( ! ( $post instanceof \WP_Post ) || 'product' !== $post->post_type || 'publish' !== $post->post_status
 				|| ! empty( $post->post_password ) || ! is_post_publicly_viewable( $post )
-				|| ! Settings::item_enabled( $post->ID ) || Exclusions::blocks( $post )
+				|| Exclusions::blocks( $post )
 				|| ! $this->product_generator->is_exposable( $post->ID ) ) {
 				continue;
 			}

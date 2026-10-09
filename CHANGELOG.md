@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- Simplified Markdown publication to one global switch; Advanced Settings now exclude only public content types and exact URL paths.
+- Moved API Catalog publication to its own settings tab with explicit enable and disable actions.
 - Renamed the visible plugin name to "Serfe WordPress AI Discovery" in the plugin header, admin screens, and documentation. The slug, text domain, folder, and stored option names are unchanged.
 
 ### Added
@@ -51,6 +53,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Removed
 
+- Removed per-item, per-content-type, per-archive, and per-term Markdown publication controls.
 - Removed site-specific product fields, shortcode integration, currency mutation, and plan grouping from product output.
 - Removed the optional multilingual-plugin language lookup; front matter now uses the active WordPress site language.
 

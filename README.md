@@ -33,27 +33,25 @@ When API Catalog publication is enabled in the settings, the homepage additional
 
 - Published WordPress posts.
 - Published WordPress pages.
-- The WordPress Posts page archive, categories, tags, and public post taxonomies, including pagination. These follow the **Posts** individual-content setting.
+- The WordPress Posts page archive, categories, tags, and public post taxonomies, including pagination.
 - Published WooCommerce products that meet the plugin's exposure rules, including their public WooCommerce descriptions, price, and availability.
-- Enabled WooCommerce shop, product category, and product tag archives, listing approved public products with their public price and availability.
-- Selected public, publicly queryable Custom Post Types, enabled one by one.
+- WooCommerce shop, product category, and product tag archives, listing public products with their public price and availability.
+- Public, publicly queryable Custom Post Types and their archives.
 
-Drafts, private content, WooCommerce cart, checkout and account pages, feeds, embeds, and unsupported post types are not exposed. Public Custom Post Type and WooCommerce catalog archives can be enabled separately.
+Drafts, private content, WooCommerce cart, checkout and account pages, feeds, embeds, and unsupported post types are not exposed.
 Editorial Markdown uses saved static content. Items containing shortcodes, unknown blocks, or dynamically rendered blocks are not eligible; content filters are not run for Markdown.
 
 ## Usage
 
-After activation, open the top-level **WP AI Discovery** menu, enable Markdown, and select the supported content types. Then open each eligible item and enable its **Serfe WordPress AI Discovery** checkbox. All publication settings and items are disabled by default.
-The Overview tab summarizes local publication switches and previously requested validation results. The Markdown tab contains the current publication controls. The Discovery tab contains the read-only Agent Readiness checks; opening the settings screen does not run those checks.
-
-The **Posts** choice also covers the Posts page archive, categories, tags, and public taxonomies associated with posts. Other public archives have separate choices. Enabled public archives list only published, publicly viewable items approved with the item checkbox. Shop, product category, and product tag archives have independent switches.
+After activation, open the top-level **WP AI Discovery** menu and enable Markdown. That publishes Markdown for all supported public content. Use Advanced Settings only to exclude content types or exact URL paths. Markdown is disabled by default.
+The Overview tab summarizes local publication switches and previously requested validation results. The Markdown tab contains the publication control and exclusions. The API Catalog tab controls catalog publication. The Discovery tab contains the read-only Agent Readiness checks; opening the settings screen does not run those checks.
 
 The **Robots.txt & llms.txt** tab edits and publishes those two files at the verified public site root. A missing physical `robots.txt` does not mean the public response is empty: WordPress, Yoast SEO, Rank Math, or another plugin may generate it virtually. Select **Validate public file** to inspect that response. Publishing a physical file over a virtual response requires explicit takeover and a matching checksum; the previous public text is saved as the one backup. A physical file can supersede the virtual response, so coordinate edits with the plugin that currently owns the policy. Existing or externally changed physical files also require takeover. If the public root is not writable, the panel shows validated text to copy for manual deployment. The plugin never deletes these files on uninstall.
 Publishing or selecting **Validate public file** compares the live public response with the root file. For `robots.txt`, it also warns about missing or malformed sitemap declarations, a possible site-wide crawl block, and unreachable sitemap URLs. Validation is read-only and checks at most five declared sitemap URLs with safe HTTP requests; simply opening the panel does not request them.
 When no physical file exists, validation shows the live virtual response separately from any draft text. The Overview tab reports **No physical file** until one is published; it does not assert that the public URL is empty.
 The same tab offers an optional link to Is It Agent-Ready. It sends no request until an administrator clicks it. For a public site, the link contains only the hostname from the site's public home URL; local and private environments open the scanner homepage without a hostname.
 
-The settings also let administrators exclude entire content types, exact site URL paths, and public taxonomy terms such as `category:123` or `product_cat:456`. Enter one path or taxonomy term per line. Exclusions take priority over content and item opt-ins.
+The settings let administrators exclude entire content types and exact site URL paths. Enter one path per line. Exclusions take priority over Markdown publication.
 
 Request the `.md` version of an enabled public URL:
 
@@ -107,8 +105,8 @@ A `health_url` is optional but required for a green check: it must be a read-onl
 1. In WordPress, go to **Plugins → Add New → Upload Plugin**.
 2. Upload the Serfe WordPress AI Discovery ZIP package.
 3. Activate the plugin.
-4. Enable Markdown for a content type and an individual item in the **WP AI Discovery** menu and the item editor.
-5. Visit that item's URL ending in `.md` to verify the response.
+4. Enable Markdown in **WP AI Discovery → Markdown**.
+5. Visit a public URL ending in `.md` to verify the response.
 
 ## Safety and routing
 
@@ -120,7 +118,7 @@ The plugin never treats the following internal paths as Markdown content routes:
 - `/wp-includes`
 - `/xmlrpc.php`
 
-Markdown is generated only for published, eligible singular content. Markdown responses include `X-Robots-Tag: noindex, follow`.
+Markdown is generated only for eligible public content and archives. Markdown responses include `X-Robots-Tag: noindex, follow`.
 
 ## Collaboration
 

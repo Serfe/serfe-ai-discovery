@@ -63,11 +63,10 @@ function __( $text, $domain ) { return $text; }
 function apply_filters( $hook, $value, $id = 0 ) { return $value; }
 
 $GLOBALS['catalog_test_options'][ Settings::OPTION ] = array(
-	'schema_version' => 2,
+	'schema_version' => 3,
 	'markdown_enabled' => 1,
 	'blocked_post_types' => array(),
 	'blocked_paths' => array( '/product-5' ),
-	'blocked_terms' => array( 'product_cat:123' ),
 );
 $GLOBALS['catalog_test_items'] = array( 1 => '1', 2 => '1', 3 => '1', 5 => '1', 6 => '1', 7 => '1' );
 $GLOBALS['catalog_test_products'] = array(
@@ -96,6 +95,8 @@ foreach ( array(
 	'Public **widgets**.',
 	'currency: "USD"',
 	'- [Public \\[widget\\]](<https://example.com/product-1/>) — USD 10.00 — In stock',
+	'- [Not approved](<https://example.com/product-4/>) — USD 4.00 — In stock',
+	'- [Blocked category](<https://example.com/product-6/>) — USD 6.00 — In stock',
 	'- [Out of stock](<https://example.com/product-7/>) — USD 15.00 — Out of stock',
 	'[Previous page](<https://example.com/product-category/widgets/page/1/>)',
 	'[Next page](<https://example.com/product-category/widgets/page/3/>)',
@@ -104,7 +105,7 @@ foreach ( array(
 		$failures[] = 'Missing: ' . $expected;
 	}
 }
-foreach ( array( 'Hidden', 'No price', 'Not approved', 'Blocked path', 'Blocked category' ) as $forbidden ) {
+foreach ( array( 'Hidden', 'No price', 'Blocked path' ) as $forbidden ) {
 	if ( false !== strpos( $output, $forbidden ) ) {
 		$failures[] = 'Unexpected: ' . $forbidden;
 	}

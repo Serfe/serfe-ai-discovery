@@ -44,11 +44,10 @@ function wp_parse_url( $url, $component = -1 ) { return parse_url( $url, $compon
 function has_term( $term_id, $taxonomy, $post ) { return 4 === $post->ID && 123 === $term_id && 'category' === $taxonomy; }
 
 $GLOBALS['archive_test_options'][ Settings::OPTION ] = array(
-	'schema_version' => 2,
+	'schema_version' => 3,
 	'markdown_enabled' => 1,
 	'blocked_post_types' => array(),
 	'blocked_paths' => array( '/book-3' ),
-	'blocked_terms' => array( 'category:123' ),
 );
 $GLOBALS['archive_test_items'] = array( 1 => '1', 2 => '0', 3 => '1', 4 => '1', 5 => '1', 6 => '1', 7 => '1', 8 => '1' );
 $posts = array(
@@ -75,7 +74,7 @@ foreach ( array(
 		$failures[] = 'Missing: ' . $expected;
 	}
 }
-foreach ( array( 'Not approved', 'Blocked path', 'Blocked category', 'Protected', 'Draft', 'Restricted', 'Wrong type' ) as $forbidden ) {
+foreach ( array( 'Blocked path', 'Protected', 'Draft', 'Restricted', 'Wrong type' ) as $forbidden ) {
 	if ( false !== strpos( $output, $forbidden ) ) {
 		$failures[] = 'Unexpected: ' . $forbidden;
 	}
