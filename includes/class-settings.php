@@ -335,11 +335,110 @@ final class Settings {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		echo '<div class="wrap"><h1>' . esc_html__( 'Serfe AI Discovery', 'serfe-ai-discovery' ) . '</h1><form action="options.php" method="post">';
-		settings_fields( self::GROUP );
-		do_settings_sections( self::PAGE );
-		submit_button();
-		echo '</form></div>';
+		$tabs = array(
+			'overview'  => __( 'Overview', 'serfe-ai-discovery' ),
+			'markdown'  => __( 'Markdown', 'serfe-ai-discovery' ),
+			'files'     => __( 'Robots.txt & llms.txt', 'serfe-ai-discovery' ),
+			'discovery' => __( 'Discovery', 'serfe-ai-discovery' ),
+			'help'      => __( 'Help & Support', 'serfe-ai-discovery' ),
+		);
+		// The tab selects read-only output; no state changes occur from this query parameter.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only navigation.
+		$requested = isset( $_GET['tab'] ) && is_string( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'overview';
+		$tab       = isset( $tabs[ $requested ] ) ? $requested : 'overview';
+		echo '<div class="wrap"><h1>' . esc_html__( 'Serfe AI Discovery', 'serfe-ai-discovery' ) . '</h1><nav class="nav-tab-wrapper" aria-label="' . esc_attr__( 'Serfe AI Discovery sections', 'serfe-ai-discovery' ) . '">';
+		foreach ( $tabs as $key => $label ) {
+			$url = add_query_arg(
+				array(
+					'page' => self::PAGE,
+					'tab'  => $key,
+				),
+				admin_url( 'options-general.php' )
+			);
+			printf( '<a class="nav-tab %s" href="%s" %s>%s</a>', esc_attr( $key === $tab ? 'nav-tab-active' : '' ), esc_url( $url ), $key === $tab ? 'aria-current="page"' : '', esc_html( $label ) );
+		}
+		echo '</nav>';
+		switch ( $tab ) {
+			case 'markdown':
+				echo '<form action="options.php" method="post">';
+				settings_fields( self::GROUP );
+				do_settings_sections( self::PAGE );
+				submit_button();
+				echo '</form>';
+				break;
+			case 'files':
+				$this->render_files_tab();
+				break;
+			case 'discovery':
+				$this->render_discovery_tab();
+				break;
+			case 'help':
+				$this->render_help_tab();
+				break;
+			default:
+				$this->render_overview_tab();
+		}
+		echo '</div>';
+	}
+
+	/** Summarize only states that this plugin can currently establish locally. */
+	private function render_overview_tab() {
+		$choices = self::choices();
+		$report  = get_transient( Readiness::CACHE_KEY );
+		$date    = is_array( $report ) && ! empty( $report['checked_at'] ) ? $report['checked_at'] : __( 'Not validated', 'serfe-ai-discovery' );
+		$checks  = is_array( $report ) && ! empty( $report['checks'] ) && is_array( $report['checks'] ) ? $report['checks'] : array();
+		$rows    = array(
+			array( __( 'Markdown Negotiation', 'serfe-ai-discovery' ), 1 === (int) $choices['markdown_enabled'] ? __( 'Enabled', 'serfe-ai-discovery' ) : __( 'Disabled', 'serfe-ai-discovery' ), __( 'Select content types and approve individual items in the Markdown tab.', 'serfe-ai-discovery' ), '' ),
+			array( 'robots.txt', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks.', 'serfe-ai-discovery' ), 'robots.txt' ),
+			array( 'llms.txt', __( 'Not managed', 'serfe-ai-discovery' ), __( 'File publication is not available yet.', 'serfe-ai-discovery' ), '' ),
+			array( __( 'XML Sitemap', 'serfe-ai-discovery' ), __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks.', 'serfe-ai-discovery' ), __( 'XML sitemap', 'serfe-ai-discovery' ) ),
+			array( __( 'API Catalog', 'serfe-ai-discovery' ), 1 === (int) $choices['api_catalog_enabled'] ? __( 'Enabled', 'serfe-ai-discovery' ) : __( 'Disabled', 'serfe-ai-discovery' ), __( 'Review its public response in Discovery.', 'serfe-ai-discovery' ), 'API Catalog' ),
+			array( __( 'MCP / Server Card', 'serfe-ai-discovery' ), __( 'Not validated', 'serfe-ai-discovery' ), __( 'Declare a qualifying MCP endpoint before enabling a Server Card.', 'serfe-ai-discovery' ), __( 'MCP server', 'serfe-ai-discovery' ) ),
+		);
+		foreach ( $rows as &$row ) {
+			if ( '' === $row[3] ) {
+				continue;
+			}
+			foreach ( $checks as $check ) {
+				if ( isset( $check['label'], $check['status'] ) && $row[3] === $check['label'] ) {
+					$row[1] = 'pass' === $check['status'] ? __( 'Available', 'serfe-ai-discovery' ) : ( 'unknown' === $check['status'] ? __( 'Needs review', 'serfe-ai-discovery' ) : __( 'Not available', 'serfe-ai-discovery' ) );
+					$row[2] = isset( $check['detail'] ) ? $check['detail'] : $row[2];
+					$row[4] = true;
+				}
+			}
+		}
+		unset( $row );
+		echo '<p>' . esc_html__( 'Public discovery features are opt-in. Validation runs only when an administrator requests it.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Capability', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'State', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Last validation', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Next action', 'serfe-ai-discovery' ) . '</th></tr></thead><tbody>';
+		foreach ( $rows as $row ) {
+			$checked = ! empty( $row[4] ) ? $date : __( 'Not validated', 'serfe-ai-discovery' );
+			printf( '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', esc_html( $row[0] ), esc_html( $row[1] ), esc_html( $checked ), esc_html( $row[2] ) );
+		}
+		echo '</tbody></table>';
+	}
+
+	/** Explain file signals while publication controls are being implemented. */
+	private function render_files_tab() {
+		echo '<h2>' . esc_html__( 'Why these files matter', 'serfe-ai-discovery' ) . '</h2>';
+		echo '<p>' . esc_html__( 'robots.txt communicates crawler access rules and can point to the XML sitemap. llms.txt is an optional public guide to curated content. A sitemap lists canonical public URLs. These signals do not guarantee indexing, traffic, rankings, or AI citations.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'Editing and publishing these root files is not available yet. Review any existing files on the public site before changing them.', 'serfe-ai-discovery' ) . '</p>';
+	}
+
+	/** Link to the existing read-only diagnostics without triggering a request. */
+	private function render_discovery_tab() {
+		$choices = self::choices();
+		echo '<h2>' . esc_html__( 'Discovery resources', 'serfe-ai-discovery' ) . '</h2>';
+		printf( '<p>%s</p>', esc_html( 1 === (int) $choices['api_catalog_enabled'] ? __( 'API Catalog publication is enabled.', 'serfe-ai-discovery' ) : __( 'API Catalog publication is disabled. Its switch is currently on the Markdown tab.', 'serfe-ai-discovery' ) ) );
+		echo '<p>' . esc_html__( 'The local checks inspect public responses only when you run them. A Server Card requires a validated MCP endpoint and is not available yet.', 'serfe-ai-discovery' ) . '</p>';
+		printf( '<p><a class="button button-secondary" href="%s">%s</a></p>', esc_url( admin_url( 'tools.php?page=serfe-agent-readiness' ) ), esc_html__( 'Open Agent Readiness checks', 'serfe-ai-discovery' ) );
+	}
+
+	/** Provide maintained local documentation and clear feature limits. */
+	private function render_help_tab() {
+		echo '<h2>' . esc_html__( 'Help & Support', 'serfe-ai-discovery' ) . '</h2>';
+		echo '<p>' . esc_html__( 'This starter plugin serves approved public content as Markdown and publishes an optional API Catalog. File publication, MCP Server Cards, and a site-wide cache generator are not available yet.', 'serfe-ai-discovery' ) . '</p>';
+		printf( '<p><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_url( 'https://github.com/Serfe-com' ), esc_html__( 'Serfe open-source repositories', 'serfe-ai-discovery' ) );
+		echo '<p>' . esc_html__( 'For support and security reporting, use the channels documented in the plugin repository.', 'serfe-ai-discovery' ) . '</p>';
 	}
 
 	/** Add a separate choice to each supported content editor. */
