@@ -50,3 +50,5 @@ jobs:
         run: composer audit --locked
       - name: Check WordPress coding standards
         run: vendor/bin/phpcs --standard=phpcs.xml.dist
+      - name: Analyze WordPress and WooCommerce types
+        run: vendor/bin/phpstan analyse --configuration=phpstan.neon.dist --no-progress --memory-limit=1G
