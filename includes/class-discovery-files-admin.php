@@ -105,8 +105,35 @@ final class Discovery_Files_Admin {
 		delete_transient( self::notice_key() );
 		echo '<h2>' . esc_html__( 'Why these files matter', 'serfe-ai-discovery' ) . '</h2>';
 		echo '<p>' . esc_html__( 'robots.txt communicates crawler access rules and can point crawlers to the XML sitemap. llms.txt is an optional public guide containing curated context and links. A sitemap maps canonical public URLs. None of these signals guarantees crawling, indexing, ranking, traffic, or AI citations.', 'serfe-ai-discovery' ) . '</p>';
+		$scanner = self::agent_ready_target( home_url( '/' ), wp_get_environment_type() );
+		printf( '<p><a class="button button-secondary" href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_url( $scanner['url'] ), esc_html__( 'Check this site with Is It Agent-Ready', 'serfe-ai-discovery' ) );
+		if ( ! $scanner['public'] ) {
+			echo '<p class="description">' . esc_html__( 'External scanners cannot access local or private environments. Open the scanner and test a public URL after deployment.', 'serfe-ai-discovery' ) . '</p>';
+		}
 		$this->render_file( 'robots.txt', $notice );
 		$this->render_file( 'llms.txt', $notice );
+	}
+
+	/** Build a scanner link without sending a local or private host. */
+	public static function agent_ready_target( $home, $environment ) {
+		$root  = 'https://isitagentready.com/';
+		$parts = wp_parse_url( $home );
+		$host  = is_array( $parts ) && isset( $parts['host'] ) ? rtrim( strtolower( trim( $parts['host'], '[]' ) ), '.' ) : '';
+		$is_ip = false !== filter_var( $host, FILTER_VALIDATE_IP );
+		if ( 'local' === $environment || '' === $host || 'localhost' === $host
+			|| preg_match( '/\.(?:localhost|local|test|invalid|internal|example|lan|home)$/', $host )
+			|| ( ! $is_ip && preg_match( '/^[0-9.]+$/', $host ) )
+			|| ( $is_ip && false === filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) )
+			|| ( ! $is_ip && ( false === filter_var( $host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME ) || false === strpos( $host, '.' ) ) ) ) {
+			return array(
+				'url'    => $root,
+				'public' => false,
+			);
+		}
+		return array(
+			'url'    => $root . rawurlencode( $host ),
+			'public' => true,
+		);
 	}
 
 	/** Show the current file, its last backup, and a protected publication form. */

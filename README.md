@@ -43,6 +43,7 @@ The settings store individual content types and public archives separately. Exis
 
 The **Robots.txt & llms.txt** tab edits and publishes those two files at the verified public site root. Existing or externally changed files require an explicit takeover after reviewing the current content. Each file keeps one previous version for restoration. If the public root is not writable, the panel shows validated text to copy for manual deployment. The plugin never deletes these files on uninstall.
 Publishing or selecting **Validate public file** compares the live public response with the root file. For `robots.txt`, it also warns about missing or malformed sitemap declarations, a possible site-wide crawl block, and unreachable sitemap URLs. Validation is read-only and checks at most five declared sitemap URLs with safe HTTP requests; simply opening the panel does not request them.
+The same tab offers an optional link to Is It Agent-Ready. It sends no request until an administrator clicks it. For a public site, the link contains only the hostname from the site's public home URL; local and private environments open the scanner homepage without a hostname.
 
 The settings also let administrators exclude entire content types, exact site URL paths, and public taxonomy terms such as `category:123` or `product_cat:456`. Enter one path or taxonomy term per line. Exclusions take priority over content and item opt-ins.
 

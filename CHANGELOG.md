@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Added an administrator-initiated Is It Agent-Ready link that omits local and private site hosts.
 - Added a tabbed administrator overview with local feature states and guidance for Markdown, discovery files, and support.
 - Added protected editors for public-root robots.txt and llms.txt, with independent backup, restore, takeover review, a starter template, and a manual-copy fallback.
 - Added explicit public-file validation and non-blocking robots.txt sitemap and crawler-policy warnings.
