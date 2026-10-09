@@ -132,6 +132,8 @@ php tests/settings.php
 
 Run the tests with the project's configured PHP container when a local PHP runtime is unavailable.
 
+For an HTTP smoke check, enable an eligible published item on a local WordPress installation and run `tests/http-smoke.sh https://example.com/eligible-item/`. The script checks HTML, explicit `.md`, negotiated Markdown, and HTML again after Markdown. Set `SMOKE_CURL_RESOLVE=host:port:ip` when the local hostname needs a direct address. This checks the live web server; test a production-like cache or CDN separately before release.
+
 ## Version
 
 Current internal version: `1.0.10`. See [CHANGELOG.md](CHANGELOG.md) for changes.
