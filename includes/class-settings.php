@@ -259,7 +259,7 @@ final class Settings {
 
 	/** Add Serfe AI Discovery as a top-level admin menu. */
 	public function register_page() {
-		add_menu_page( __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), 'manage_options', self::PAGE, array( $this, 'render_page' ), Menu_Icon::data_uri() );
+		add_menu_page( __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), 'manage_options', self::PAGE, array( $this, 'render_page' ), SERFE_AI_DISCOVERY_URL . 'assets/wp_serfe_logo_gray.svg' );
 	}
 
 	/** Explain the scope of the current switches. */

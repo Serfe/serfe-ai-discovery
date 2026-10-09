@@ -8,8 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** Safely publishes the two public-root discovery files. */
 final class Discovery_Files {
-	const MAX_BYTES = 131072;
-	const MAX_LIMIT = 1048576;
+	const MAX_BYTES    = 131072;
+	const MAX_LIMIT    = 1048576;
 	const MAX_SITEMAPS = 5;
 
 	/** Resolve the public root only when the WordPress URL and directory layout agree. */
