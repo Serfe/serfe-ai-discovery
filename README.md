@@ -2,6 +2,12 @@
 
 Expose published WordPress content as clean Markdown for AI agents and other Markdown consumers.
 
+## Plugin Objective
+
+This plugin is designed as an essential complement to your existing SEO strategy. While standard SEO plugins optimize your site for traditional search engines (Google, Bing), **Serfe WordPress AI Discovery** ensures your content is perfectly structured and discoverable by **AI Agents, LLMs, and semantic search engines**. 
+
+By natively serving `.md` versions of your public posts, pages, and products, along with providing technical endpoints like `robots.txt`, `llms.txt`, and API Catalogs, this plugin bridges the gap between WordPress and the Agentic Web.
+
 ## What it does
 
 Appending `.md` to an eligible canonical URL, or requesting that URL with `Accept: text/markdown`, returns its Markdown representation with `Content-Type: text/markdown; charset=utf-8`.
@@ -36,7 +42,7 @@ Editorial Markdown uses saved static content. Items containing shortcodes, unkno
 
 ## Usage
 
-After activation, open the top-level **Serfe WordPress AI Discovery** menu, enable Markdown, and select the supported content types. Then open each eligible item and enable its **Serfe WordPress AI Discovery** checkbox. All publication settings and items are disabled by default.
+After activation, open the top-level **WP AI Discovery** menu, enable Markdown, and select the supported content types. Then open each eligible item and enable its **Serfe WordPress AI Discovery** checkbox. All publication settings and items are disabled by default.
 The Overview tab summarizes local publication switches and previously requested validation results. The Markdown tab contains the current publication controls. The Discovery tab contains the read-only Agent Readiness checks; opening the settings screen does not run those checks.
 
 The settings store individual content types and public archives separately. Existing settings from schema v1 retain their individual-content selections when migrated to schema v2; all archive selections start disabled. Enabled public archives list only published, publicly viewable items approved with the item checkbox. Shop, product category, and product tag archives have independent switches.
@@ -65,11 +71,11 @@ Negotiated Markdown responses include `Vary: Accept` and `X-Markdown-Tokens`, a 
 
 The Markdown response includes YAML front matter such as title, canonical URL, language when available, publication date, and excerpt when available.
 
-## Agent readiness
+## Agents Discovery
 
-Under **Serfe WordPress AI Discovery → Discovery**, administrators can start local, read-only capability checks. Opening the page does not send HTTP requests. Selecting **Run checks again** checks the live public response for `robots.txt`, a sitemap, the RFC 9727 API catalog, Markdown negotiation, OAuth Protected Resource Metadata, and an Agent Skills index. It uses no third-party scanner and caches results for five minutes.
+Under **WP AI Discovery → Discovery**, administrators can start local, read-only capability checks. Opening the page does not send HTTP requests. Selecting **Run checks again** checks the live public response for `robots.txt`, a sitemap, the RFC 9727 API catalog, Markdown negotiation, OAuth Protected Resource Metadata, and an Agent Skills index. It uses no third-party scanner and caches results for five minutes.
 
-MCP and Agentic Commerce are never inferred from a plugin name or a static card. An implementation must register its real service through these filters:
+Developers can extend the plugin's readiness signals by integrating their own endpoints (such as Model Context Protocol (MCP) or Agentic Commerce functionality). MCP and Agentic Commerce are never inferred from a plugin name or a static card. An implementation must register its real service through these filters:
 
 ```php
 add_filter( 'serfe_agent_readiness_mcp', function () {
@@ -94,22 +100,13 @@ add_filter( 'serfe_agent_readiness_agentic_commerce', function () {
 ```
 
 A `health_url` is optional but required for a green check: it must be a read-only endpoint that returns a 2xx response. OAuth is shown as not applicable when the site has no declared protected agent resource; public content does not need OAuth.
-The Help & Support tab has a Serfe contact card describing the starter kit's limits, with a website link on the logo and a separate contact link. It shows the blue logo with WordPress's light admin color scheme and the white logo on a dark card with other admin color schemes. A theme integration can override the card surface with:
-
-```php
-add_filter( 'serfe_ai_discovery_footer_surface', function () {
-    return 'dark';
-} );
-```
-
-
 
 ## Installation
 
 1. In WordPress, go to **Plugins → Add New → Upload Plugin**.
 2. Upload the Serfe WordPress AI Discovery ZIP package.
 3. Activate the plugin.
-4. Enable Markdown for a content type and an individual item in the **Serfe WordPress AI Discovery** menu and the item editor.
+4. Enable Markdown for a content type and an individual item in the **WP AI Discovery** menu and the item editor.
 5. Visit that item's URL ending in `.md` to verify the response.
 
 ## Safety and routing
@@ -124,11 +121,15 @@ The plugin never treats the following internal paths as Markdown content routes:
 
 Markdown is generated only for published, eligible singular content. Markdown responses include `X-Robots-Tag: noindex, follow`.
 
+## Collaboration
+
+We welcome contributions from the developer community! If you find a bug, have a feature request, or want to submit a pull request, please get involved.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution rules and local verification guidelines.
+See [SUPPORT.md](SUPPORT.md) for community support channels. Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
+
 ## Development
 
 The test suite is self-contained and covers routing, discovery, Markdown generation, and WooCommerce product output.
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution and local verification guidelines.
-See [SUPPORT.md](SUPPORT.md) for community support channels. Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 
 ```bash
 php tests/run.php
@@ -148,6 +149,11 @@ For an HTTP smoke check, enable an eligible published item on a local WordPress 
 ## Version
 
 Current internal version: `1.0.10`. See [CHANGELOG.md](CHANGELOG.md) for changes.
+
+## About Serfe
+
+Serfe is a software development company that specializes in building high-quality, scalable web applications and integrations. We are committed to open-source and helping organizations embrace modern web standards, including the emerging Agentic Web. 
+Learn more about us at [serfe.com](https://www.serfe.com).
 
 ## License
 

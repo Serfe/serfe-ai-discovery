@@ -302,7 +302,7 @@ final class Settings {
 		$svg = file_get_contents( SERFE_AI_DISCOVERY_PATH . 'assets/wp_serfe_logo_gray.svg' );
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- WordPress requires an SVG data URI for centered menu icons.
 		$icon_url = false !== $svg ? 'data:image/svg+xml;base64,' . base64_encode( $svg ) : 'dashicons-admin-generic';
-		add_menu_page( __( 'WP AI Discovery', 'serfe-ai-discovery' ), __( 'Serfe WordPress AI Discovery', 'serfe-ai-discovery' ), 'manage_options', self::PAGE, array( $this, 'render_page' ), $icon_url );
+		add_menu_page( __( 'Serfe WordPress AI Discovery', 'serfe-ai-discovery' ), __( 'WP AI Discovery', 'serfe-ai-discovery' ), 'manage_options', self::PAGE, array( $this, 'render_page' ), $icon_url );
 	}
 
 	/** Explain the scope of the current switches. */
@@ -752,12 +752,9 @@ final class Settings {
 		printf( '<p><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_url( 'https://github.com/Serfe-com' ), esc_html__( 'Serfe open-source repositories', 'serfe-ai-discovery' ) );
 		echo '<p>' . esc_html__( 'For support and security reporting, use the channels documented in the plugin repository.', 'serfe-ai-discovery' ) . '</p>';
 
-		$surface    = 'light' === get_user_option( 'admin_color' ) ? 'light' : 'dark';
-		$surface    = apply_filters( 'serfe_ai_discovery_footer_surface', $surface );
-		$surface    = 'dark' === $surface ? 'dark' : 'light';
-		$logo       = 'dark' === $surface ? 'serfe-logo-white.png' : 'serfe-logo-blue.png';
-		$style      = 'dark' === $surface ? 'background: #123b68; color: #fff;' : 'background: #fff; color: #1d2327;';
-		$link_style = 'dark' === $surface ? 'color: #fff;' : 'color: #135e96;';
+		$logo       = 'serfe-logo-white.webp';
+		$style      = 'background: #123b68; color: #fff;';
+		$link_style = 'color: #fff;';
 		printf(
 			'<div class="serfe-help-serfe-card" style="max-width: 1000px; margin-top: 32px; padding: 20px 24px; border-radius: 4px; %1$s"><a href="%2$s" target="_blank" rel="noopener noreferrer" aria-label="%3$s"><img src="%4$s" alt="%5$s" style="display: block; width: 149px; height: auto; max-width: 100%%;"></a><h3 style="color: inherit;">%6$s</h3><p>%7$s</p><p style="margin-bottom: 0;"><a href="%8$s" target="_blank" rel="noopener noreferrer" style="%9$s">%10$s</a></p></div>',
 			esc_attr( $style ),
