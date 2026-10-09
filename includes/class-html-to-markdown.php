@@ -46,7 +46,7 @@ final class Html_To_Markdown {
 		if ( XML_TEXT_NODE === $node->nodeType ) {
 			return preg_replace( '/\s+/', ' ', $node->nodeValue );
 		}
-		if ( XML_ELEMENT_NODE !== $node->nodeType ) {
+		if ( ! ( $node instanceof \DOMElement ) ) {
 			return '';
 		}
 

@@ -85,7 +85,7 @@ final class Product_Generator {
 		$rows = array();
 		foreach ( $product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
-			if ( ! $variation || 'publish' !== $variation->get_status() || ! $variation->variation_is_visible() ) {
+			if ( ! ( $variation instanceof \WC_Product_Variation ) || 'publish' !== $variation->get_status() || ! $variation->variation_is_visible() ) {
 				continue;
 			}
 			$price = $variation->get_price();

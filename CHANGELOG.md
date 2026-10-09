@@ -28,6 +28,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Security
 
+- Ignored catalog child objects that are not WooCommerce product variations before reading variation-only properties.
 - Verified the Agent Readiness refresh notice with a nonce and sanitized the request's `Accept` header before negotiation.
 - Added `Vary: Accept` to eligible HTML responses and protected internal paths under a site URL prefix from Markdown negotiation.
 - Added administrator exclusions for content types, exact URL paths, and public taxonomy terms; exclusions override Markdown opt-ins.

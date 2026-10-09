@@ -37,20 +37,18 @@ final class WC_Product_Variable extends WC_Product {
 	public function get_children() { return $this->children; }
 }
 
-final class Test_Variation {
-	private $price;
+final class WC_Product_Variation extends WC_Product {
 	private $attributes;
 	private $status;
 	private $visible;
 	private $in_stock;
 	public function __construct( $price, $attributes, $status = 'publish', $visible = true, $in_stock = true ) {
-		$this->price = $price;
+		parent::__construct( $price );
 		$this->attributes = $attributes;
 		$this->status = $status;
 		$this->visible = $visible;
 		$this->in_stock = $in_stock;
 	}
-	public function get_price() { return $this->price; }
 	public function get_attributes() { return $this->attributes; }
 	public function get_status() { return $this->status; }
 	public function variation_is_visible() { return $this->visible; }
@@ -59,13 +57,14 @@ final class Test_Variation {
 
 $GLOBALS['test_products'] = array(
 	1 => new WC_Product( '9.50' ),
-	2 => new WC_Product_Variable( '15', array( 201, 202, 203, 204 ) ),
+	2 => new WC_Product_Variable( '15', array( 201, 202, 203, 204, 205 ) ),
 	3 => new WC_Product( '10', 'hidden' ),
 	4 => new WC_Product( '', 'catalog' ),
-	201 => new Test_Variation( '20', array( 'pa_color' => 'red', 'size' => 'Large' ) ),
-	202 => new Test_Variation( '15', array( 'pa_color' => 'blue', 'size' => 'Small' ), 'publish', true, false ),
-	203 => new Test_Variation( '5', array( 'pa_color' => 'green' ), 'publish', false ),
-	204 => new Test_Variation( '8', array( 'pa_color' => 'yellow' ), 'draft' ),
+	201 => new WC_Product_Variation( '20', array( 'pa_color' => 'red', 'size' => 'Large' ) ),
+	202 => new WC_Product_Variation( '15', array( 'pa_color' => 'blue', 'size' => 'Small' ), 'publish', true, false ),
+	203 => new WC_Product_Variation( '5', array( 'pa_color' => 'green' ), 'publish', false ),
+	204 => new WC_Product_Variation( '8', array( 'pa_color' => 'yellow' ), 'draft' ),
+	205 => new WC_Product( '4' ),
 );
 $GLOBALS['test_filter_result'] = null;
 
@@ -128,6 +127,7 @@ $assert_contains( '| Blue · Small | USD 15.00 | Out of stock |', $variable, 'Sh
 $assert_contains( '| Red · Large | USD 20.00 | In stock |', $variable, 'Shows a second public variation' );
 $assert_not_contains( 'Green', $variable, 'Omits hidden variations' );
 $assert_not_contains( 'Yellow', $variable, 'Omits unpublished variations' );
+$assert_not_contains( 'USD 4.00', $variable, 'Omits a child that is not a WooCommerce variation' );
 $assert_contains( "\nprice_from: 15.00\n", $variable, 'Minimum price ignores hidden and unpublished variations' );
 
 if ( $failures ) {
