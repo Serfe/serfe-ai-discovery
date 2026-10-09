@@ -4,6 +4,7 @@
  * Description: Publishes approved public WordPress content as alternative Markdown and discovery signals.
  * Author: Serfe <info@serfe.com>
  * Version: 1.0.10
+ * Requires at least: 7.1
  * Requires PHP: 7.4
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
