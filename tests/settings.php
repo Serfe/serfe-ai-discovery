@@ -1,9 +1,33 @@
 <?php
 
 define( 'ABSPATH', dirname( __DIR__ ) . '/' );
+require_once dirname( __DIR__ ) . '/includes/class-discovery-files.php';
+require_once dirname( __DIR__ ) . '/includes/class-discovery-files-admin.php';
 require_once dirname( __DIR__ ) . '/includes/class-settings.php';
 
 use Serfe\AI_Discovery\Settings;
+
+class WP_Error {
+	private $code;
+	private $message;
+
+	public function __construct( $code, $message = '' ) {
+		$this->code    = $code;
+		$this->message = $message;
+	}
+
+	public function get_error_code() {
+		return $this->code;
+	}
+
+	public function get_error_message() {
+		return $this->message;
+	}
+}
+
+function is_wp_error( $value ) {
+	return $value instanceof WP_Error;
+}
 
 class WP_Post {
 	public $post_type;
@@ -58,6 +82,10 @@ function term_exists( $term_id, $taxonomy ) {
 }
 
 function home_url( $path = '' ) {
+	return 'https://example.com' . $path;
+}
+
+function site_url( $path = '' ) {
 	return 'https://example.com' . $path;
 }
 
@@ -196,6 +224,99 @@ $assert_same( true, Settings::item_enabled( 10 ), 'Rejects unsupported post type
 
 $settings->save_item_choice( 10, new WP_Post( 'post' ) );
 $assert_same( false, Settings::item_enabled( 10 ), 'Unchecking disables Markdown for item' );
+
+if ( ! function_exists( '__' ) ) {
+	function __( $text ) {
+		return $text;
+	}
+}
+if ( ! function_exists( 'esc_html__' ) ) {
+	function esc_html__( $text ) {
+		return $text;
+	}
+}
+if ( ! function_exists( 'esc_attr__' ) ) {
+	function esc_attr__( $text ) {
+		return $text;
+	}
+}
+if ( ! function_exists( 'sanitize_key' ) ) {
+	function sanitize_key( $value ) {
+		return is_string( $value ) ? strtolower( preg_replace( '/[^a-z0-9_\-]/i', '', $value ) ) : '';
+	}
+}
+if ( ! function_exists( 'esc_html' ) ) {
+	function esc_html( $text ) {
+		return $text;
+	}
+}
+if ( ! function_exists( 'esc_attr' ) ) {
+	function esc_attr( $text ) {
+		return $text;
+	}
+}
+if ( ! function_exists( 'esc_url' ) ) {
+	function esc_url( $url ) {
+		return $url;
+	}
+}
+if ( ! function_exists( 'wp_nonce_field' ) ) {
+	function wp_nonce_field() {}
+}
+if ( ! function_exists( 'admin_url' ) ) {
+	function admin_url( $path = '' ) {
+		return 'https://example.com/wp-admin/' . $path;
+	}
+}
+if ( ! function_exists( 'get_transient' ) ) {
+	function get_transient( $key ) {
+		return isset( $GLOBALS['test_transients'][ $key ] ) ? $GLOBALS['test_transients'][ $key ] : false;
+	}
+}
+if ( ! function_exists( 'delete_transient' ) ) {
+	function delete_transient( $key ) {
+		unset( $GLOBALS['test_transients'][ $key ] );
+	}
+}
+if ( ! function_exists( 'set_transient' ) ) {
+	function set_transient( $key, $value ) {
+		$GLOBALS['test_transients'][ $key ] = $value;
+		return true;
+	}
+}
+if ( ! function_exists( 'get_current_user_id' ) ) {
+	function get_current_user_id() {
+		return 1;
+	}
+}
+if ( ! function_exists( 'wp_get_environment_type' ) ) {
+	function wp_get_environment_type() {
+		return 'production';
+	}
+}
+if ( ! function_exists( 'esc_textarea' ) ) {
+	function esc_textarea( $text ) {
+		return is_string( $text ) ? htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' ) : '';
+	}
+}
+if ( ! function_exists( 'add_query_arg' ) ) {
+	function add_query_arg( $args, $url = '' ) {
+		return $url . '?' . http_build_query( $args );
+	}
+}
+
+$_GET['tab'] = 'robots';
+ob_start();
+$settings->render_page();
+$robots_page = ob_get_clean();
+$assert_same( true, strpos( $robots_page, 'tab=robots' ) !== false, 'Nav tab includes Robots.txt' );
+$assert_same( true, strpos( $robots_page, 'tab=llms' ) !== false, 'Nav tab includes llms.txt' );
+
+$_GET['tab'] = 'llms';
+ob_start();
+$settings->render_page();
+$llms_page = ob_get_clean();
+$assert_same( true, strpos( $llms_page, 'tab=llms' ) !== false, 'Nav tab selects llms.txt' );
 
 if ( $failures ) {
 	fwrite( STDERR, implode( "\n", $failures ) . "\n" );

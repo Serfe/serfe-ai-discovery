@@ -7,13 +7,19 @@ define( 'ABSPATH', $base . '/wp/' );
 
 class WP_Error {
 	private $code;
+	private $message;
 
-	public function __construct( $code, $message ) {
-		$this->code = $code;
+	public function __construct( $code, $message = '' ) {
+		$this->code    = $code;
+		$this->message = $message;
 	}
 
 	public function get_error_code() {
 		return $this->code;
+	}
+
+	public function get_error_message() {
+		return $this->message;
 	}
 }
 
@@ -219,6 +225,138 @@ unlink( $base . '/robots.txt' );
 unlink( $base . '/linked-wp' );
 rmdir( $base . '/wp' );
 rmdir( $base );
+
+require_once dirname( __DIR__ ) . '/includes/class-settings.php';
+require_once dirname( __DIR__ ) . '/includes/class-discovery-files-admin.php';
+
+use Serfe\AI_Discovery\Discovery_Files_Admin;
+use Serfe\AI_Discovery\Settings;
+
+if ( ! function_exists( 'wp_get_environment_type' ) ) {
+	function wp_get_environment_type() {
+		return 'production';
+	}
+}
+if ( ! function_exists( 'esc_html__' ) ) {
+	function esc_html__( $text ) {
+		return $text;
+	}
+}
+if ( ! function_exists( 'esc_url' ) ) {
+	function esc_url( $url ) {
+		return $url;
+	}
+}
+if ( ! function_exists( 'esc_html' ) ) {
+	function esc_html( $text ) {
+		return $text;
+	}
+}
+if ( ! function_exists( 'esc_attr' ) ) {
+	function esc_attr( $text ) {
+		return $text;
+	}
+}
+if ( ! function_exists( 'esc_attr__' ) ) {
+	function esc_attr__( $text ) {
+		return $text;
+	}
+}
+if ( ! function_exists( 'esc_textarea' ) ) {
+	function esc_textarea( $text ) {
+		return is_string( $text ) ? htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' ) : '';
+	}
+}
+if ( ! function_exists( 'sanitize_text_field' ) ) {
+	function sanitize_text_field( $value ) {
+		return is_string( $value ) ? trim( $value ) : '';
+	}
+}
+if ( ! function_exists( 'sanitize_key' ) ) {
+	function sanitize_key( $value ) {
+		return is_string( $value ) ? strtolower( preg_replace( '/[^a-z0-9_\-]/i', '', $value ) ) : '';
+	}
+}
+if ( ! function_exists( 'wp_unslash' ) ) {
+	function wp_unslash( $value ) {
+		return $value;
+	}
+}
+if ( ! function_exists( 'wp_nonce_field' ) ) {
+	function wp_nonce_field() {}
+}
+if ( ! function_exists( 'admin_url' ) ) {
+	function admin_url( $path = '' ) {
+		return 'https://example.com/wp-admin/' . $path;
+	}
+}
+if ( ! function_exists( 'add_query_arg' ) ) {
+	function add_query_arg( $args, $url = '' ) {
+		return $url . '?' . http_build_query( $args );
+	}
+}
+if ( ! function_exists( 'check_admin_referer' ) ) {
+	function check_admin_referer() {
+		return true;
+	}
+}
+if ( ! function_exists( 'set_transient' ) ) {
+	function set_transient( $key, $value ) {
+		$GLOBALS['test_transients'][ $key ] = $value;
+		return true;
+	}
+}
+if ( ! function_exists( 'get_transient' ) ) {
+	function get_transient( $key ) {
+		return isset( $GLOBALS['test_transients'][ $key ] ) ? $GLOBALS['test_transients'][ $key ] : false;
+	}
+}
+if ( ! function_exists( 'delete_transient' ) ) {
+	function delete_transient( $key ) {
+		unset( $GLOBALS['test_transients'][ $key ] );
+	}
+}
+if ( ! function_exists( 'wp_safe_redirect' ) ) {
+	function wp_safe_redirect( $url ) {
+		$GLOBALS['test_redirect_url'] = $url;
+	}
+}
+
+$admin = new Discovery_Files_Admin();
+
+ob_start();
+$admin->render_robots_tab();
+$robots_output = ob_get_clean();
+$assert_same( true, strpos( $robots_output, 'Why robots.txt matters' ) !== false, 'Renders dedicated Robots.txt tab heading' );
+$assert_same( true, strpos( $robots_output, 'robots.txt' ) !== false, 'Includes robots.txt editor' );
+$assert_same( false, strpos( $robots_output, 'Why llms.txt matters' ), 'Robots tab does not render llms.txt' );
+
+ob_start();
+$admin->render_llms_tab();
+$llms_output = ob_get_clean();
+$assert_same( true, strpos( $llms_output, 'Why llms.txt matters' ) !== false, 'Renders dedicated llms.txt tab heading' );
+$assert_same( true, strpos( $llms_output, 'llms.txt' ) !== false, 'Includes llms.txt editor' );
+$assert_same( false, strpos( $llms_output, 'Why robots.txt matters' ), 'llms tab does not render robots.txt' );
+
+$_POST = array(
+	'file' => 'robots.txt',
+	'mode' => 'validate',
+);
+$GLOBALS['test_redirect_url'] = '';
+try {
+	$admin->handle_action();
+} catch ( \Exception $e ) {}
+$assert_same( true, strpos( $GLOBALS['test_redirect_url'], 'tab=robots' ) !== false, 'Action for robots.txt redirects to tab=robots' );
+
+$_POST = array(
+	'file' => 'llms.txt',
+	'mode' => 'validate',
+);
+$GLOBALS['test_redirect_url'] = '';
+try {
+	$admin->handle_action();
+} catch ( \Exception $e ) {}
+$assert_same( true, strpos( $GLOBALS['test_redirect_url'], 'tab=llms' ) !== false, 'Action for llms.txt redirects to tab=llms' );
 if ( $failures ) {
 	fwrite( STDERR, implode( "\n", $failures ) . "\n" );
 	exit( 1 );

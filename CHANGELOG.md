@@ -26,6 +26,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Separated Robots.txt and llms.txt into dedicated top-level tabs on the Serfe AI Discovery settings screen.
 - Clarified the server-side cache and private, no-store HTTP response policy in the WordPress.org readme.
 - Restored the Serfe roundel as a 20-pixel admin menu SVG, matching WordPress's menu icon size.
 - Rendered the bundled admin menu SVG as a centered WordPress background icon using a base64 data URI.

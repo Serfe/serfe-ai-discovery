@@ -364,14 +364,15 @@ final class Settings {
 		$tabs = array(
 			'overview'  => __( 'Overview', 'serfe-ai-discovery' ),
 			'markdown'  => __( 'Markdown', 'serfe-ai-discovery' ),
-			'files'     => __( 'Robots.txt & llms.txt', 'serfe-ai-discovery' ),
+			'robots'    => __( 'Robots.txt', 'serfe-ai-discovery' ),
+			'llms'      => __( 'llms.txt', 'serfe-ai-discovery' ),
 			'discovery' => __( 'Discovery', 'serfe-ai-discovery' ),
 			'help'      => __( 'Help & Support', 'serfe-ai-discovery' ),
 		);
 		// The tab selects read-only output; no state changes occur from this query parameter.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only navigation.
 		$requested = isset( $_GET['tab'] ) && is_string( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'overview';
-		$tab       = isset( $tabs[ $requested ] ) ? $requested : 'overview';
+		$tab       = isset( $tabs[ $requested ] ) ? $requested : ( 'files' === $requested ? 'robots' : 'overview' );
 		echo '<div class="wrap"><h1>' . esc_html__( 'Serfe AI Discovery', 'serfe-ai-discovery' ) . '</h1><nav class="nav-tab-wrapper" aria-label="' . esc_attr__( 'Serfe AI Discovery sections', 'serfe-ai-discovery' ) . '">';
 		foreach ( $tabs as $key => $label ) {
 			$url = add_query_arg(
@@ -395,8 +396,14 @@ final class Settings {
 				$this->render_markdown_urls();
 				$this->render_markdown_cache();
 				break;
+			case 'robots':
+				( new Discovery_Files_Admin() )->render_robots_tab();
+				break;
+			case 'llms':
+				( new Discovery_Files_Admin() )->render_llms_tab();
+				break;
 			case 'files':
-				$this->render_files_tab();
+				( new Discovery_Files_Admin() )->render_robots_tab();
 				break;
 			case 'discovery':
 				$this->render_discovery_tab();
