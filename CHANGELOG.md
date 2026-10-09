@@ -21,6 +21,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Completed the Help & Support contact card with the starter-kit scope and a direct Serfe contact link.
 - Moved the Serfe logo to Help & Support, selected its blue or white variant from the admin color scheme, and linked it to the Serfe website with the plugin's UTM source.
 - Moved the plugin settings to a top-level WordPress admin menu using the shipped gray Serfe SVG as its icon.
 - Moved Agent Readiness diagnostics into the Discovery tab on the plugin settings screen.

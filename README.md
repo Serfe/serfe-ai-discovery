@@ -92,7 +92,7 @@ add_filter( 'serfe_agent_readiness_agentic_commerce', function () {
 ```
 
 A `health_url` is optional but required for a green check: it must be a read-only endpoint that returns a 2xx response. OAuth is shown as not applicable when the site has no declared protected agent resource; public content does not need OAuth.
-The Help & Support tab links the Serfe logo to the Serfe website. It shows the blue logo with WordPress's light admin color scheme and the white logo on a dark card with other admin color schemes. A theme integration can override the card surface with:
+The Help & Support tab has a Serfe contact card describing the starter kit's limits, with a website link on the logo and a separate contact link. It shows the blue logo with WordPress's light admin color scheme and the white logo on a dark card with other admin color schemes. A theme integration can override the card surface with:
 
 ```php
 add_filter( 'serfe_ai_discovery_footer_surface', function () {
