@@ -424,13 +424,13 @@ final class Settings {
 		echo '<p>' . esc_html__( 'Editing and publishing these root files is not available yet. Review any existing files on the public site before changing them.', 'serfe-ai-discovery' ) . '</p>';
 	}
 
-	/** Link to the existing read-only diagnostics without triggering a request. */
+	/** Show the read-only diagnostic without triggering a request. */
 	private function render_discovery_tab() {
 		$choices = self::choices();
 		echo '<h2>' . esc_html__( 'Discovery resources', 'serfe-ai-discovery' ) . '</h2>';
 		printf( '<p>%s</p>', esc_html( 1 === (int) $choices['api_catalog_enabled'] ? __( 'API Catalog publication is enabled.', 'serfe-ai-discovery' ) : __( 'API Catalog publication is disabled. Its switch is currently on the Markdown tab.', 'serfe-ai-discovery' ) ) );
 		echo '<p>' . esc_html__( 'The local checks inspect public responses only when you run them. A Server Card requires a validated MCP endpoint and is not available yet.', 'serfe-ai-discovery' ) . '</p>';
-		printf( '<p><a class="button button-secondary" href="%s">%s</a></p>', esc_url( admin_url( 'tools.php?page=serfe-agent-readiness' ) ), esc_html__( 'Open Agent Readiness checks', 'serfe-ai-discovery' ) );
+		( new Readiness() )->render_page();
 	}
 
 	/** Provide maintained local documentation and clear feature limits. */

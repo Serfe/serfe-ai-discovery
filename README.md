@@ -37,7 +37,7 @@ Editorial Markdown uses saved static content. Items containing shortcodes, unkno
 ## Usage
 
 After activation, go to **Settings → Serfe AI Discovery**, enable Markdown, and select the supported content types. Then open each eligible item and enable its **Serfe AI Discovery** checkbox. All publication settings and items are disabled by default.
-The Overview tab summarizes local publication switches and previously requested validation results. The Markdown tab contains the current publication controls. The Discovery tab links to the existing read-only Agent Readiness checks; opening the settings screen does not run those checks.
+The Overview tab summarizes local publication switches and previously requested validation results. The Markdown tab contains the current publication controls. The Discovery tab contains the read-only Agent Readiness checks; opening the settings screen does not run those checks.
 
 The settings store individual content types and public archives separately. Existing settings from schema v1 retain their individual-content selections when migrated to schema v2; all archive selections start disabled. Enabled public archives list only published, publicly viewable items approved with the item checkbox. Shop, product category, and product tag archives have independent switches.
 
@@ -62,7 +62,7 @@ The Markdown response includes YAML front matter such as title, canonical URL, l
 
 ## Agent readiness
 
-Under **Tools → Agent Readiness**, administrators can start local, read-only capability checks. Opening the page does not send HTTP requests. Selecting **Run checks again** checks the live public response for `robots.txt`, a sitemap, the RFC 9727 API catalog, Markdown negotiation, OAuth Protected Resource Metadata, and an Agent Skills index. It uses no third-party scanner and caches results for five minutes.
+Under **Settings → Serfe AI Discovery → Discovery**, administrators can start local, read-only capability checks. Opening the page does not send HTTP requests. Selecting **Run checks again** checks the live public response for `robots.txt`, a sitemap, the RFC 9727 API catalog, Markdown negotiation, OAuth Protected Resource Metadata, and an Agent Skills index. It uses no third-party scanner and caches results for five minutes.
 
 MCP and Agentic Commerce are never inferred from a plugin name or a static card. An implementation must register its real service through these filters:
 

@@ -19,6 +19,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Moved Agent Readiness diagnostics into the Discovery tab on the plugin settings screen.
 - Markdown and alternate links are disabled until both the content type and item are enabled.
 - Markdown responses now include a canonical Link header and use a no-store cache policy.
 - Product Markdown now uses WooCommerce's public short and full descriptions, visible variations, and the site's configured currency.

@@ -18,11 +18,10 @@ final class Readiness {
 	const CACHE_TTL     = 300;
 	const SKILLS_SCHEMA = 'https://schemas.agentskills.io/discovery/0.2.0/schema.json';
 
-	/** Register the Tools screen and its refresh action. */
+	/** Register the diagnostic refresh action on the plugin settings screen. */
 	public function register_hooks() {
-		add_action( 'admin_menu', array( $this, 'register_page' ) );
 		add_action( 'admin_post_serfe_ai_discovery_readiness_refresh', array( $this, 'refresh' ) );
-		add_action( 'admin_head-tools_page_serfe-agent-readiness', array( $this, 'render_styles' ) );
+		add_action( 'admin_head-settings_page_serfe-ai-discovery', array( $this, 'render_styles' ) );
 	}
 
 	/** Render styles kept local to the Agent Readiness screen. */
@@ -77,17 +76,6 @@ final class Readiness {
 		<?php
 	}
 
-	/** Add Tools > Agent Readiness. */
-	public function register_page() {
-		add_management_page(
-			__( 'Agent Readiness', 'serfe-ai-discovery' ),
-			__( 'Agent Readiness', 'serfe-ai-discovery' ),
-			'manage_options',
-			'serfe-agent-readiness',
-			array( $this, 'render_page' )
-		);
-	}
-
 	/** Remove the local result cache, then return to the panel. */
 	public function refresh() {
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -99,11 +87,12 @@ final class Readiness {
 		$this->inspect( true );
 		$redirect_url = add_query_arg(
 			array(
-				'page'      => 'serfe-agent-readiness',
+				'page'      => Settings::PAGE,
+				'tab'       => 'discovery',
 				'refreshed' => '1',
 				'_wpnonce'  => wp_create_nonce( 'serfe_ai_discovery_readiness_refreshed' ),
 			),
-			admin_url( 'tools.php' )
+			admin_url( 'options-general.php' )
 		);
 		wp_safe_redirect( $redirect_url );
 		exit;
@@ -127,8 +116,8 @@ final class Readiness {
 		$logo_blue      = SERFE_AI_DISCOVERY_URL . 'assets/serfe-logo-blue.png';
 		$logo_white     = SERFE_AI_DISCOVERY_URL . 'assets/serfe-logo-white.png';
 		?>
-		<div class="wrap">
-			<h1><?php esc_html_e( 'Agent Readiness', 'serfe-ai-discovery' ); ?></h1>
+		<div class="serfe-readiness-panel">
+			<h2><?php esc_html_e( 'Agent Readiness', 'serfe-ai-discovery' ); ?></h2>
 			<div class="card" style="max-width: 1000px; padding: 20px 24px; margin: 16px 0;">
 				<h2 style="margin-top: 0;"><?php esc_html_e( 'Build trust for the agentic web.', 'serfe-ai-discovery' ); ?></h2>
 				<p><?php esc_html_e( 'Agent Readiness gives your team a clear, practical view of how easily browsers, crawlers, and AI agents can discover and understand your WordPress site.', 'serfe-ai-discovery' ); ?></p>
