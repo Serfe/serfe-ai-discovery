@@ -365,6 +365,7 @@ final class Settings {
 		echo '</nav>';
 		switch ( $tab ) {
 			case 'markdown':
+				$this->render_markdown_guidance();
 				echo '<form action="options.php" method="post">';
 				settings_fields( self::GROUP );
 				do_settings_sections( self::PAGE );
@@ -384,6 +385,14 @@ final class Settings {
 				$this->render_overview_tab();
 		}
 		echo '</div>';
+	}
+
+	/** Explain Markdown publication before an administrator changes its switches. */
+	private function render_markdown_guidance() {
+		echo '<details style="margin: 16px 0;"><summary>' . esc_html__( 'About Markdown negotiation', 'serfe-ai-discovery' ) . '</summary>';
+		echo '<p>' . esc_html__( 'What it does: Returns an alternative Markdown representation of approved public content when a compatible client requests it.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'Why it helps: Removes unnecessary presentation markup while browsers continue receiving HTML.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'Important: HTML remains the canonical customer-facing version. Markdown availability does not guarantee crawler usage or AI citations.', 'serfe-ai-discovery' ) . '</p></details>';
 	}
 
 	/** Summarize only states that this plugin can currently establish locally. */
@@ -454,6 +463,10 @@ final class Settings {
 		echo '<h2>' . esc_html__( 'Discovery resources', 'serfe-ai-discovery' ) . '</h2>';
 		printf( '<p>%s</p>', esc_html( 1 === (int) $choices['api_catalog_enabled'] ? __( 'API Catalog publication is enabled.', 'serfe-ai-discovery' ) : __( 'API Catalog publication is disabled. Its switch is currently on the Markdown tab.', 'serfe-ai-discovery' ) ) );
 		echo '<p>' . esc_html__( 'The local checks inspect public responses only when you run them. A Server Card requires a validated MCP endpoint and is not available yet.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<details style="margin: 16px 0;"><summary>' . esc_html__( 'About XML Sitemaps', 'serfe-ai-discovery' ) . '</summary>';
+		echo '<p>' . esc_html__( 'What it does: Lists canonical public URLs in a machine-readable format.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'Why it helps: Gives crawlers and technical tools a consistent public URL map.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'Important: Include live canonical public URLs only. Exclude redirects, noindex content, duplicates, private pages, search pages, cart, checkout, and account pages.', 'serfe-ai-discovery' ) . '</p></details>';
 		( new Readiness() )->render_page();
 	}
 

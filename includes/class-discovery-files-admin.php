@@ -110,6 +110,15 @@ final class Discovery_Files_Admin {
 		if ( ! $scanner['public'] ) {
 			echo '<p class="description">' . esc_html__( 'External scanners cannot access local or private environments. Open the scanner and test a public URL after deployment.', 'serfe-ai-discovery' ) . '</p>';
 		}
+		echo '<details style="margin: 16px 0;"><summary>' . esc_html__( 'About robots.txt', 'serfe-ai-discovery' ) . '</summary>';
+		echo '<p>' . esc_html__( 'What it does: Defines crawler access rules and can declare the XML sitemap location.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'Why it helps: Clarifies which public areas are intended for crawling and where public URLs can be discovered.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'Important: Rules must reflect your organization’s policy. Allowing or blocking a crawler does not guarantee crawling, training, indexing, or citation.', 'serfe-ai-discovery' ) . '</p></details>';
+		echo '<details style="margin: 16px 0;"><summary>' . esc_html__( 'About llms.txt', 'serfe-ai-discovery' ) . '</summary>';
+		echo '<p>' . esc_html__( 'What it does: Provides an optional human-readable Markdown overview and curated links to relevant public content.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'Why it helps: Makes approved information easier for AI systems and technical tools to identify and interpret.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'Important: Include only current, public, canonical URLs. Never include private areas, customer pages, admin URLs, credentials, unsupported claims, or outdated offers.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'This file complements the website, sitemap, structured content, and crawler policy; it does not replace them.', 'serfe-ai-discovery' ) . '</p></details>';
 		$this->render_file( 'robots.txt', $notice );
 		$this->render_file( 'llms.txt', $notice );
 	}
