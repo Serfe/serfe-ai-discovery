@@ -21,59 +21,6 @@ final class Readiness {
 	/** Register the diagnostic refresh action on the plugin settings screen. */
 	public function register_hooks() {
 		add_action( 'admin_post_serfe_ai_discovery_readiness_refresh', array( $this, 'refresh' ) );
-		add_action( 'admin_head-toplevel_page_serfe-ai-discovery', array( $this, 'render_styles' ) );
-	}
-
-	/** Render styles kept local to the Agent Readiness screen. */
-	public function render_styles() {
-		?>
-		<style>
-			.serfe-readiness-footer {
-				max-width: 1000px;
-				border-top: 1px solid #dcdcde;
-				margin-top: 34px;
-				padding: 20px 0;
-				display: flex;
-				align-items: center;
-				gap: 14px;
-			}
-
-			.serfe-readiness-footer[data-serfe-surface="dark"] {
-				background: #123b68;
-				border-color: #123b68;
-				border-radius: 4px;
-				padding: 20px;
-			}
-
-			.serfe-readiness-footer__link {
-				display: inline-flex;
-				align-items: center;
-			}
-
-			.serfe-readiness-logo {
-				display: block;
-				width: 149px;
-				height: auto;
-				max-width: 100%;
-			}
-
-			.serfe-readiness-logo--dark {
-				display: none;
-			}
-
-			.serfe-readiness-footer[data-serfe-surface="dark"] .serfe-readiness-logo--light {
-				display: none;
-			}
-
-			.serfe-readiness-footer[data-serfe-surface="dark"] .serfe-readiness-logo--dark {
-				display: block;
-			}
-
-			.serfe-readiness-footer[data-serfe-surface="dark"] .description {
-				color: #dce8f5;
-			}
-		</style>
-		<?php
 	}
 
 	/** Remove the local result cache, then return to the panel. */
@@ -111,10 +58,6 @@ final class Readiness {
 				'checked_at' => '',
 			);
 		}
-		$footer_surface = apply_filters( 'serfe_ai_discovery_footer_surface', 'light' );
-		$footer_surface = 'dark' === $footer_surface ? 'dark' : 'light';
-		$logo_blue      = SERFE_AI_DISCOVERY_URL . 'assets/serfe-logo-blue.png';
-		$logo_white     = SERFE_AI_DISCOVERY_URL . 'assets/serfe-logo-white.png';
 		?>
 		<div class="serfe-readiness-panel">
 			<h2><?php esc_html_e( 'Agent Readiness', 'serfe-ai-discovery' ); ?></h2>
@@ -167,13 +110,6 @@ final class Readiness {
 					<p class="description"><?php echo esc_html( sprintf( __( 'Last checked: %s', 'serfe-ai-discovery' ), $report['checked_at'] ) ); ?></p>
 			<?php endif; ?>
 
-			<div class="serfe-readiness-footer" data-serfe-surface="<?php echo esc_attr( $footer_surface ); ?>">
-				<a class="serfe-readiness-footer__link" href="https://www.serfe.com" target="_blank" rel="noopener noreferrer" aria-label="<?php esc_attr_e( 'Visit Serfe', 'serfe-ai-discovery' ); ?>">
-					<img class="serfe-readiness-logo serfe-readiness-logo--light" src="<?php echo esc_url( $logo_blue ); ?>" alt="" aria-hidden="true">
-					<img class="serfe-readiness-logo serfe-readiness-logo--dark" src="<?php echo esc_url( $logo_white ); ?>" alt="" aria-hidden="true">
-				</a>
-				<span class="description"><?php esc_html_e( 'Your Nearshore Software Development Partner in the Americas', 'serfe-ai-discovery' ); ?></span>
-			</div>
 		</div>
 		<?php
 	}

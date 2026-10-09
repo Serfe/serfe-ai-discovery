@@ -458,6 +458,21 @@ final class Settings {
 		echo '<p>' . esc_html__( 'This starter plugin serves approved public content as Markdown, can publish robots.txt and llms.txt, and publishes an optional API Catalog. MCP Server Cards and a site-wide cache generator are not available yet.', 'serfe-ai-discovery' ) . '</p>';
 		printf( '<p><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_url( 'https://github.com/Serfe-com' ), esc_html__( 'Serfe open-source repositories', 'serfe-ai-discovery' ) );
 		echo '<p>' . esc_html__( 'For support and security reporting, use the channels documented in the plugin repository.', 'serfe-ai-discovery' ) . '</p>';
+
+		$surface = 'light' === get_user_option( 'admin_color' ) ? 'light' : 'dark';
+		$surface = apply_filters( 'serfe_ai_discovery_footer_surface', $surface );
+		$surface = 'dark' === $surface ? 'dark' : 'light';
+		$logo    = 'dark' === $surface ? 'serfe-logo-white.png' : 'serfe-logo-blue.png';
+		$style   = 'dark' === $surface ? 'background: #123b68; color: #fff;' : 'background: #fff; color: #1d2327;';
+		printf(
+			'<div class="serfe-help-serfe-card" style="max-width: 1000px; margin-top: 32px; padding: 20px 24px; border-radius: 4px; %1$s"><a href="%2$s" target="_blank" rel="noopener noreferrer" aria-label="%3$s"><img src="%4$s" alt="%5$s" style="display: block; width: 149px; height: auto; max-width: 100%%;"></a><p style="margin-bottom: 0; color: inherit;">%6$s</p></div>',
+			esc_attr( $style ),
+			esc_url( 'https://www.serfe.com?utm_source=serfe-ai-discovery' ),
+			esc_attr__( 'Visit Serfe', 'serfe-ai-discovery' ),
+			esc_url( SERFE_AI_DISCOVERY_URL . 'assets/' . $logo ),
+			esc_attr__( 'Serfe', 'serfe-ai-discovery' ),
+			esc_html__( 'Your Nearshore Software Development Partner in the Americas', 'serfe-ai-discovery' )
+		);
 	}
 
 	/** Add a separate choice to each supported content editor. */
