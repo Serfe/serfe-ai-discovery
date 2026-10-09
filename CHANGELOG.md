@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Added explicit inspection of virtual public discovery-file responses, including robots.txt served by WordPress or SEO plugins.
 - Added a generation-keyed server-side Markdown cache with automatic invalidation on content, visibility, price, stock, taxonomy, opt-in and setting changes.
 - Added enabled URL table and Markdown cache status controls to the Serfe AI Discovery → Markdown tab.
 - Added expandable admin guidance for Markdown, robots.txt, llms.txt, and XML Sitemaps, including their limits.
@@ -49,6 +50,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Security
 
+- Required checksum-confirmed takeover before a physical file can replace an existing virtual public response; retained its previous text as the backup.
 - Sanitized file-action controls before validation while preserving discovery-file text for strict content validation.
 - Added a guarded public-root file publication service with fixed filenames, UTF-8 validation, atomic replacement, previous-version backups, and checksum-based takeover checks.
 - Ignored catalog child objects that are not WooCommerce product variations before reading variation-only properties.

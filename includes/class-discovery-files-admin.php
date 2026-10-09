@@ -80,8 +80,15 @@ final class Discovery_Files_Admin {
 						: __( 'The public file was written and checked.', 'serfe-ai-discovery' ),
 					'warnings' => $result['warnings'],
 				);
-				if ( 'validate' === $mode && strlen( $candidate ) <= Discovery_Files::MAX_LIMIT ) {
-					$notice['candidate'] = $candidate;
+				if ( 'validate' === $mode ) {
+					if ( strlen( $candidate ) <= Discovery_Files::MAX_LIMIT ) {
+						$notice['candidate'] = $candidate;
+					}
+					$notice['virtual']  = ! empty( $result['virtual'] );
+					$notice['checksum'] = isset( $result['checksum'] ) ? $result['checksum'] : '';
+					if ( ! empty( $result['virtual'] ) ) {
+						$notice['public_content'] = $result['content'];
+					}
 				}
 			}
 		}
@@ -164,9 +171,16 @@ final class Discovery_Files_Admin {
 			);
 		}
 		$known    = isset( $state['meta']['checksum'] ) ? $state['meta']['checksum'] : '';
-		$conflict = $known !== $state['checksum'];
+		$virtual  = ! $state['exists'] && is_array( $notice ) && isset( $notice['file'] ) && $name === $notice['file'] && ! empty( $notice['virtual'] );
+		$conflict = $known !== $state['checksum'] || $virtual;
+		if ( ! $state['exists'] ) {
+			echo '<div class="notice notice-info inline"><p>' . esc_html__( 'No physical file exists at the public root. WordPress, Yoast SEO, Rank Math, or another plugin may still serve a virtual public response. Select Validate public file to inspect it before publishing a physical file.', 'serfe-ai-discovery' ) . '</p></div>';
+			if ( 'robots.txt' === $name ) {
+				printf( '<p class="description"><a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a> · <a href="%3$s" target="_blank" rel="noopener noreferrer">%4$s</a></p>', esc_url( 'https://yoast.com/help/how-to-edit-robots-txt-through-yoast-seo/' ), esc_html__( 'Yoast SEO robots.txt guide', 'serfe-ai-discovery' ), esc_url( 'https://rankmath.com/kb/how-to-edit-robots-txt-with-rank-math/' ), esc_html__( 'Rank Math robots.txt guide', 'serfe-ai-discovery' ) );
+			}
+		}
 		if ( $conflict ) {
-			echo '<div class="notice notice-warning inline"><p>' . esc_html__( 'This file is unmanaged, missing, or changed outside the plugin. Review its current state before taking control.', 'serfe-ai-discovery' ) . '</p></div>';
+			echo '<div class="notice notice-warning inline"><p>' . esc_html__( 'This public response is unmanaged or changed outside the plugin. Review its current content before taking control.', 'serfe-ai-discovery' ) . '</p></div>';
 		}
 		if ( is_array( $notice ) && isset( $notice['file'] ) && $name === $notice['file'] ) {
 			$type = isset( $notice['type'] ) && in_array( $notice['type'], array( 'success', 'warning', 'error', 'info' ), true ) ? $notice['type'] : 'info';
@@ -177,7 +191,15 @@ final class Discovery_Files_Admin {
 				}
 			}
 		}
-		$editor = is_array( $notice ) && isset( $notice['file'], $notice['candidate'] ) && $name === $notice['file'] ? $notice['candidate'] : $state['content'];
+		$editor        = is_array( $notice ) && isset( $notice['file'], $notice['candidate'] ) && $name === $notice['file'] ? $notice['candidate'] : $state['content'];
+		$display_state = $state;
+		if ( $virtual ) {
+			$display_state['content']  = isset( $notice['public_content'] ) ? $notice['public_content'] : '';
+			$display_state['checksum'] = $notice['checksum'];
+			if ( '' === $editor ) {
+				$editor = $display_state['content'];
+			}
+		}
 		if ( 'llms.txt' === $name ) {
 			echo '<p>' . esc_html__( 'Start with the site name and a concise description. Group current public canonical links under useful headings such as Products, Services, Resources, Support, Documentation, and Legal. Review this guide after important content or URL changes.', 'serfe-ai-discovery' ) . '</p>';
 		}
@@ -185,10 +207,10 @@ final class Discovery_Files_Admin {
 		if ( isset( $state['meta']['published_at'], $state['meta']['user_id'] ) ) {
 			printf( '<p class="description">%s</p>', esc_html( sprintf( /* translators: 1: date and time, 2: administrator ID. */ __( 'Last published: %1$s by administrator %2$d.', 'serfe-ai-discovery' ), $state['meta']['published_at'], $state['meta']['user_id'] ) ) );
 		}
-		$this->render_warnings( $name, $state['content'] );
+		$this->render_warnings( $name, $display_state['content'] );
 		printf( '<form action="%s" method="post">', esc_url( admin_url( 'admin-post.php' ) ) );
 		wp_nonce_field( self::ACTION );
-		printf( '<input type="hidden" name="action" value="%s"><input type="hidden" name="file" value="%s"><input type="hidden" name="checksum" value="%s">', esc_attr( self::ACTION ), esc_attr( $name ), esc_attr( $state['checksum'] ) );
+		printf( '<input type="hidden" name="action" value="%s"><input type="hidden" name="file" value="%s"><input type="hidden" name="checksum" value="%s">', esc_attr( self::ACTION ), esc_attr( $name ), esc_attr( $display_state['checksum'] ) );
 		printf( '<p><label for="serfe-file-%s"><strong>%s</strong></label></p><textarea id="serfe-file-%s" name="content" rows="15" class="large-text code">%s</textarea>', esc_attr( $name ), esc_html__( 'Editor content', 'serfe-ai-discovery' ), esc_attr( $name ), esc_textarea( $editor ) );
 		if ( $conflict ) {
 			echo '<p><label><input type="checkbox" name="takeover" value="1"> ' . esc_html__( 'I reviewed the current public file and confirm that this plugin may take control of it.', 'serfe-ai-discovery' ) . '</label></p>';
@@ -203,7 +225,7 @@ final class Discovery_Files_Admin {
 		}
 		echo '</p></form>';
 		if ( $conflict || ( is_array( $notice ) && isset( $notice['file'], $notice['code'] ) && $name === $notice['file'] ) ) {
-			$this->render_review( $name, $state, $editor );
+			$this->render_review( $name, $display_state, $editor );
 		}
 		echo '</section>';
 	}
@@ -213,7 +235,7 @@ final class Discovery_Files_Admin {
 		echo '<details><summary>' . esc_html__( 'Review current file, editor text, and previous backup', 'serfe-ai-discovery' ) . '</summary>';
 		$validated = Discovery_Files::normalize_content( $editor );
 		foreach ( array(
-			__( 'Current public file', 'serfe-ai-discovery' ) => $state['content'],
+			__( 'Current public response', 'serfe-ai-discovery' ) => $state['content'],
 			__( 'Editor content', 'serfe-ai-discovery' )  => $editor,
 			__( 'Previous backup', 'serfe-ai-discovery' ) => is_string( $state['backup'] ) ? $state['backup'] : __( 'No backup is available.', 'serfe-ai-discovery' ),
 		) as $label => $content ) {

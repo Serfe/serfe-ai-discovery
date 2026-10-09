@@ -96,6 +96,46 @@ final class Discovery_Files {
 		);
 	}
 
+	/** Inspect a public response only after an administrator explicitly requests validation or publication. */
+	public static function inspect_public_response( $name ) {
+		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) || ! current_user_can( 'manage_options' ) ) {
+			return new \WP_Error( 'forbidden', __( 'You are not allowed to inspect discovery files.', 'serfe-ai-discovery' ) );
+		}
+		$response = wp_safe_remote_get(
+			home_url( '/' . $name ),
+			array(
+				'redirection'         => 0,
+				'timeout'             => 5,
+				'limit_response_size' => self::MAX_LIMIT + 1,
+			)
+		);
+		if ( is_wp_error( $response ) ) {
+			return new \WP_Error( 'public_unverified', __( 'The public response could not be checked. No root file was written.', 'serfe-ai-discovery' ) );
+		}
+		$code = wp_remote_retrieve_response_code( $response );
+		if ( 404 === $code ) {
+			return array(
+				'exists'   => false,
+				'content'  => '',
+				'checksum' => '',
+			);
+		}
+		$content_type = wp_remote_retrieve_header( $response, 'content-type' );
+		$content      = wp_remote_retrieve_body( $response );
+		if ( 200 !== $code || ! is_string( $content_type ) || 0 !== stripos( $content_type, 'text/plain' )
+			|| ! is_string( $content ) || strlen( $content ) > self::MAX_LIMIT ) {
+			return new \WP_Error( 'public_unverified', __( 'The public response is not a bounded plain-text file. No root file was written.', 'serfe-ai-discovery' ) );
+		}
+		if ( is_wp_error( self::normalize_content( $content ) ) ) {
+			return new \WP_Error( 'public_unverified', __( 'The public response is not valid editable text. No root file was written.', 'serfe-ai-discovery' ) );
+		}
+		return array(
+			'exists'   => true,
+			'content'  => $content,
+			'checksum' => hash( 'sha256', $content ),
+		);
+	}
+
 	/** Publish an approved file, requiring an exact current checksum on takeover. */
 	public static function publish( $name, $candidate, $takeover = false, $expected_checksum = '' ) {
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -114,7 +154,18 @@ final class Discovery_Files {
 		if ( $conflict && ! $takeover ) {
 			return new \WP_Error( 'takeover_required', __( 'The public file is unmanaged or has changed outside this plugin. Review it and confirm takeover before publishing.', 'serfe-ai-discovery' ) );
 		}
-		if ( ( $current['exists'] || '' !== $known ) && ! hash_equals( $current['checksum'], (string) $expected_checksum ) ) {
+		$virtual = false;
+		if ( ! $current['exists'] ) {
+			$virtual = self::inspect_public_response( $name );
+			if ( is_wp_error( $virtual ) ) {
+				return $virtual;
+			}
+			if ( $virtual['exists'] && ! $takeover ) {
+				return new \WP_Error( 'takeover_required', __( 'A virtual public response already exists. Inspect it and explicitly confirm takeover before creating a physical file.', 'serfe-ai-discovery' ) );
+			}
+		}
+		$effective_checksum = is_array( $virtual ) && $virtual['exists'] ? $virtual['checksum'] : $current['checksum'];
+		if ( ( $current['exists'] || '' !== $known || ( is_array( $virtual ) && $virtual['exists'] ) || '' !== (string) $expected_checksum ) && ! hash_equals( $effective_checksum, (string) $expected_checksum ) ) {
 			return new \WP_Error( 'stale_file', __( 'The public file changed since this editor was opened. Review the current content before publishing.', 'serfe-ai-discovery' ) );
 		}
 		$path = self::path( $name );
@@ -148,8 +199,16 @@ final class Discovery_Files {
 			unlink( $temp );
 			return new \WP_Error( 'stale_file', __( 'The public file changed during publication. Review it before trying again.', 'serfe-ai-discovery' ) );
 		}
-		if ( $current['exists'] ) {
-			update_option( self::backup_key( $name ), $current['content'], false );
+		if ( is_array( $virtual ) ) {
+			$latest_public = self::inspect_public_response( $name );
+			if ( is_wp_error( $latest_public ) || $latest_public['checksum'] !== $virtual['checksum'] ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink -- Remove only the temporary file created above.
+				unlink( $temp );
+				return new \WP_Error( 'stale_file', __( 'The public response changed during publication. Review it before trying again.', 'serfe-ai-discovery' ) );
+			}
+		}
+		if ( $current['exists'] || ( is_array( $virtual ) && $virtual['exists'] ) ) {
+			update_option( self::backup_key( $name ), $current['exists'] ? $current['content'] : $virtual['content'], false );
 		}
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- Rename within the same directory provides atomic publication.
 		if ( is_link( $path ) || ! rename( $temp, $path ) ) {
@@ -187,7 +246,23 @@ final class Discovery_Files {
 			return $state;
 		}
 		if ( ! $state['exists'] ) {
-			return new \WP_Error( 'no_file', __( 'No public file exists at the resolved site root.', 'serfe-ai-discovery' ) );
+			$public = self::inspect_public_response( $name );
+			if ( is_wp_error( $public ) ) {
+				return $public;
+			}
+			$warnings = $public['exists']
+				? array( __( 'A virtual public response exists without a physical root file. Publishing here would replace the response served by WordPress or another plugin.', 'serfe-ai-discovery' ) )
+				: array( __( 'No physical root file or public response was found.', 'serfe-ai-discovery' ) );
+			if ( 'robots.txt' === $name && $public['exists'] ) {
+				$warnings = array_merge( $warnings, self::robots_warnings( $public['content'] ) );
+			}
+			return array(
+				'verified' => false,
+				'warnings' => $warnings,
+				'virtual'  => $public['exists'],
+				'content'  => $public['content'],
+				'checksum' => $public['checksum'],
+			);
 		}
 		$url      = home_url( '/' . $name );
 		$response = wp_safe_remote_get(

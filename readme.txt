@@ -23,7 +23,7 @@ Markdown is disabled by default. Enable the master switch, select a supported co
 
 = Discovery files =
 
-The Robots.txt & llms.txt tab can validate and publish these files at the public site root. Existing or externally changed files require an explicit takeover. The plugin keeps one previous version of each file for restoration. If safe root writes are unavailable, it offers validated content for manual deployment.
+The Robots.txt & llms.txt tab can validate and publish these files at the public site root. Without a physical file, WordPress or an SEO plugin such as Yoast SEO or Rank Math may still serve a virtual robots.txt response. Administrators can inspect the live response before publishing; replacing it with a physical file requires explicit takeover and a matching checksum. The plugin keeps one previous public version for restoration. If safe root writes are unavailable, it offers validated content for manual deployment.
 
 = API Catalog and diagnostics =
 

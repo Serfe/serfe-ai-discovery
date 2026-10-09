@@ -72,7 +72,13 @@ function wp_safe_remote_get( $url, $args ) {
 		return array( 'code' => 200, 'body' => '<urlset/>' );
 	}
 	$path = $GLOBALS['test_root'] . '/' . basename( $url );
-	return array( 'code' => 200, 'body' => ! empty( $GLOBALS['test_public_mismatch'] ) ? 'stale cache' : file_get_contents( $path ) );
+	$GLOBALS['test_public_gets'][] = $url;
+	if ( ! file_exists( $path ) ) {
+		return 'robots.txt' === basename( $url ) && isset( $GLOBALS['test_virtual_robots'] )
+			? array( 'code' => 200, 'body' => $GLOBALS['test_virtual_robots'], 'content_type' => 'text/plain; charset=utf-8' )
+			: array( 'code' => 404, 'body' => '', 'content_type' => 'text/html' );
+	}
+	return array( 'code' => 200, 'body' => ! empty( $GLOBALS['test_public_mismatch'] ) ? 'stale cache' : file_get_contents( $path ), 'content_type' => 'text/plain; charset=utf-8' );
 }
 
 function wp_safe_remote_head( $url, $args ) {
@@ -86,6 +92,10 @@ function wp_remote_retrieve_response_code( $response ) {
 
 function wp_remote_retrieve_body( $response ) {
 	return $response['body'];
+}
+
+function wp_remote_retrieve_header( $response, $header ) {
+	return 'content-type' === $header ? $response['content_type'] : '';
 }
 
 require_once dirname( __DIR__ ) . '/includes/class-discovery-files.php';
@@ -125,6 +135,24 @@ $assert_error( 'invalid_name', Discovery_Files::inspect( '../secret' ), 'Restric
 $GLOBALS['test_can_manage'] = false;
 $assert_error( 'forbidden', Discovery_Files::publish( 'robots.txt', 'User-agent: *' ), 'Requires administrator capability' );
 $GLOBALS['test_can_manage'] = true;
+$GLOBALS['test_public_gets'] = array();
+$GLOBALS['test_virtual_robots'] = "User-agent: *\nDisallow: /virtual/\n";
+$state = Discovery_Files::inspect( 'robots.txt' );
+$assert_same( false, $state['exists'], 'Distinguishes missing physical file from public response' );
+$assert_same( array(), $GLOBALS['test_public_gets'], 'Does not make a loopback request on passive inspection' );
+$virtual = Discovery_Files::validate_current( 'robots.txt' );
+$assert_same( true, $virtual['virtual'], 'Validation detects virtual robots.txt' );
+$assert_same( $GLOBALS['test_virtual_robots'], $virtual['content'], 'Validation returns the effective public content' );
+$assert_error( 'takeover_required', Discovery_Files::publish( 'robots.txt', "User-agent: *\n", false, $virtual['checksum'] ), 'Rejects silent replacement of virtual robots.txt' );
+$assert_error( 'stale_file', Discovery_Files::publish( 'robots.txt', "User-agent: *\n", true, 'wrong' ), 'Rejects stale virtual takeover confirmation' );
+unset( $GLOBALS['test_virtual_robots'] );
+$assert_error( 'stale_file', Discovery_Files::publish( 'robots.txt', "User-agent: *\n", true, $virtual['checksum'] ), 'Rejects takeover when the reviewed virtual response disappears' );
+$GLOBALS['test_virtual_robots'] = "User-agent: *\nDisallow: /virtual/\n";
+$result = Discovery_Files::publish( 'robots.txt', "User-agent: *\n", true, $virtual['checksum'] );
+$assert_same( true, $result['verified'], 'Publishes a physical file after explicit virtual takeover' );
+$assert_same( $GLOBALS['test_virtual_robots'], get_option( 'serfe_ai_discovery_robots_txt_backup' ), 'Preserves previous virtual response as backup' );
+unlink( $base . '/robots.txt' );
+unset( $GLOBALS['test_virtual_robots'], $GLOBALS['test_options']['serfe_ai_discovery_robots_txt_meta'], $GLOBALS['test_options']['serfe_ai_discovery_robots_txt_backup'] );
 file_put_contents( $base . '/robots.txt', "User-agent: *\nDisallow: /old/\n" );
 $current = Discovery_Files::inspect( 'robots.txt' );
 $assert_same( true, $current['exists'], 'Reads the existing public file' );

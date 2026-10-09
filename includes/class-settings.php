@@ -546,7 +546,7 @@ final class Settings {
 		$meta = $state['meta'];
 		$date = isset( $meta['validated_at'] ) ? $meta['validated_at'] : false;
 		if ( ! $state['exists'] ) {
-			return array( $name, __( 'Not published', 'serfe-ai-discovery' ), __( 'Review and publish the file in Robots.txt & llms.txt.', 'serfe-ai-discovery' ), '', $date );
+			return array( $name, __( 'No physical file', 'serfe-ai-discovery' ), __( 'Validate the public response; WordPress or an SEO plugin may serve a virtual file.', 'serfe-ai-discovery' ), '', $date );
 		}
 		if ( ! isset( $meta['checksum'] ) || $meta['checksum'] !== $state['checksum'] ) {
 			return array( $name, __( 'External change', 'serfe-ai-discovery' ), __( 'Review the current file and confirm takeover before publishing.', 'serfe-ai-discovery' ), '', $date );
