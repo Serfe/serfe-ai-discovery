@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** Announces available Markdown representations from HTML responses. */
 final class Discovery {
-	const API_CATALOG_PATH = '/.well-known/api-catalog';
+	const API_CATALOG_PATH    = '/.well-known/api-catalog';
 	const API_CATALOG_PROFILE = 'https://www.rfc-editor.org/info/rfc9727';
 
 	/** @var Product_Generator */
@@ -28,8 +28,8 @@ final class Discovery {
 
 	/** Serve the RFC 9727 API catalog from its standard well-known URI. */
 	public function send_api_catalog() {
-		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-		if ( ! self::is_api_catalog_request( $uri ) ) {
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Preserve encoded URI bytes for an exact path comparison; no raw value is rendered.
+		if ( ! Settings::api_catalog_enabled() || ! self::is_api_catalog_request( $uri ) ) {
 			return;
 		}
 
@@ -49,7 +49,7 @@ final class Discovery {
 
 	/** Announce agent-facing machine resources from the site's homepage. */
 	public function send_homepage_agent_link_headers() {
-		if ( headers_sent() || ! is_front_page() ) {
+		if ( headers_sent() || ! is_front_page() || ! Settings::api_catalog_enabled() ) {
 			return;
 		}
 
@@ -61,7 +61,8 @@ final class Discovery {
 
 	/** @param string $uri Request URI. @return bool */
 	public static function is_api_catalog_request( $uri ) {
-		return rtrim( (string) parse_url( (string) $uri, PHP_URL_PATH ), '/' ) === self::API_CATALOG_PATH;
+		$expected_path = (string) wp_parse_url( home_url( self::API_CATALOG_PATH ), PHP_URL_PATH );
+		return rtrim( (string) wp_parse_url( (string) $uri, PHP_URL_PATH ), '/' ) === rtrim( $expected_path, '/' );
 	}
 
 	/** @return array<string, array<int, array<string, mixed>>> */
@@ -88,29 +89,125 @@ final class Discovery {
 	 * @return bool
 	 */
 	public function current_content_has_markdown() {
-		if ( ! is_singular() || is_feed() || is_embed() ) {
+		if ( ! is_singular() || is_feed() || is_embed() || is_user_logged_in() ) {
 			return false;
 		}
 
 		$post = get_queried_object();
-		if ( ! ( $post instanceof \WP_Post ) || $post->post_status !== 'publish' ) {
+		if ( ! ( $post instanceof \WP_Post )
+			|| 'publish' !== $post->post_status
+			|| ! empty( $post->post_password )
+			|| ! is_post_publicly_viewable( $post )
+			|| self::is_sensitive_woocommerce_page( $post )
+			|| Exclusions::blocks( $post )
+			|| ! Settings::markdown_enabled_for( $post->post_type )
+			|| ! Settings::item_enabled( $post->ID ) ) {
 			return false;
 		}
 
-		if ( in_array( $post->post_type, array( 'post', 'page' ), true ) ) {
-			return true;
+		if ( 'product' !== $post->post_type ) {
+			return Editorial_Content::is_static( $post );
 		}
 
-		return $post->post_type === 'product' && $this->product_generator->is_exposable( $post->ID );
+		return 'product' === $post->post_type && $this->product_generator->is_exposable( $post->ID );
+	}
+
+	/** Return an enabled public archive and its canonical page URL. */
+	public function current_archive_context() {
+		if ( is_404() || is_feed() || is_embed() || is_search() || is_user_logged_in() ) {
+			return null;
+		}
+		$page = max( 1, (int) get_query_var( 'paged' ) );
+		if ( function_exists( 'is_shop' ) && is_shop() ) {
+			$type = get_post_type_object( 'product' );
+			$url  = 1 === $page ? get_post_type_archive_link( 'product' ) : get_pagenum_link( $page, false );
+			if ( ! $type || ! $type->public || ! $type->publicly_queryable || ! Settings::archive_enabled_for( 'product' )
+				|| ! is_string( $url ) || Exclusions::blocks_archive( 'product', $url ) ) {
+				return null;
+			}
+			return array(
+				'type' => 'product',
+				'page' => $page,
+				'url'  => $url,
+			);
+		}
+		foreach ( array(
+			'product_cat' => 'is_product_category',
+			'product_tag' => 'is_product_tag',
+		) as $taxonomy => $condition ) {
+			if ( ! function_exists( $condition ) || ! call_user_func( $condition ) ) {
+				continue;
+			}
+			$term   = get_queried_object();
+			$object = taxonomy_exists( $taxonomy ) ? get_taxonomy( $taxonomy ) : null;
+			if ( ! ( $term instanceof \WP_Term ) || $taxonomy !== $term->taxonomy || ! $object || ! $object->public || ! $object->publicly_queryable
+				|| ! Settings::archive_enabled_for( $taxonomy ) || Exclusions::blocks_term( $taxonomy, $term->term_id ) ) {
+				return null;
+			}
+			$url = 1 === $page ? get_term_link( $term ) : get_pagenum_link( $page, false );
+			if ( ! is_string( $url ) || Exclusions::blocks_archive( 'product', $url ) || Exclusions::blocks_archive( $taxonomy, $url ) ) {
+				return null;
+			}
+			return array(
+				'type' => $taxonomy,
+				'page' => $page,
+				'url'  => $url,
+				'term' => $term,
+			);
+		}
+		if ( ! is_post_type_archive() ) {
+			return null;
+		}
+		$object = get_queried_object();
+		if ( ! ( $object instanceof \WP_Post_Type ) || 'product' === $object->name || ! Settings::archive_enabled_for( $object->name ) ) {
+			return null;
+		}
+		$type = get_post_type_object( $object->name );
+		if ( ! $type || ! $type->public || ! $type->publicly_queryable || ! $type->has_archive ) {
+			return null;
+		}
+		$url = 1 === $page ? get_post_type_archive_link( $type->name ) : get_pagenum_link( $page, false );
+		if ( ! is_string( $url ) || '' === $url || Exclusions::blocks_archive( $type->name, $url ) ) {
+			return null;
+		}
+		return array(
+			'type' => $type->name,
+			'page' => $page,
+			'url'  => $url,
+		);
+	}
+
+	/** @param \WP_Post $post Queried post. @return bool */
+	private static function is_sensitive_woocommerce_page( $post ) {
+		if ( 'page' !== $post->post_type ) {
+			return false;
+		}
+
+		if ( function_exists( 'wc_get_page_id' ) ) {
+			foreach ( array( 'cart', 'checkout', 'myaccount', 'pay', 'view_order', 'shop' ) as $page ) {
+				if ( (int) wc_get_page_id( $page ) === (int) $post->ID ) {
+					return true;
+				}
+			}
+		}
+
+		foreach ( array( 'is_cart', 'is_checkout', 'is_account_page', 'is_wc_endpoint_url' ) as $condition ) {
+			if ( function_exists( $condition ) && call_user_func( $condition ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/** Print the Markdown alternate link for eligible HTML content. */
 	public function render_html_alternate() {
-		if ( ! $this->current_content_has_markdown() ) {
+		$url = $this->current_markdown_url();
+		if ( '' === $url ) {
 			return;
 		}
 
-		printf( '<link rel="alternate" type="text/markdown" href="%s" />' . "\n", esc_url( $this->current_markdown_url() ) );
+		printf( '<link rel="alternate" type="text/markdown" href="%s" />' . "\n", esc_url( $url ) );
 	}
 
 	/**
@@ -122,16 +219,22 @@ final class Discovery {
 	 * Markdown responses exit at dispatcher priority 0 and never reach this hook.
 	 */
 	public function send_http_link_header() {
-		if ( headers_sent() || ! $this->current_content_has_markdown() ) {
+		$url = $this->current_markdown_url();
+		if ( headers_sent() || '' === $url ) {
 			return;
 		}
 
-		header( sprintf( 'Link: <%s>; rel="alternate"; type="text/markdown"', sanitize_url( $this->current_markdown_url() ) ), false );
+		header( sprintf( 'Link: <%s>; rel="alternate"; type="text/markdown"', sanitize_url( $url ) ), false );
+		header( 'Vary: Accept', false );
 	}
 
 	/** @return string */
 	private function current_markdown_url() {
-		return self::markdown_url( get_permalink( get_queried_object_id() ) );
+		if ( $this->current_content_has_markdown() ) {
+			return self::markdown_url( get_permalink( get_queried_object_id() ) );
+		}
+		$archive = $this->current_archive_context();
+		return $archive ? self::markdown_url( $archive['url'] ) : '';
 	}
 
 	/**
@@ -142,11 +245,11 @@ final class Discovery {
 	 */
 	public static function markdown_url( $permalink ) {
 		$permalink = (string) $permalink;
-		$path      = (string) parse_url( $permalink, PHP_URL_PATH );
-		if ( $path === '' || $path === '/' ) {
-			return rtrim( $permalink, "/\\" ) . '/.md';
+		$path      = (string) wp_parse_url( $permalink, PHP_URL_PATH );
+		if ( '' === $path || '/' === $path ) {
+			return rtrim( $permalink, '/\\' ) . '/.md';
 		}
 
-		return rtrim( $permalink, "/\\" ) . '.md';
+		return rtrim( $permalink, '/\\' ) . '.md';
 	}
 }

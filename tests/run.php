@@ -15,6 +15,10 @@ use Serfe\AI_Discovery\Request_Router;
 use Serfe\AI_Discovery\Discovery;
 use Serfe\AI_Discovery\Response;
 
+function wp_parse_url( $url, $component = -1 ) {
+	return parse_url( $url, $component );
+}
+
 $failures = array();
 $tests    = 0;
 
@@ -31,6 +35,9 @@ $assert_same( false, Request_Router::is_markdown_uri( '/es/product/' ), 'Ignores
 $assert_same( false, Request_Router::is_markdown_uri( '/wp-json/example.md' ), 'Ignores internal URL' );
 $assert_same( true, Request_Router::is_negotiable_uri( '/privacy-policy/' ), 'Allows public canonical URLs for negotiation' );
 $assert_same( false, Request_Router::is_negotiable_uri( '/wp-json/wp/v2/posts' ), 'Does not negotiate internal REST URLs' );
+$assert_same( false, Request_Router::is_negotiable_uri( '/blog/wp-json/wp/v2/posts' ), 'Does not negotiate REST URLs under a site prefix' );
+$assert_same( false, Request_Router::is_markdown_uri( '/blog/wp-admin/post.md' ), 'Does not rewrite admin URLs under a site prefix' );
+$assert_same( true, Request_Router::is_negotiable_uri( '/blog/wp-json-guide/' ), 'Allows similarly named public paths' );
 $assert_same( true, Request_Router::accepts_markdown( 'text/html, text/markdown; q=0.9' ), 'Detects Markdown in Accept header' );
 $assert_same( false, Request_Router::accepts_markdown( 'text/html, text/markdown; q=0' ), 'Honours an unacceptable Markdown quality value' );
 $assert_same( false, Request_Router::accepts_markdown( 'text/html, application/json' ), 'Keeps HTML as default without Markdown Accept header' );
@@ -44,6 +51,7 @@ $converter = new Html_To_Markdown();
 $html      = '<h2>Title</h2><p>Hello <strong>world</strong>.</p><ul><li>One</li><li>Two</li></ul><script>secret()</script>';
 $expected  = "## Title\n\nHello **world**.\n\n- One\n- Two";
 $assert_same( $expected, $converter->convert( $html ), 'Converts HTML and removes scripts' );
+$assert_same( 'Public', $converter->convert( '<p>Public</p><p hidden>Hidden</p><div aria-hidden="true">Private</div><p style="display:none">Gone</p><form><input value="secret"><button>Pay</button></form>' ), 'Skips hidden content and forms' );
 $assert_same( '[Link](https://example.com) and `code`', $converter->convert( '<p><a href="https://example.com">Link</a> and <code>code</code></p>' ), 'Converts links and code' );
 $table_html = '<table><thead><tr><th>Service</th><th>Option</th></tr></thead><tbody><tr><td>WordPress</td><td><strong>Managed</strong></td></tr></tbody></table>';
 $table_md   = "| Service | Option |\n| --- | --- |\n| WordPress | **Managed** |";

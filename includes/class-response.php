@@ -8,18 +8,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** Sends terminal HTTP responses for Markdown requests. */
 final class Response {
-	/** @param string $markdown Markdown document. @param bool $negotiated Selected via Accept. */
-	public function markdown( $markdown, $negotiated = false ) {
+	/** @param string $markdown Markdown document. @param bool $negotiated Selected via Accept. @param string $canonical_url HTML permalink. */
+	public function markdown( $markdown, $negotiated = false, $canonical_url = '' ) {
 		if ( ! headers_sent() ) {
 			header_remove( 'Set-Cookie' );
 			status_header( 200 );
 			header( 'Content-Type: text/markdown; charset=utf-8' );
+			header( 'X-Content-Type-Options: nosniff' );
+			if ( '' !== $canonical_url ) {
+				header( sprintf( 'Link: <%s>; rel="canonical"', esc_url_raw( $canonical_url ) ), false );
+			}
 			if ( $negotiated ) {
 				header( 'Vary: Accept', false );
 			}
 			header( 'X-Markdown-Tokens: ' . self::estimate_tokens( $markdown ) );
 			header( 'X-Robots-Tag: noindex, follow' );
-			header( 'Cache-Control: public, max-age=300, s-maxage=3600' );
+			header( 'Cache-Control: private, no-store' );
 		}
 
 		echo $markdown; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Plain Markdown response.

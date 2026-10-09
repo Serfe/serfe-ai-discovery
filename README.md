@@ -18,7 +18,7 @@ Eligible HTML pages also announce their Markdown version through both mechanisms
 - `<link rel="alternate" type="text/markdown">` in the document head.
 - An HTTP `Link` response header with `rel="alternate"` and `type="text/markdown"`.
 
-The homepage additionally advertises machine-readable service discovery resources using RFC 8288 Link headers:
+When API Catalog publication is enabled in the settings, the homepage additionally advertises machine-readable service discovery resources using RFC 8288 Link headers:
 
 - `rel="api-catalog"` points to `/.well-known/api-catalog`, an RFC 9727 Linkset catalog.
 - `rel="service-desc"` points to the WordPress REST API index.
@@ -27,32 +27,46 @@ The homepage additionally advertises machine-readable service discovery resource
 
 - Published WordPress posts.
 - Published WordPress pages.
-- Published WooCommerce products that meet the plugin's exposure rules.
+- Published WooCommerce products that meet the plugin's exposure rules, including their public WooCommerce descriptions, price, and availability.
+- Enabled WooCommerce shop, product category, and product tag archives, listing approved public products with their public price and availability.
+- Selected public, publicly queryable Custom Post Types, enabled one by one.
 
-Drafts, private content, archives, feeds, embeds, and unsupported post types are not exposed.
+Drafts, private content, WooCommerce cart, checkout and account pages, feeds, embeds, and unsupported post types are not exposed. Public Custom Post Type and WooCommerce catalog archives can be enabled separately.
+Editorial Markdown uses saved static content. Items containing shortcodes, unknown blocks, or dynamically rendered blocks are not eligible; content filters are not run for Markdown.
 
 ## Usage
 
-After activation, request the `.md` version of any eligible public URL.
+After activation, open the top-level **Serfe AI Discovery** menu, enable Markdown, and select the supported content types. Then open each eligible item and enable its **Serfe AI Discovery** checkbox. All publication settings and items are disabled by default.
+The Overview tab summarizes local publication switches and previously requested validation results. The Markdown tab contains the current publication controls. The Discovery tab contains the read-only Agent Readiness checks; opening the settings screen does not run those checks.
+
+The settings store individual content types and public archives separately. Existing settings from schema v1 retain their individual-content selections when migrated to schema v2; all archive selections start disabled. Enabled public archives list only published, publicly viewable items approved with the item checkbox. Shop, product category, and product tag archives have independent switches.
+
+The **Robots.txt & llms.txt** tab edits and publishes those two files at the verified public site root. Existing or externally changed files require an explicit takeover after reviewing the current content. Each file keeps one previous version for restoration. If the public root is not writable, the panel shows validated text to copy for manual deployment. The plugin never deletes these files on uninstall.
+Publishing or selecting **Validate public file** compares the live public response with the root file. For `robots.txt`, it also warns about missing or malformed sitemap declarations, a possible site-wide crawl block, and unreachable sitemap URLs. Validation is read-only and checks at most five declared sitemap URLs with safe HTTP requests; simply opening the panel does not request them.
+The same tab offers an optional link to Is It Agent-Ready. It sends no request until an administrator clicks it. For a public site, the link contains only the hostname from the site's public home URL; local and private environments open the scanner homepage without a hostname.
+
+The settings also let administrators exclude entire content types, exact site URL paths, and public taxonomy terms such as `category:123` or `product_cat:456`. Enter one path or taxonomy term per line. Exclusions take priority over content and item opt-ins.
+
+Request the `.md` version of an enabled public URL:
 
 ```text
-https://wordpress.localhost/privacy-policy.md
-https://wordpress.localhost/hello-world.md
+https://example.com/privacy-policy.md
+https://example.com/hello-world.md
 ```
 
 Agents can request the canonical HTML URL directly through content negotiation while browsers continue receiving HTML by default:
 
 ```bash
-curl -H 'Accept: text/markdown' https://wordpress.localhost/privacy-policy/
+curl -H 'Accept: text/markdown' https://example.com/privacy-policy/
 ```
 
-Negotiated Markdown responses include `Vary: Accept` and `X-Markdown-Tokens`, a deterministic estimate used when no model tokenizer is installed.
+Negotiated Markdown responses include `Vary: Accept` and `X-Markdown-Tokens`, a deterministic estimate used when no model tokenizer is installed. Markdown responses use `Cache-Control: private, no-store` until cache behavior has been validated across supported hosts and CDNs.
 
 The Markdown response includes YAML front matter such as title, canonical URL, language when available, publication date, and excerpt when available.
 
 ## Agent readiness
 
-Under **Tools → Agent Readiness**, administrators can run local, read-only capability checks. The panel checks the live public response for `robots.txt`, a sitemap, the RFC 9727 API catalog, Markdown negotiation, OAuth Protected Resource Metadata, and an Agent Skills index. It uses no third-party scanner and caches results for five minutes; use **Run checks again** to clear the cache.
+Under **Serfe AI Discovery → Discovery**, administrators can start local, read-only capability checks. Opening the page does not send HTTP requests. Selecting **Run checks again** checks the live public response for `robots.txt`, a sitemap, the RFC 9727 API catalog, Markdown negotiation, OAuth Protected Resource Metadata, and an Agent Skills index. It uses no third-party scanner and caches results for five minutes.
 
 MCP and Agentic Commerce are never inferred from a plugin name or a static card. An implementation must register its real service through these filters:
 
@@ -79,7 +93,7 @@ add_filter( 'serfe_agent_readiness_agentic_commerce', function () {
 ```
 
 A `health_url` is optional but required for a green check: it must be a read-only endpoint that returns a 2xx response. OAuth is shown as not applicable when the site has no declared protected agent resource; public content does not need OAuth.
-The footer contains two complete local PNG assets: the blue Serfe logo for light surfaces (the default) and the white logo for dark surfaces. Each image retains its native aspect ratio; the footer merely selects one or the other. A theme integration can choose the dark surface with:
+The Help & Support tab has a Serfe contact card describing the starter kit's limits, with a website link on the logo and a separate contact link. It shows the blue logo with WordPress's light admin color scheme and the white logo on a dark card with other admin color schemes. A theme integration can override the card surface with:
 
 ```php
 add_filter( 'serfe_ai_discovery_footer_surface', function () {
@@ -94,7 +108,8 @@ add_filter( 'serfe_ai_discovery_footer_surface', function () {
 1. In WordPress, go to **Plugins → Add New → Upload Plugin**.
 2. Upload the Serfe AI Discovery ZIP package.
 3. Activate the plugin.
-4. Visit an eligible URL ending in `.md` to verify the response.
+4. Enable Markdown for a content type and an individual item in the **Serfe AI Discovery** menu and the item editor.
+5. Visit that item's URL ending in `.md` to verify the response.
 
 ## Safety and routing
 
@@ -110,65 +125,29 @@ Markdown is generated only for published, eligible singular content. Markdown re
 
 ## Development
 
-The test suite is self-contained and covers routing, discovery, Markdown generation, and WooCommerce product-plan grouping.
+The test suite is self-contained and covers routing, discovery, Markdown generation, and WooCommerce product output.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution and local verification guidelines.
+See [SUPPORT.md](SUPPORT.md) for community support channels. Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 
 ```bash
 php tests/run.php
 php tests/discovery.php
-php tests/product-plan-grouping.php
+php tests/editorial-content.php
+php tests/product-generator.php
+php tests/readiness.php
+php tests/settings.php
 ```
 
 Run the tests with the project's configured PHP container when a local PHP runtime is unavailable.
+Run `composer install`, then `vendor/bin/phpcs --standard=phpcs.xml.dist` for the current WordPress-Extra source rules and `composer audit --locked` for development dependencies. Composer packages are development tools; the plugin has no bundled runtime vendor directory.
+Run `vendor/bin/phpstan analyse --configuration=phpstan.neon.dist --no-progress --memory-limit=1G` for the current WordPress and WooCommerce type checks.
+
+For an HTTP smoke check, enable an eligible published item on a local WordPress installation and run `tests/http-smoke.sh https://example.com/eligible-item/`. The script checks HTML, explicit `.md`, negotiated Markdown, and HTML again after Markdown. Set `SMOKE_CURL_RESOLVE=host:port:ip` when the local hostname needs a direct address. This checks the live web server; test a production-like cache or CDN separately before release.
 
 ## Version
 
-Current version: `1.0.10`.
+Current internal version: `1.0.10`. See [CHANGELOG.md](CHANGELOG.md) for changes.
 
-### 1.0.10 — 2026-09-24
+## License
 
-- Replaced the readiness footer's composed wordmark with complete local blue and white logo assets; no masking, cropping, or text overlay is used.
-
-### 1.0.9 — 2026-09-24
-
-- Added blue-on-light and white-on-dark Serfe logo variants for the Agent Readiness footer.
-
-### 1.0.8 — 2026-09-24
-
-- Fixed the Agent Readiness refresh redirect and added a commercial introduction with a Serfe footer.
-- Added local validation for the RFC 9727 API catalog.
-
-### 1.0.7 — 2026-09-24
-
-- Added **Tools → Agent Readiness**, a local, read-only diagnostic panel for agent-facing capabilities.
-- Added deterministic checks for robots, sitemaps, Markdown negotiation, MCP, OAuth metadata, Agent Skills, and Agentic Commerce.
-
-### 1.0.6 — 2026-09-24
-
-- Fixed the homepage alternate Markdown URL to use `/.md` instead of an invalid hostname suffix.
-
-### 1.0.5 — 2026-09-24
-
-- Added homepage `Link` headers for the API catalog and WordPress REST API description.
-- Added an RFC 9727 `application/linkset+json` API catalog at `/.well-known/api-catalog`.
-
-### 1.0.4 — 2026-09-23
-
-- Added `Accept: text/markdown` negotiation for eligible public posts, pages, and products.
-- Added `Vary: Accept` and an estimated `X-Markdown-Tokens` response header for negotiated responses.
-
-### 1.0.3 — 2026-09-22
-
-- Added conversion for nested and task lists, strikethrough, definition lists, keyboard input, link and image titles, and fenced code blocks with language hints.
-- Extended table conversion with escaped separators and left, centre, and right alignment markers.
-
-### 1.0.2 — 2026-09-22
-
-- Added GitHub-flavored Markdown table conversion for Gutenberg table blocks.
-
-### 1.0.1 — 2026-09-22
-
-- Added Markdown representations and discovery links for published WordPress pages.
-
-### 1.0.0 — 2026-09-21
-
-- Initial Serfe release with Markdown routing, discovery, tests, and documentation.
+The plugin source is licensed under GPL version 2 or any later version. See [LICENSE](LICENSE). The Serfe name and logos remain subject to their trademark rights.

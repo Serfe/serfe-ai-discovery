@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Private security reporting
+    url: https://www.serfe.com/en/contact-us
+    about: Do not open a public issue for a vulnerability. Read SECURITY.md and contact Serfe privately.
+  - name: General support
+    url: https://www.serfe.com/en/contact-us
+    about: Use this contact page until the WordPress.org support forum is available.

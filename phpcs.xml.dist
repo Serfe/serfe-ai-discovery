@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<ruleset name="Serfe AI Discovery">
+    <description>WordPress extra rules for the plugin's production PHP source.</description>
+    <file>serfe-ai-discovery.php</file>
+    <file>includes</file>
+    <rule ref="WordPress-Extra"/>
+</ruleset>

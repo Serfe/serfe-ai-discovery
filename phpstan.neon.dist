@@ -1,0 +1,12 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 2
+    phpVersion: 70400
+    paths:
+        - serfe-ai-discovery.php
+        - includes
+    bootstrapFiles:
+        - tests/bootstrap/phpstan.php
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php

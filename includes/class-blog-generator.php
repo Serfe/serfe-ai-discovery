@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/** Generates the Markdown representation of a standard post or page. */
+/** Generates the Markdown representation of public editorial content. */
 final class Blog_Generator {
 	/** @var Html_To_Markdown */
 	private $converter;
@@ -17,22 +17,21 @@ final class Blog_Generator {
 
 	/** @param \WP_Post $post Post. @return string */
 	public function generate( $post ) {
-		$details = apply_filters( 'wpml_post_language_details', null, $post->ID );
-		$lang    = is_array( $details ) && ! empty( $details['language_code'] ) ? $details['language_code'] : '';
-		$title   = get_the_title( $post );
+		$lang    = get_bloginfo( 'language' );
+		$title   = (string) $post->post_title;
 		$url     = get_permalink( $post );
 		$date    = get_the_date( 'c', $post );
-		$excerpt = has_excerpt( $post ) ? get_the_excerpt( $post ) : '';
-		$html    = apply_filters( 'the_content', $post->post_content );
+		$excerpt = (string) $post->post_excerpt;
+		$html    = (string) $post->post_content;
 
 		$front  = "---\n";
 		$front .= 'title: ' . Markdown::yaml_scalar( $title ) . "\n";
 		$front .= 'url: ' . Markdown::yaml_scalar( $url ) . "\n";
-		if ( $lang !== '' ) {
+		if ( '' !== $lang ) {
 			$front .= 'lang: ' . Markdown::yaml_scalar( $lang ) . "\n";
 		}
 		$front .= 'date: ' . Markdown::yaml_scalar( $date ) . "\n";
-		if ( $excerpt !== '' ) {
+		if ( '' !== $excerpt ) {
 			$front .= 'excerpt: ' . Markdown::yaml_scalar( $excerpt ) . "\n";
 		}
 		$front .= "---\n\n";

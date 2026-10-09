@@ -6,6 +6,14 @@ function __( $text ) {
 	return $text;
 }
 
+function home_url( $path = '' ) {
+	return 'https://example.com' . $path;
+}
+
+function wp_parse_url( $url, $component = -1 ) {
+	return parse_url( $url, $component );
+}
+
 require_once dirname( __DIR__ ) . '/includes/class-readiness.php';
 
 use Serfe\AI_Discovery\Readiness;
@@ -47,6 +55,11 @@ $valid_catalog = array(
 );
 $assert_same( true, Readiness::valid_api_catalog( $valid_catalog ), 'Accepts a valid RFC 9727 API catalog' );
 $assert_same( false, Readiness::valid_api_catalog( array() ), 'Rejects an invalid API catalog' );
+$assert_same( true, Readiness::is_same_origin_url( 'https://example.com/sitemap.xml' ), 'Allows same-origin validation' );
+$assert_same( false, Readiness::is_same_origin_url( 'https://other.example/sitemap.xml' ), 'Rejects external validation' );
+$assert_same( false, Readiness::is_same_origin_url( 'https://example.com:8443/sitemap.xml' ), 'Rejects a different port' );
+$assert_same( false, Readiness::is_same_origin_url( 'http://example.com/sitemap.xml' ), 'Rejects a different scheme' );
+$assert_same( false, Readiness::is_same_origin_url( 'https://user@example.com/sitemap.xml' ), 'Rejects credentials in validation URL' );
 
 $valid_skill = array(
 	'$schema' => Readiness::SKILLS_SCHEMA,
@@ -70,4 +83,3 @@ if ( $failures ) {
 }
 
 echo "All {$tests} readiness tests passed.\n";
-

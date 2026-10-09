@@ -19,7 +19,7 @@ final class Request_Router {
 			return;
 		}
 
-		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Preserve encoded permalink bytes; this value is parsed as a path and is never rendered.
 		if ( self::is_markdown_uri( $uri ) ) {
 			$this->markdown_request = true;
 			add_filter( 'woocommerce_set_cookie_enabled', '__return_false', 99 );
@@ -27,9 +27,9 @@ final class Request_Router {
 			return;
 		}
 
-		$accept = isset( $_SERVER['HTTP_ACCEPT'] ) ? wp_unslash( $_SERVER['HTTP_ACCEPT'] ) : '';
+		$accept = isset( $_SERVER['HTTP_ACCEPT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT'] ) ) : '';
 		if ( self::is_negotiable_uri( $uri ) && self::accepts_markdown( $accept ) ) {
-			$this->markdown_request = true;
+			$this->markdown_request  = true;
 			$this->accept_negotiated = true;
 			add_filter( 'woocommerce_set_cookie_enabled', '__return_false', 99 );
 		}
@@ -47,8 +47,8 @@ final class Request_Router {
 
 	/** @param string $uri Request URI. @return bool */
 	public static function is_markdown_uri( $uri ) {
-		$path = (string) parse_url( (string) $uri, PHP_URL_PATH );
-		if ( $path === '' || ! preg_match( '#\.md/?$#', $path ) ) {
+		$path = (string) wp_parse_url( (string) $uri, PHP_URL_PATH );
+		if ( '' === $path || ! preg_match( '#\.md/?$#', $path ) ) {
 			return false;
 		}
 
@@ -57,18 +57,12 @@ final class Request_Router {
 
 	/** @param string $uri Request URI. @return bool */
 	public static function is_negotiable_uri( $uri ) {
-		$path = (string) parse_url( (string) $uri, PHP_URL_PATH );
-		if ( $path === '' ) {
+		$path = (string) wp_parse_url( (string) $uri, PHP_URL_PATH );
+		if ( '' === $path ) {
 			return false;
 		}
 
-		foreach ( array( '/wp-admin', '/wp-json', '/wp-content', '/wp-includes', '/xmlrpc.php' ) as $skip ) {
-			if ( strpos( $path, $skip ) === 0 ) {
-				return false;
-			}
-		}
-
-		return true;
+		return ! preg_match( '~(?:^|/)(?:wp-admin|wp-json|wp-content|wp-includes)(?:/|$)|(?:^|/)xmlrpc\.php(?:/|$)~', $path );
 	}
 
 	/** @param string $accept Accept header. @return bool */
@@ -93,10 +87,10 @@ final class Request_Router {
 
 	/** @param string $uri Markdown request URI. @return string */
 	public static function underlying_uri( $uri ) {
-		$path  = (string) parse_url( (string) $uri, PHP_URL_PATH );
+		$path  = (string) wp_parse_url( (string) $uri, PHP_URL_PATH );
 		$clean = preg_replace( '#\.md/?$#', '/', $path );
-		$query = (string) parse_url( (string) $uri, PHP_URL_QUERY );
+		$query = (string) wp_parse_url( (string) $uri, PHP_URL_QUERY );
 
-		return $clean . ( $query !== '' ? '?' . $query : '' );
+		return $clean . ( '' !== $query ? '?' . $query : '' );
 	}
 }
