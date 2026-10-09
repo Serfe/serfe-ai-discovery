@@ -257,9 +257,9 @@ final class Settings {
 		add_settings_field( 'api_catalog_enabled', __( 'API Catalog', 'serfe-ai-discovery' ), array( $this, 'render_catalog_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
 	}
 
-	/** Add Settings > Serfe AI Discovery. */
+	/** Add Serfe AI Discovery as a top-level admin menu. */
 	public function register_page() {
-		add_options_page( __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), 'manage_options', self::PAGE, array( $this, 'render_page' ) );
+		add_menu_page( __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), 'manage_options', self::PAGE, array( $this, 'render_page' ), Menu_Icon::data_uri() );
 	}
 
 	/** Explain the scope of the current switches. */
@@ -353,7 +353,7 @@ final class Settings {
 					'page' => self::PAGE,
 					'tab'  => $key,
 				),
-				admin_url( 'options-general.php' )
+				admin_url( 'admin.php' )
 			);
 			printf( '<a class="nav-tab %s" href="%s" %s>%s</a>', esc_attr( $key === $tab ? 'nav-tab-active' : '' ), esc_url( $url ), $key === $tab ? 'aria-current="page"' : '', esc_html( $label ) );
 		}

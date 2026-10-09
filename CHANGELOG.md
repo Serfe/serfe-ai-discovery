@@ -20,6 +20,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Moved the plugin settings to a top-level WordPress admin menu with a monochrome Serfe SVG icon.
 - Moved Agent Readiness diagnostics into the Discovery tab on the plugin settings screen.
 - Markdown and alternate links are disabled until both the content type and item are enabled.
 - Markdown responses now include a canonical Link header and use a no-store cache policy.

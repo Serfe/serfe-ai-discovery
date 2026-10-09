@@ -21,7 +21,7 @@ final class Readiness {
 	/** Register the diagnostic refresh action on the plugin settings screen. */
 	public function register_hooks() {
 		add_action( 'admin_post_serfe_ai_discovery_readiness_refresh', array( $this, 'refresh' ) );
-		add_action( 'admin_head-settings_page_serfe-ai-discovery', array( $this, 'render_styles' ) );
+		add_action( 'admin_head-toplevel_page_serfe-ai-discovery', array( $this, 'render_styles' ) );
 	}
 
 	/** Render styles kept local to the Agent Readiness screen. */
@@ -92,7 +92,7 @@ final class Readiness {
 				'refreshed' => '1',
 				'_wpnonce'  => wp_create_nonce( 'serfe_ai_discovery_readiness_refreshed' ),
 			),
-			admin_url( 'options-general.php' )
+			admin_url( 'admin.php' )
 		);
 		wp_safe_redirect( $redirect_url );
 		exit;

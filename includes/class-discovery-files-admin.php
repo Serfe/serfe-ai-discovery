@@ -18,7 +18,7 @@ final class Discovery_Files_Admin {
 
 	/** Add a local copy button for validated manual-deployment text. */
 	public function enqueue_scripts( $hook ) {
-		if ( 'settings_page_' . Settings::PAGE !== $hook ) {
+		if ( 'toplevel_page_' . Settings::PAGE !== $hook ) {
 			return;
 		}
 		wp_register_script( 'serfe-ai-discovery-files', false, array(), '1.0.10', true );
@@ -82,7 +82,7 @@ final class Discovery_Files_Admin {
 					'page' => Settings::PAGE,
 					'tab'  => 'files',
 				),
-				admin_url( 'options-general.php' )
+				admin_url( 'admin.php' )
 			)
 		);
 		exit;
