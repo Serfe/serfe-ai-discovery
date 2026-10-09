@@ -9,7 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Added a generation-keyed server-side Markdown cache with automatic invalidation on content, visibility, price, stock, taxonomy, opt-in and setting changes.
-- Added enabled URL table and Markdown cache status controls to the Settings → Serfe AI Discovery → Markdown tab.
+- Added enabled URL table and Markdown cache status controls to the Serfe AI Discovery → Markdown tab.
 - Added expandable admin guidance for Markdown, robots.txt, llms.txt, and XML Sitemaps, including their limits.
 - Added an administrator-initiated Is It Agent-Ready link that omits local and private site hosts.
 - Added a tabbed administrator overview with local feature states and guidance for Markdown, discovery files, and support.
@@ -25,6 +25,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Clarified the server-side cache and private, no-store HTTP response policy in the WordPress.org readme.
 - Restored the Serfe roundel as a 20-pixel admin menu SVG, matching WordPress's menu icon size.
 - Rendered the bundled admin menu SVG as a centered WordPress background icon using a base64 data URI.
 - Completed the Help & Support contact card with the starter-kit scope and a direct Serfe contact link.
