@@ -295,14 +295,14 @@ final class Settings {
 		add_settings_field( 'blocked_terms', __( 'Excluded categories and terms', 'serfe-ai-discovery' ), array( $this, 'render_blocked_terms_field' ), self::PAGE, 'serfe_ai_discovery_advanced' );
 	}
 
-	/** Add Serfe AI Discovery as a top-level admin menu. */
+	/** Add Serfe WordPress AI Discovery as a top-level admin menu. */
 	public function register_page() {
 		// WordPress centers SVG data URIs as menu backgrounds instead of rendering an img element.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Read-only bundled SVG asset.
 		$svg = file_get_contents( SERFE_AI_DISCOVERY_PATH . 'assets/wp_serfe_logo_gray.svg' );
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- WordPress requires an SVG data URI for centered menu icons.
 		$icon_url = false !== $svg ? 'data:image/svg+xml;base64,' . base64_encode( $svg ) : 'dashicons-admin-generic';
-		add_menu_page( __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), 'manage_options', self::PAGE, array( $this, 'render_page' ), $icon_url );
+		add_menu_page( __( 'WP AI Discovery', 'serfe-ai-discovery' ), __( 'Serfe WordPress AI Discovery', 'serfe-ai-discovery' ), 'manage_options', self::PAGE, array( $this, 'render_page' ), $icon_url );
 	}
 
 	/** Explain the scope of the current switches. */
@@ -409,7 +409,7 @@ final class Settings {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only navigation.
 		$requested = isset( $_GET['tab'] ) && is_string( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'overview';
 		$tab       = isset( $tabs[ $requested ] ) ? $requested : ( 'files' === $requested ? 'robots' : 'overview' );
-		echo '<div class="wrap"><h1>' . esc_html__( 'Serfe AI Discovery', 'serfe-ai-discovery' ) . '</h1><nav class="nav-tab-wrapper" aria-label="' . esc_attr__( 'Serfe AI Discovery sections', 'serfe-ai-discovery' ) . '">';
+		echo '<div class="wrap"><h1>' . esc_html__( 'Serfe WordPress AI Discovery', 'serfe-ai-discovery' ) . '</h1><nav class="nav-tab-wrapper" aria-label="' . esc_attr__( 'Serfe WordPress AI Discovery sections', 'serfe-ai-discovery' ) . '">';
 		foreach ( $tabs as $key => $label ) {
 			$url = add_query_arg(
 				array(
@@ -777,7 +777,7 @@ final class Settings {
 	public function register_item_boxes() {
 		foreach ( self::supported_post_types() as $type ) {
 			if ( post_type_exists( $type ) ) {
-				add_meta_box( 'serfe_ai_discovery_markdown', __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), array( $this, 'render_item_box' ), $type, 'side' );
+				add_meta_box( 'serfe_ai_discovery_markdown', __( 'Serfe WordPress AI Discovery', 'serfe-ai-discovery' ), array( $this, 'render_item_box' ), $type, 'side' );
 			}
 		}
 	}

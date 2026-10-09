@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- Renamed the visible plugin name to "Serfe WordPress AI Discovery" in the plugin header, admin screens, and documentation. The slug, text domain, folder, and stored option names are unchanged.
+
 ### Added
 
 - Added explicit inspection of virtual public discovery-file responses, including robots.txt served by WordPress or SEO plugins.

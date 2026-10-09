@@ -1,4 +1,4 @@
-=== Serfe AI Discovery ===
+=== Serfe WordPress AI Discovery ===
 Tags: markdown, llms-txt, robots-txt, api-discovery, ai
 Requires at least: 7.1
 Tested up to: 7.1
@@ -11,7 +11,7 @@ Publish approved public WordPress content as Markdown and manage selected discov
 
 == Description ==
 
-Serfe AI Discovery is an opt-in starter kit for public content. It returns Markdown for approved posts, pages, WooCommerce products and catalog archives, and selected public Custom Post Types. Browsers continue to receive canonical HTML.
+Serfe WordPress AI Discovery is an opt-in starter kit for public content. It returns Markdown for approved posts, pages, WooCommerce products and catalog archives, and selected public Custom Post Types. Browsers continue to receive canonical HTML.
 
 An administrator can also review and publish root robots.txt and llms.txt files, enable a catalog of existing public APIs, and run bounded local checks for discovery resources. These features do not create an MCP server, agent tools, authentication, or new API permissions.
 
@@ -31,8 +31,8 @@ The optional API Catalog describes existing public APIs; it does not enable any 
 
 == Installation ==
 
-1. Install and activate Serfe AI Discovery through the WordPress Plugins screen.
-2. Open the top-level Serfe AI Discovery menu.
+1. Install and activate Serfe WordPress AI Discovery through the WordPress Plugins screen.
+2. Open the top-level Serfe WordPress AI Discovery menu.
 3. Review the Overview and Help & Support tabs before enabling publication.
 4. To publish Markdown, enable the master switch and supported content types, then approve individual items in their editors.
 5. Request an approved public URL with .md or Accept: text/markdown and confirm that the normal URL still returns HTML.
