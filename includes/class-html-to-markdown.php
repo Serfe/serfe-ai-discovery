@@ -2,6 +2,8 @@
 
 namespace Serfe\AI_Discovery;
 
+// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- DOMNode property names are fixed by PHP's DOM API.
+
 use DOMDocument;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -41,10 +43,10 @@ final class Html_To_Markdown {
 
 	/** @param \DOMNode $node Node. @return string */
 	private function node( $node ) {
-		if ( $node->nodeType === XML_TEXT_NODE ) {
+		if ( XML_TEXT_NODE === $node->nodeType ) {
 			return preg_replace( '/\s+/', ' ', $node->nodeValue );
 		}
-		if ( $node->nodeType !== XML_ELEMENT_NODE ) {
+		if ( XML_ELEMENT_NODE !== $node->nodeType ) {
 			return '';
 		}
 
@@ -77,25 +79,25 @@ final class Html_To_Markdown {
 			case 'strong':
 			case 'b':
 				$text = trim( $inner );
-				return $text === '' ? '' : '**' . $text . '**';
+				return '' === $text ? '' : '**' . $text . '**';
 			case 'em':
 			case 'i':
 				$text = trim( $inner );
-				return $text === '' ? '' : '*' . $text . '*';
+				return '' === $text ? '' : '*' . $text . '*';
 			case 'del':
 			case 's':
 			case 'strike':
 				$text = trim( $inner );
-				return $text === '' ? '' : '~~' . $text . '~~';
+				return '' === $text ? '' : '~~' . $text . '~~';
 			case 'a':
 				$href  = $node->getAttribute( 'href' );
 				$text  = trim( $inner );
 				$title = $this->markdown_title( $node->getAttribute( 'title' ) );
-				return $href === '' ? $text : '[' . ( $text !== '' ? $text : $href ) . '](' . $href . $title . ')';
+				return '' === $href ? $text : '[' . ( '' !== $text ? $text : $href ) . '](' . $href . $title . ')';
 			case 'img':
 				$src   = $node->getAttribute( 'src' );
 				$title = $this->markdown_title( $node->getAttribute( 'title' ) );
-				return $src === '' ? '' : '![' . $node->getAttribute( 'alt' ) . '](' . $src . $title . ')';
+				return '' === $src ? '' : '![' . $node->getAttribute( 'alt' ) . '](' . $src . $title . ')';
 			case 'ul':
 				return "\n" . $this->list_items( $node, false ) . "\n";
 			case 'ol':
@@ -136,14 +138,14 @@ final class Html_To_Markdown {
 		$output = '';
 		$index  = $ordered && ctype_digit( $node->getAttribute( 'start' ) ) ? (int) $node->getAttribute( 'start' ) : 1;
 		foreach ( $node->childNodes as $child ) {
-			if ( $child->nodeType !== XML_ELEMENT_NODE || strtolower( $child->nodeName ) !== 'li' ) {
+			if ( XML_ELEMENT_NODE !== $child->nodeType || strtolower( $child->nodeName ) !== 'li' ) {
 				continue;
 			}
 
 			$content = '';
 			$nested  = '';
 			foreach ( $child->childNodes as $item_child ) {
-				if ( $item_child->nodeType === XML_ELEMENT_NODE && in_array( strtolower( $item_child->nodeName ), array( 'ul', 'ol' ), true ) ) {
+				if ( XML_ELEMENT_NODE === $item_child->nodeType && in_array( strtolower( $item_child->nodeName ), array( 'ul', 'ol' ), true ) ) {
 					$nested .= $this->list_items( $item_child, strtolower( $item_child->nodeName ) === 'ol' );
 					continue;
 				}
@@ -152,7 +154,7 @@ final class Html_To_Markdown {
 
 			$task    = $this->task_checkbox( $child );
 			$output .= ( $ordered ? $index . '. ' : '- ' ) . $task . trim( $content ) . "\n";
-			if ( $nested !== '' ) {
+			if ( '' !== $nested ) {
 				$output .= $this->indent_lines( rtrim( $nested ), 4 ) . "\n";
 			}
 			++$index;
@@ -177,7 +179,7 @@ final class Html_To_Markdown {
 		$prefix = str_repeat( ' ', $spaces );
 		$lines  = explode( "\n", $value );
 		foreach ( $lines as &$line ) {
-			if ( $line !== '' ) {
+			if ( '' !== $line ) {
 				$line = $prefix . $line;
 			}
 		}
@@ -228,7 +230,7 @@ final class Html_To_Markdown {
 	private function table_cells( $row ) {
 		$cells = array();
 		foreach ( $row->childNodes as $cell ) {
-			if ( $cell->nodeType !== XML_ELEMENT_NODE || ! in_array( strtolower( $cell->nodeName ), array( 'th', 'td' ), true ) ) {
+			if ( XML_ELEMENT_NODE !== $cell->nodeType || ! in_array( strtolower( $cell->nodeName ), array( 'th', 'td' ), true ) ) {
 				continue;
 			}
 
@@ -254,7 +256,7 @@ final class Html_To_Markdown {
 
 		$index = 0;
 		foreach ( $first_row->childNodes as $cell ) {
-			if ( $cell->nodeType !== XML_ELEMENT_NODE || ! in_array( strtolower( $cell->nodeName ), array( 'th', 'td' ), true ) ) {
+			if ( XML_ELEMENT_NODE !== $cell->nodeType || ! in_array( strtolower( $cell->nodeName ), array( 'th', 'td' ), true ) ) {
 				continue;
 			}
 			if ( $index >= $columns ) {
@@ -266,11 +268,11 @@ final class Html_To_Markdown {
 			if ( preg_match( '/has-text-align-(left|center|right)/', $class, $matches ) || preg_match( '/text-align\s*:\s*(left|center|right)/i', $style, $matches ) ) {
 				$align = strtolower( $matches[1] );
 			}
-			if ( $align === 'left' ) {
+			if ( 'left' === $align ) {
 				$alignment[ $index ] = ':---';
-			} elseif ( $align === 'center' ) {
+			} elseif ( 'center' === $align ) {
 				$alignment[ $index ] = ':---:';
-			} elseif ( $align === 'right' ) {
+			} elseif ( 'right' === $align ) {
 				$alignment[ $index ] = '---:';
 			}
 			++$index;
@@ -283,19 +285,19 @@ final class Html_To_Markdown {
 	private function definition_list( $node ) {
 		$output = '';
 		foreach ( $node->childNodes as $child ) {
-			if ( $child->nodeType !== XML_ELEMENT_NODE ) {
+			if ( XML_ELEMENT_NODE !== $child->nodeType ) {
 				continue;
 			}
 			$tag  = strtolower( $child->nodeName );
 			$text = trim( $this->walk( $child->childNodes ) );
-			if ( $tag === 'dt' && $text !== '' ) {
+			if ( 'dt' === $tag && '' !== $text ) {
 				$output .= $text . "\n";
-			} elseif ( $tag === 'dd' && $text !== '' ) {
+			} elseif ( 'dd' === $tag && '' !== $text ) {
 				$output .= ': ' . $text . "\n";
 			}
 		}
 
-		return $output === '' ? '' : "\n\n" . rtrim( $output ) . "\n\n";
+		return '' === $output ? '' : "\n\n" . rtrim( $output ) . "\n\n";
 	}
 
 	/** Convert a preformatted block, preserving an optional language class. */
@@ -324,12 +326,12 @@ final class Html_To_Markdown {
 			$delimiter .= '`';
 		}
 
-		return $value === '' ? '' : $delimiter . $value . $delimiter;
+		return '' === $value ? '' : $delimiter . $value . $delimiter;
 	}
 
 	/** Escape an optional Markdown link or image title. */
 	private function markdown_title( $title ) {
 		$title = trim( $title );
-		return $title === '' ? '' : ' "' . str_replace( '"', '\\"', $title ) . '"';
+		return '' === $title ? '' : ' "' . str_replace( '"', '\\"', $title ) . '"';
 	}
 }

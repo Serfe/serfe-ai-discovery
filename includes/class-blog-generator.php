@@ -27,11 +27,11 @@ final class Blog_Generator {
 		$front  = "---\n";
 		$front .= 'title: ' . Markdown::yaml_scalar( $title ) . "\n";
 		$front .= 'url: ' . Markdown::yaml_scalar( $url ) . "\n";
-		if ( $lang !== '' ) {
+		if ( '' !== $lang ) {
 			$front .= 'lang: ' . Markdown::yaml_scalar( $lang ) . "\n";
 		}
 		$front .= 'date: ' . Markdown::yaml_scalar( $date ) . "\n";
-		if ( $excerpt !== '' ) {
+		if ( '' !== $excerpt ) {
 			$front .= 'excerpt: ' . Markdown::yaml_scalar( $excerpt ) . "\n";
 		}
 		$front .= "---\n\n";

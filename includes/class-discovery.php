@@ -95,7 +95,7 @@ final class Discovery {
 
 		$post = get_queried_object();
 		if ( ! ( $post instanceof \WP_Post )
-			|| $post->post_status !== 'publish'
+			|| 'publish' !== $post->post_status
 			|| ! empty( $post->post_password )
 			|| ! is_post_publicly_viewable( $post )
 			|| self::is_sensitive_woocommerce_page( $post )
@@ -109,7 +109,7 @@ final class Discovery {
 			return Editorial_Content::is_static( $post );
 		}
 
-		return $post->post_type === 'product' && $this->product_generator->is_exposable( $post->ID );
+		return 'product' === $post->post_type && $this->product_generator->is_exposable( $post->ID );
 	}
 
 	/** @param \WP_Post $post Queried post. @return bool */
@@ -175,7 +175,7 @@ final class Discovery {
 	public static function markdown_url( $permalink ) {
 		$permalink = (string) $permalink;
 		$path      = (string) wp_parse_url( $permalink, PHP_URL_PATH );
-		if ( $path === '' || $path === '/' ) {
+		if ( '' === $path || '/' === $path ) {
 			return rtrim( $permalink, '/\\' ) . '/.md';
 		}
 

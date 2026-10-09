@@ -48,7 +48,7 @@ final class Request_Router {
 	/** @param string $uri Request URI. @return bool */
 	public static function is_markdown_uri( $uri ) {
 		$path = (string) wp_parse_url( (string) $uri, PHP_URL_PATH );
-		if ( $path === '' || ! preg_match( '#\.md/?$#', $path ) ) {
+		if ( '' === $path || ! preg_match( '#\.md/?$#', $path ) ) {
 			return false;
 		}
 
@@ -58,7 +58,7 @@ final class Request_Router {
 	/** @param string $uri Request URI. @return bool */
 	public static function is_negotiable_uri( $uri ) {
 		$path = (string) wp_parse_url( (string) $uri, PHP_URL_PATH );
-		if ( $path === '' ) {
+		if ( '' === $path ) {
 			return false;
 		}
 
@@ -91,6 +91,6 @@ final class Request_Router {
 		$clean = preg_replace( '#\.md/?$#', '/', $path );
 		$query = (string) wp_parse_url( (string) $uri, PHP_URL_QUERY );
 
-		return $clean . ( $query !== '' ? '?' . $query : '' );
+		return $clean . ( '' !== $query ? '?' . $query : '' );
 	}
 }

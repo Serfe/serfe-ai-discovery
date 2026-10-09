@@ -41,7 +41,7 @@ final class Product_Generator {
 		$front     .= 'title: ' . Markdown::yaml_scalar( $title ) . "\n";
 		$front     .= 'url: ' . Markdown::yaml_scalar( $url ) . "\n";
 		$front     .= 'type: ' . Markdown::yaml_scalar( 'product' ) . "\n";
-		if ( $lang !== '' ) {
+		if ( '' !== $lang ) {
 			$front .= 'lang: ' . Markdown::yaml_scalar( $lang ) . "\n";
 		}
 		$front .= 'currency: ' . Markdown::yaml_scalar( $currency ) . "\n";
@@ -55,10 +55,10 @@ final class Product_Generator {
 		if ( $product ) {
 			$description = trim( (string) $product->get_short_description() );
 			$full        = trim( (string) $product->get_description() );
-			if ( $full !== '' ) {
-				$description .= ( $description !== '' ? "\n\n" : '' ) . $full;
+			if ( '' !== $full ) {
+				$description .= ( '' !== $description ? "\n\n" : '' ) . $full;
 			}
-			if ( $description !== '' ) {
+			if ( '' !== $description ) {
 				$body .= ( new Html_To_Markdown() )->convert( $description ) . "\n\n";
 			}
 		}

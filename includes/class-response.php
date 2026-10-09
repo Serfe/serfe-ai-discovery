@@ -15,7 +15,7 @@ final class Response {
 			status_header( 200 );
 			header( 'Content-Type: text/markdown; charset=utf-8' );
 			header( 'X-Content-Type-Options: nosniff' );
-			if ( $canonical_url !== '' ) {
+			if ( '' !== $canonical_url ) {
 				header( sprintf( 'Link: <%s>; rel="canonical"', esc_url_raw( $canonical_url ) ), false );
 			}
 			if ( $negotiated ) {

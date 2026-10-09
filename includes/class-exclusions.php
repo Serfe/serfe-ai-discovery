@@ -16,7 +16,7 @@ final class Exclusions {
 		}
 
 		$path = Settings::normalize_blocked_path( get_permalink( $post ) );
-		if ( $path !== '' && in_array( $path, $choices['blocked_paths'], true ) ) {
+		if ( '' !== $path && in_array( $path, $choices['blocked_paths'], true ) ) {
 			return true;
 		}
 

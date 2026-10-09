@@ -123,7 +123,7 @@ final class Readiness {
 			);
 		}
 		$footer_surface = apply_filters( 'serfe_ai_discovery_footer_surface', 'light' );
-		$footer_surface = $footer_surface === 'dark' ? 'dark' : 'light';
+		$footer_surface = 'dark' === $footer_surface ? 'dark' : 'light';
 		$logo_blue      = SERFE_AI_DISCOVERY_URL . 'assets/serfe-logo-blue.png';
 		$logo_white     = SERFE_AI_DISCOVERY_URL . 'assets/serfe-logo-white.png';
 		?>
@@ -173,8 +173,9 @@ final class Readiness {
 				<?php wp_nonce_field( 'serfe_ai_discovery_readiness_refresh' ); ?>
 				<?php submit_button( __( 'Run checks again', 'serfe-ai-discovery' ), 'secondary', 'submit', false ); ?>
 			</form>
-			<?php if ( $report['checked_at'] !== '' ) : ?>
-				<p class="description"><?php echo esc_html( sprintf( __( 'Last checked: %s', 'serfe-ai-discovery' ), $report['checked_at'] ) ); ?></p>
+				<?php if ( '' !== $report['checked_at'] ) : ?>
+					<?php /* translators: %s: date and time of the last capability check. */ ?>
+					<p class="description"><?php echo esc_html( sprintf( __( 'Last checked: %s', 'serfe-ai-discovery' ), $report['checked_at'] ) ); ?></p>
 			<?php endif; ?>
 
 			<div class="serfe-readiness-footer" data-serfe-surface="<?php echo esc_attr( $footer_surface ); ?>">
@@ -226,7 +227,7 @@ final class Readiness {
 			return $this->check( 'unknown', __( 'robots.txt', 'serfe-ai-discovery' ), $response['detail'], $url );
 		}
 
-		if ( $response['code'] === 200 && preg_match( '/^\s*user-agent\s*:/im', $response['body'] ) ) {
+		if ( 200 === $response['code'] && preg_match( '/^\s*user-agent\s*:/im', $response['body'] ) ) {
 			return $this->check( 'pass', __( 'robots.txt', 'serfe-ai-discovery' ), __( 'A robots.txt response is available.', 'serfe-ai-discovery' ), $url );
 		}
 
@@ -244,7 +245,7 @@ final class Readiness {
 				continue;
 			}
 			$loopback_down = false;
-			if ( $response['code'] === 200 && preg_match( '/<(?:\w+:)?(?:urlset|sitemapindex)\b/i', $response['body'] ) ) {
+			if ( 200 === $response['code'] && preg_match( '/<(?:\w+:)?(?:urlset|sitemapindex)\b/i', $response['body'] ) ) {
 				return $this->check( 'pass', __( 'XML sitemap', 'serfe-ai-discovery' ), __( 'A valid XML sitemap was found.', 'serfe-ai-discovery' ), $url );
 			}
 		}
@@ -265,7 +266,7 @@ final class Readiness {
 		}
 
 		$catalog = json_decode( $response['body'], true );
-		if ( $response['code'] === 200
+		if ( 200 === $response['code']
 			&& stripos( $response['content_type'], 'application/linkset+json' ) === 0
 			&& self::valid_api_catalog( $catalog ) ) {
 			return $this->check( 'pass', __( 'API catalog', 'serfe-ai-discovery' ), __( 'A valid RFC 9727 API catalog is available.', 'serfe-ai-discovery' ), $url );
@@ -308,7 +309,7 @@ final class Readiness {
 			}
 
 			$url = get_permalink( $post );
-			if ( $first_url === '' ) {
+			if ( '' === $first_url ) {
 				$first_url = $url;
 			}
 			$response = $this->get( $url, array( 'Accept' => 'text/markdown' ) );
@@ -317,7 +318,7 @@ final class Readiness {
 			}
 
 			$loopback_down = false;
-			if ( $response['code'] === 200 && stripos( $response['content_type'], 'text/markdown' ) === 0 ) {
+			if ( 200 === $response['code'] && stripos( $response['content_type'], 'text/markdown' ) === 0 ) {
 				return $this->check( 'pass', __( 'Markdown negotiation', 'serfe-ai-discovery' ), __( 'A public page returned text/markdown for Accept: text/markdown.', 'serfe-ai-discovery' ), $url );
 			}
 		}
@@ -345,12 +346,12 @@ final class Readiness {
 			return $this->check( 'unknown', __( 'OAuth protected resource', 'serfe-ai-discovery' ), $response['detail'], $url );
 		}
 
-		if ( $response['code'] === 404 && ! is_array( $provider ) ) {
+		if ( 404 === $response['code'] && ! is_array( $provider ) ) {
 			return $this->check( 'na', __( 'OAuth protected resource', 'serfe-ai-discovery' ), __( 'No protected agent resource is declared. Public content does not need OAuth.', 'serfe-ai-discovery' ) );
 		}
 
 		$metadata = json_decode( $response['body'], true );
-		if ( $response['code'] === 200 && self::valid_oauth_metadata( $metadata ) ) {
+		if ( 200 === $response['code'] && self::valid_oauth_metadata( $metadata ) ) {
 			return $this->check( 'pass', __( 'OAuth protected resource', 'serfe-ai-discovery' ), __( 'Protected Resource Metadata has a resource and authorization server.', 'serfe-ai-discovery' ), $url );
 		}
 
@@ -366,7 +367,8 @@ final class Readiness {
 		}
 
 		$validation = self::validate_skills_index( json_decode( $response['body'], true ) );
-		if ( $response['code'] === 200 && $validation['valid'] ) {
+		if ( 200 === $response['code'] && $validation['valid'] ) {
+			/* translators: %d: number of skills listed in the validated index. */
 			return $this->check( 'pass', __( 'Agent Skills', 'serfe-ai-discovery' ), sprintf( __( 'A valid Agent Skills index lists %d skill(s).', 'serfe-ai-discovery' ), $validation['count'] ), $url );
 		}
 
@@ -494,7 +496,7 @@ final class Readiness {
 	/** @return bool */
 	private static function is_local_hostname( $url ) {
 		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
-		return $host === 'localhost' || substr( $host, -10 ) === '.localhost' || substr( $host, -5 ) === '.test';
+		return 'localhost' === $host || substr( $host, -10 ) === '.localhost' || substr( $host, -5 ) === '.test';
 	}
 
 	/** @return array<string, string> */

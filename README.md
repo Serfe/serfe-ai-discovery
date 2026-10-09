@@ -132,6 +132,7 @@ php tests/settings.php
 ```
 
 Run the tests with the project's configured PHP container when a local PHP runtime is unavailable.
+Run `composer install`, then `vendor/bin/phpcs --standard=phpcs.xml.dist` for the current WordPress-Extra source rules and `composer audit --locked` for development dependencies. Composer packages are development tools; the plugin has no bundled runtime vendor directory.
 
 For an HTTP smoke check, enable an eligible published item on a local WordPress installation and run `tests/http-smoke.sh https://example.com/eligible-item/`. The script checks HTML, explicit `.md`, negotiated Markdown, and HTML again after Markdown. Set `SMOKE_CURL_RESOLVE=host:port:ip` when the local hostname needs a direct address. This checks the live web server; test a production-like cache or CDN separately before release.
 
