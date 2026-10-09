@@ -269,15 +269,14 @@ final class Settings {
 		}
 
 		return array(
-			'schema_version'       => self::SCHEMA_VERSION,
-			'markdown_enabled'     => isset( $input['markdown_enabled'] ) && in_array( $input['markdown_enabled'], array( '1', 1 ), true ) ? 1 : 0,
-			'markdown_all_content' => isset( $input['markdown_all_content'] ) && in_array( $input['markdown_all_content'], array( '1', 1 ), true ) ? 1 : 0,
-			'detail_post_types'    => array_values( array_unique( $allowed_types ) ),
-			'enabled_archives'     => array_values( array_unique( $allowed_archives ) ),
-			'blocked_post_types'   => array_values( array_unique( $allowed_blocked_types ) ),
-			'blocked_paths'        => array_values( array_unique( $blocked_paths ) ),
-			'blocked_terms'        => array_values( array_unique( $blocked_terms ) ),
-			'api_catalog_enabled'  => isset( $input['api_catalog_enabled'] ) && in_array( $input['api_catalog_enabled'], array( '1', 1 ), true ) ? 1 : 0,
+			'schema_version'      => self::SCHEMA_VERSION,
+			'markdown_enabled'    => isset( $input['markdown_enabled'] ) && in_array( $input['markdown_enabled'], array( '1', 1 ), true ) ? 1 : 0,
+			'detail_post_types'   => array_values( array_unique( $allowed_types ) ),
+			'enabled_archives'    => array_values( array_unique( $allowed_archives ) ),
+			'blocked_post_types'  => array_values( array_unique( $allowed_blocked_types ) ),
+			'blocked_paths'       => array_values( array_unique( $blocked_paths ) ),
+			'blocked_terms'       => array_values( array_unique( $blocked_terms ) ),
+			'api_catalog_enabled' => isset( $input['api_catalog_enabled'] ) && in_array( $input['api_catalog_enabled'], array( '1', 1 ), true ) ? 1 : 0,
 		);
 	}
 
@@ -285,8 +284,7 @@ final class Settings {
 	public function register_settings() {
 		register_setting( self::GROUP, self::OPTION, array( 'sanitize_callback' => array( $this, 'sanitize' ) ) );
 		add_settings_section( 'serfe_ai_discovery_publication', __( 'General publication settings', 'serfe-ai-discovery' ), array( $this, 'render_section' ), self::PAGE );
-		add_settings_field( 'markdown_enabled', __( 'Markdown', 'serfe-ai-discovery' ), array( $this, 'render_markdown_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
-		add_settings_field( 'markdown_all_content', __( 'Quick enable', 'serfe-ai-discovery' ), array( $this, 'render_all_content_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
+		add_settings_field( 'markdown_enabled', __( 'Markdown negotiation', 'serfe-ai-discovery' ), array( $this, 'render_markdown_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
 		add_settings_field( 'api_catalog_enabled', __( 'API Catalog', 'serfe-ai-discovery' ), array( $this, 'render_catalog_field' ), self::PAGE, 'serfe_ai_discovery_publication' );
 
 		add_settings_section( 'serfe_ai_discovery_advanced', __( 'Advanced Settings (Filter or Exclude Specific Content Types)', 'serfe-ai-discovery' ), array( $this, 'render_advanced_section' ), self::PAGE );
@@ -312,26 +310,28 @@ final class Settings {
 		echo '<p>' . esc_html__( 'Configure public discovery features and Markdown representation options.', 'serfe-ai-discovery' ) . '</p>';
 	}
 
-	/** Explain advanced filtering options. */
+	/** Explain advanced filtering options within a collapsible details wrapper. */
 	public function render_advanced_section() {
-		echo '<p>' . esc_html__( 'Configure detailed inclusion/exclusion rules for specific post types, archives, or URL paths when Quick Enable is not checked.', 'serfe-ai-discovery' ) . '</p>';
+		$choices    = self::choices();
+		$has_custom = ! empty( $choices['blocked_post_types'] ) || ! empty( $choices['blocked_paths'] ) || ! empty( $choices['blocked_terms'] ) || ! empty( $choices['detail_post_types'] );
+		$open_attr  = $has_custom ? 'open' : '';
+		printf(
+			'<details %s style="margin-top: 24px; padding: 12px 16px; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px;"><summary style="font-size: 1.1em; font-weight: 600; cursor: pointer; color: #1d2327;">%s</summary>',
+			esc_attr( $open_attr ),
+			esc_html__( 'Advanced Settings (Filter or Exclude Specific Content Types)', 'serfe-ai-discovery' )
+		);
+		echo '<p style="margin-top: 8px; color: #646970;">' . esc_html__( 'Optional: Configure detailed inclusion/exclusion rules for specific post types, archives, or URL paths. By default, full support applies to all public content.', 'serfe-ai-discovery' ) . '</p>';
 	}
 
 	/** Render the Markdown master switch. */
 	public function render_markdown_field() {
 		$choices = self::choices();
-		printf( '<label><input type="checkbox" name="%s[markdown_enabled]" value="1" %s> %s</label>', esc_attr( self::OPTION ), checked( 1, $choices['markdown_enabled'], false ), esc_html__( 'Enable Markdown content negotiation', 'serfe-ai-discovery' ) );
-	}
-
-	/** Render the quick 1-click toggle to enable all published public content. */
-	public function render_all_content_field() {
-		$choices = self::choices();
 		printf(
-			'<label><input type="checkbox" name="%s[markdown_all_content]" value="1" %s> <strong>%s</strong></label><p class="description">%s</p>',
+			'<label><input type="checkbox" name="%s[markdown_enabled]" value="1" %s> <strong>%s</strong></label><p class="description">%s</p>',
 			esc_attr( self::OPTION ),
-			checked( 1, $choices['markdown_all_content'], false ),
-			esc_html__( 'Enable for all published public content (Posts, Pages, Products, CPTs)', 'serfe-ai-discovery' ),
-			esc_html__( 'One-click toggle: Enables Markdown negotiation for all public content. Uncheck to specify individual types in Advanced Settings below.', 'serfe-ai-discovery' )
+			checked( 1, $choices['markdown_enabled'], false ),
+			esc_html__( 'Enable Markdown content negotiation (Full support)', 'serfe-ai-discovery' ),
+			esc_html__( 'Single toggle: Enables Markdown negotiation for all public published content (Posts, Pages, Products, Custom Post Types) and public archives.', 'serfe-ai-discovery' )
 		);
 	}
 
@@ -427,10 +427,10 @@ final class Settings {
 				echo '<form action="options.php" method="post">';
 				settings_fields( self::GROUP );
 				do_settings_sections( self::PAGE );
+				echo '</details>';
 				submit_button();
 				echo '</form>';
 				$this->render_markdown_urls();
-				$this->render_markdown_cache();
 				break;
 			case 'robots':
 				( new Discovery_Files_Admin() )->render_robots_tab();
@@ -471,13 +471,13 @@ final class Settings {
 		}
 		$discovery    = new Discovery( new Product_Generator() );
 		$rows         = array();
-		$target_types = 1 === (int) $choices['markdown_all_content'] ? self::supported_post_types() : $choices['detail_post_types'];
+		$target_types = ! empty( $choices['detail_post_types'] ) ? $choices['detail_post_types'] : self::supported_post_types();
 		if ( ! empty( $target_types ) ) {
 			$posts = get_posts(
 				array(
 					'post_type'        => $target_types,
 					'post_status'      => 'publish',
-					'posts_per_page'   => 50,
+					'posts_per_page'   => 10,
 					'orderby'          => 'modified',
 					'order'            => 'DESC',
 					'has_password'     => false,
@@ -491,7 +491,8 @@ final class Settings {
 				}
 			}
 		}
-		foreach ( $choices['enabled_archives'] as $archive ) {
+		$enabled_archives = ! empty( $choices['enabled_archives'] ) ? $choices['enabled_archives'] : self::supported_archive_keys();
+		foreach ( $enabled_archives as $archive ) {
 			if ( in_array( $archive, array( 'product_cat', 'product_tag' ), true ) ) {
 				continue;
 			}
@@ -503,7 +504,7 @@ final class Settings {
 			}
 		}
 		if ( ! $rows ) {
-			echo '<p>' . esc_html__( 'No item or archive currently passes the publication policy. Enable a content type and approve items in their editor.', 'serfe-ai-discovery' ) . '</p>';
+			echo '<p>' . esc_html__( 'No item or archive currently passes the publication policy.', 'serfe-ai-discovery' ) . '</p>';
 		} else {
 			echo '<table class="widefat striped" style="max-width: 1000px;"><thead><tr><th>' . esc_html__( 'Content', 'serfe-ai-discovery' ) . '</th><th>HTML</th><th>Markdown</th></tr></thead><tbody>';
 			foreach ( $rows as $row ) {
@@ -512,27 +513,33 @@ final class Settings {
 			}
 			echo '</tbody></table>';
 		}
-		echo '<p class="description">' . esc_html__( 'Shows up to 50 recently modified approved items. Product category and tag archives follow the same rules for each public term.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Shows the last 10 edited approved items.', 'serfe-ai-discovery' ) . '</p>';
+
+		$this->render_markdown_cache();
 	}
 
 	/** Show the generated-content cache state and its explicit regeneration action. */
 	private function render_markdown_cache() {
 		$state = Markdown_Cache::state();
-		echo '<h2>' . esc_html__( 'Generated Markdown cache', 'serfe-ai-discovery' ) . '</h2>';
+		echo '<div style="margin-top: 24px; padding: 16px; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; max-width: 1000px;">';
+		echo '<h3 style="margin-top: 0;">' . esc_html__( 'Markdown Cache Management', 'serfe-ai-discovery' ) . '</h3>';
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only confirmation flag after a nonce-protected redirect.
 		if ( isset( $_GET['regenerated'] ) && '1' === $_GET['regenerated'] ) {
-			echo '<div class="notice notice-success inline"><p>' . esc_html__( 'Generated Markdown will be rebuilt on the next request for each URL.', 'serfe-ai-discovery' ) . '</p></div>';
+			echo '<div class="notice notice-success inline"><p>' . esc_html__( 'Generated Markdown cache has been regenerated.', 'serfe-ai-discovery' ) . '</p></div>';
 		}
-		echo '<p>' . esc_html__( 'Generated Markdown is stored on this server for up to one day and discarded whenever content, visibility, prices, stock, catalog terms, approvals, or these settings change. Eligibility is checked on every request before a stored document is used. Markdown responses always send Cache-Control: private, no-store, so proxies and CDNs do not keep them.', 'serfe-ai-discovery' ) . '</p>';
-		printf(
-			'<p><strong>%s</strong> %s</p>',
-			esc_html__( 'Last invalidation:', 'serfe-ai-discovery' ),
-			esc_html( '' !== $state['invalidated_at'] ? sprintf( /* translators: 1: date and time, 2: reason code. */ __( '%1$s (%2$s)', 'serfe-ai-discovery' ), $state['invalidated_at'], $state['reason'] ) : __( 'Not yet invalidated', 'serfe-ai-discovery' ) )
-		);
-		printf( '<form method="post" action="%s"><input type="hidden" name="action" value="serfe_ai_discovery_markdown_cache">', esc_url( admin_url( 'admin-post.php' ) ) );
+		echo '<p>' . esc_html__( 'Generated Markdown is stored on this server and invalidated automatically whenever content is saved or edited.', 'serfe-ai-discovery' ) . '</p>';
+		if ( '' !== $state['invalidated_at'] ) {
+			printf(
+				'<p class="description">%s</p>',
+				/* translators: 1: date and time, 2: reason code. */
+				esc_html( sprintf( __( 'Last cache invalidation: %1$s (reason: %2$s, generation: %3$d)', 'serfe-ai-discovery' ), $state['invalidated_at'], $state['reason'], $state['generation'] ) )
+			);
+		}
+		printf( '<form method="post" action="%s" style="margin-top: 12px;"><input type="hidden" name="action" value="serfe_ai_discovery_markdown_cache">', esc_url( admin_url( 'admin-post.php' ) ) );
 		wp_nonce_field( 'serfe_ai_discovery_markdown_cache' );
-		submit_button( __( 'Regenerate Markdown cache', 'serfe-ai-discovery' ), 'secondary', 'submit', false );
+		submit_button( __( 'Regenerate Markdown Cache', 'serfe-ai-discovery' ), 'secondary', 'submit', false );
 		echo '</form>';
+		echo '</div>';
 	}
 
 	/** Summarize only states that this plugin can currently establish locally. */
