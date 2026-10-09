@@ -8,12 +8,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** Administrator choices for public discovery features. */
 final class Settings {
-	const OPTION = 'serfe_ai_discovery_settings';
-	const ITEM_META = '_serfe_ai_discovery_markdown_enabled';
-	const NONCE_ACTION = 'serfe_ai_discovery_save_item';
-	const NONCE_NAME = 'serfe_ai_discovery_item_nonce';
-	const GROUP = 'serfe_ai_discovery';
-	const PAGE = 'serfe-ai-discovery';
+	const OPTION         = 'serfe_ai_discovery_settings';
+	const ITEM_META      = '_serfe_ai_discovery_markdown_enabled';
+	const NONCE_ACTION   = 'serfe_ai_discovery_save_item';
+	const NONCE_NAME     = 'serfe_ai_discovery_item_nonce';
+	const GROUP          = 'serfe_ai_discovery';
+	const PAGE           = 'serfe-ai-discovery';
 	const SCHEMA_VERSION = 2;
 
 	/** Register the settings screen and per-item opt-in. */
@@ -32,9 +32,9 @@ final class Settings {
 		if ( ! isset( $stored['schema_version'] ) || (int) $stored['schema_version'] < self::SCHEMA_VERSION ) {
 			$stored = self::migrate_legacy( $stored );
 		}
-		$choices = wp_parse_args( $stored, self::defaults() );
+		$choices                      = wp_parse_args( $stored, self::defaults() );
 		$choices['detail_post_types'] = is_array( $choices['detail_post_types'] ) ? $choices['detail_post_types'] : array();
-		$choices['enabled_archives'] = is_array( $choices['enabled_archives'] ) ? $choices['enabled_archives'] : array();
+		$choices['enabled_archives']  = is_array( $choices['enabled_archives'] ) ? $choices['enabled_archives'] : array();
 		foreach ( array( 'blocked_post_types', 'blocked_paths', 'blocked_terms' ) as $key ) {
 			$choices[ $key ] = is_array( $choices[ $key ] ) ? $choices[ $key ] : array();
 		}
@@ -55,23 +55,25 @@ final class Settings {
 	/** @param array<string, mixed> $stored Previous option. @return array<string, mixed> */
 	private static function migrate_legacy( $stored ) {
 		$settings = new self();
-		return $settings->sanitize( array(
-			'markdown_enabled' => isset( $stored['markdown_enabled'] ) ? $stored['markdown_enabled'] : 0,
-			'detail_post_types' => isset( $stored['enabled_post_types'] ) ? $stored['enabled_post_types'] : array(),
-			'api_catalog_enabled' => isset( $stored['api_catalog_enabled'] ) ? $stored['api_catalog_enabled'] : 0,
-		) );
+		return $settings->sanitize(
+			array(
+				'markdown_enabled'    => isset( $stored['markdown_enabled'] ) ? $stored['markdown_enabled'] : 0,
+				'detail_post_types'   => isset( $stored['enabled_post_types'] ) ? $stored['enabled_post_types'] : array(),
+				'api_catalog_enabled' => isset( $stored['api_catalog_enabled'] ) ? $stored['api_catalog_enabled'] : 0,
+			)
+		);
 	}
 
 	/** @return array<string, mixed> */
 	private static function defaults() {
 		return array(
 			'schema_version'      => self::SCHEMA_VERSION,
-			'markdown_enabled'   => 0,
-			'detail_post_types' => array(),
-			'enabled_archives'  => array(),
-			'blocked_post_types' => array(),
-			'blocked_paths' => array(),
-			'blocked_terms' => array(),
+			'markdown_enabled'    => 0,
+			'detail_post_types'   => array(),
+			'enabled_archives'    => array(),
+			'blocked_post_types'  => array(),
+			'blocked_paths'       => array(),
+			'blocked_terms'       => array(),
 			'api_catalog_enabled' => 0,
 		);
 	}
@@ -98,7 +100,13 @@ final class Settings {
 		if ( post_type_exists( 'product' ) ) {
 			$types[] = 'product';
 		}
-		foreach ( get_post_types( array( 'public' => true, 'publicly_queryable' => true ), 'names' ) as $type ) {
+		foreach ( get_post_types(
+			array(
+				'public'             => true,
+				'publicly_queryable' => true,
+			),
+			'names'
+		) as $type ) {
 			if ( ! in_array( $type, array( 'attachment', 'post', 'page', 'product' ), true ) ) {
 				$types[] = $type;
 			}
@@ -149,7 +157,7 @@ final class Settings {
 		if ( 0 === strpos( $value, '/' ) ) {
 			$path = $value;
 		} else {
-			$url = wp_parse_url( $value );
+			$url  = wp_parse_url( $value );
 			$home = wp_parse_url( home_url( '/' ) );
 			if ( ! is_array( $url ) || ! is_array( $home ) || empty( $url['scheme'] ) || ! in_array( strtolower( $url['scheme'] ), array( 'http', 'https' ), true )
 				|| empty( $url['host'] ) || empty( $home['host'] ) || strtolower( $url['host'] ) !== strtolower( $home['host'] )
@@ -172,23 +180,23 @@ final class Settings {
 
 	/** @param mixed $input Submitted setting. @return array<string, mixed> */
 	public function sanitize( $input ) {
-		$input = is_array( $input ) ? $input : array();
-		$types = isset( $input['detail_post_types'] ) && is_array( $input['detail_post_types'] )
+		$input         = is_array( $input ) ? $input : array();
+		$types         = isset( $input['detail_post_types'] ) && is_array( $input['detail_post_types'] )
 			? $input['detail_post_types']
 			: array();
-		$archives = isset( $input['enabled_archives'] ) && is_array( $input['enabled_archives'] )
+		$archives      = isset( $input['enabled_archives'] ) && is_array( $input['enabled_archives'] )
 			? $input['enabled_archives']
 			: array();
 		$blocked_types = isset( $input['blocked_post_types'] ) && is_array( $input['blocked_post_types'] ) ? $input['blocked_post_types'] : array();
 
 		$allowed_types = array();
-		$supported = self::supported_post_types();
+		$supported     = self::supported_post_types();
 		foreach ( $types as $type ) {
 			if ( is_string( $type ) && in_array( $type, $supported, true ) ) {
 				$allowed_types[] = $type;
 			}
 		}
-		$allowed_archives = array();
+		$allowed_archives   = array();
 		$supported_archives = self::supported_archive_keys();
 		foreach ( $archives as $archive ) {
 			if ( is_string( $archive ) && in_array( $archive, $supported_archives, true ) ) {
@@ -202,7 +210,7 @@ final class Settings {
 			}
 		}
 		$blocked_paths = array();
-		$path_lines = isset( $input['blocked_paths'] ) && is_string( $input['blocked_paths'] ) ? preg_split( '/\r\n|\r|\n/', $input['blocked_paths'] ) : array();
+		$path_lines    = isset( $input['blocked_paths'] ) && is_string( $input['blocked_paths'] ) ? preg_split( '/\r\n|\r|\n/', $input['blocked_paths'] ) : array();
 		foreach ( array_slice( $path_lines, 0, 100 ) as $line ) {
 			$path = self::normalize_blocked_path( $line );
 			if ( '' !== $path ) {
@@ -210,15 +218,15 @@ final class Settings {
 			}
 		}
 		$blocked_terms = array();
-		$term_lines = isset( $input['blocked_terms'] ) && is_string( $input['blocked_terms'] ) ? preg_split( '/\r\n|\r|\n/', $input['blocked_terms'] ) : array();
+		$term_lines    = isset( $input['blocked_terms'] ) && is_string( $input['blocked_terms'] ) ? preg_split( '/\r\n|\r|\n/', $input['blocked_terms'] ) : array();
 		foreach ( array_slice( $term_lines, 0, 100 ) as $line ) {
 			$key = trim( $line );
 			if ( ! preg_match( '/^([a-z][a-z0-9_]*)\:([1-9][0-9]*)$/', $key, $parts ) ) {
 				continue;
 			}
 			$taxonomy = $parts[1];
-			$term_id = (int) $parts[2];
-			$object = taxonomy_exists( $taxonomy ) ? get_taxonomy( $taxonomy ) : null;
+			$term_id  = (int) $parts[2];
+			$object   = taxonomy_exists( $taxonomy ) ? get_taxonomy( $taxonomy ) : null;
 			if ( $term_id > 0 && $object && ! empty( $object->public ) && ! empty( $object->publicly_queryable ) && term_exists( $term_id, $taxonomy ) ) {
 				$blocked_terms[] = $taxonomy . ':' . $term_id;
 			}
@@ -226,12 +234,12 @@ final class Settings {
 
 		return array(
 			'schema_version'      => self::SCHEMA_VERSION,
-			'markdown_enabled'   => isset( $input['markdown_enabled'] ) && in_array( $input['markdown_enabled'], array( '1', 1 ), true ) ? 1 : 0,
-			'detail_post_types' => array_values( array_unique( $allowed_types ) ),
-			'enabled_archives'  => array_values( array_unique( $allowed_archives ) ),
-			'blocked_post_types' => array_values( array_unique( $allowed_blocked_types ) ),
-			'blocked_paths' => array_values( array_unique( $blocked_paths ) ),
-			'blocked_terms' => array_values( array_unique( $blocked_terms ) ),
+			'markdown_enabled'    => isset( $input['markdown_enabled'] ) && in_array( $input['markdown_enabled'], array( '1', 1 ), true ) ? 1 : 0,
+			'detail_post_types'   => array_values( array_unique( $allowed_types ) ),
+			'enabled_archives'    => array_values( array_unique( $allowed_archives ) ),
+			'blocked_post_types'  => array_values( array_unique( $allowed_blocked_types ) ),
+			'blocked_paths'       => array_values( array_unique( $blocked_paths ) ),
+			'blocked_terms'       => array_values( array_unique( $blocked_terms ) ),
 			'api_catalog_enabled' => isset( $input['api_catalog_enabled'] ) && in_array( $input['api_catalog_enabled'], array( '1', 1 ), true ) ? 1 : 0,
 		);
 	}
@@ -270,7 +278,7 @@ final class Settings {
 		$choices = self::choices();
 		foreach ( self::supported_post_types() as $type ) {
 			$object = get_post_type_object( $type );
-			$label = $object && isset( $object->labels->name ) ? $object->labels->name : $type;
+			$label  = $object && isset( $object->labels->name ) ? $object->labels->name : $type;
 			printf( '<label><input type="checkbox" name="%s[detail_post_types][]" value="%s" %s> %s</label><br>', esc_attr( self::OPTION ), esc_attr( $type ), checked( in_array( $type, $choices['detail_post_types'], true ), true, false ), esc_html( $label ) );
 		}
 	}
@@ -285,7 +293,7 @@ final class Settings {
 				$label = __( 'Product tags', 'serfe-ai-discovery' );
 			} else {
 				$object = get_post_type_object( $archive );
-				$label = $object && isset( $object->labels->name ) ? $object->labels->name : $archive;
+				$label  = $object && isset( $object->labels->name ) ? $object->labels->name : $archive;
 			}
 			printf( '<label><input type="checkbox" name="%s[enabled_archives][]" value="%s" %s> %s</label><br>', esc_attr( self::OPTION ), esc_attr( $archive ), checked( in_array( $archive, $choices['enabled_archives'], true ), true, false ), esc_html( $label ) );
 		}
@@ -303,7 +311,7 @@ final class Settings {
 		$choices = self::choices();
 		foreach ( self::supported_post_types() as $type ) {
 			$object = get_post_type_object( $type );
-			$label = $object && isset( $object->labels->name ) ? $object->labels->name : $type;
+			$label  = $object && isset( $object->labels->name ) ? $object->labels->name : $type;
 			printf( '<label><input type="checkbox" name="%s[blocked_post_types][]" value="%s" %s> %s</label><br>', esc_attr( self::OPTION ), esc_attr( $type ), checked( in_array( $type, $choices['blocked_post_types'], true ), true, false ), esc_html( $label ) );
 		}
 	}

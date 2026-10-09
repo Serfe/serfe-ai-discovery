@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** Announces available Markdown representations from HTML responses. */
 final class Discovery {
-	const API_CATALOG_PATH = '/.well-known/api-catalog';
+	const API_CATALOG_PATH    = '/.well-known/api-catalog';
 	const API_CATALOG_PROFILE = 'https://www.rfc-editor.org/info/rfc9727';
 
 	/** @var Product_Generator */
@@ -176,9 +176,9 @@ final class Discovery {
 		$permalink = (string) $permalink;
 		$path      = (string) parse_url( $permalink, PHP_URL_PATH );
 		if ( $path === '' || $path === '/' ) {
-			return rtrim( $permalink, "/\\" ) . '/.md';
+			return rtrim( $permalink, '/\\' ) . '/.md';
 		}
 
-		return rtrim( $permalink, "/\\" ) . '.md';
+		return rtrim( $permalink, '/\\' ) . '.md';
 	}
 }

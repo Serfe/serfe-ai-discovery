@@ -94,9 +94,9 @@ final class Product_Generator {
 				continue;
 			}
 			$rows[] = array(
-				'label'     => $label,
-				'price'     => (float) $price,
-				'in_stock'  => $variation->is_in_stock(),
+				'label'    => $label,
+				'price'    => (float) $price,
+				'in_stock' => $variation->is_in_stock(),
 			);
 		}
 
@@ -104,14 +104,19 @@ final class Product_Generator {
 			return '';
 		}
 
-		usort( $rows, function ( $a, $b ) { return $a['price'] <=> $b['price']; } );
+		usort(
+			$rows,
+			function ( $a, $b ) {
+				return $a['price'] <=> $b['price'];
+			}
+		);
 		$price_from = $rows[0]['price'];
-		$output  = '## ' . __( 'Variations', 'serfe-ai-discovery' ) . "\n\n";
-		$output .= '| ' . __( 'Option', 'serfe-ai-discovery' ) . ' | ' . __( 'Price', 'serfe-ai-discovery' ) . ' | ' . __( 'Availability', 'serfe-ai-discovery' ) . " |\n";
-		$output .= "| --- | --- | --- |\n";
+		$output     = '## ' . __( 'Variations', 'serfe-ai-discovery' ) . "\n\n";
+		$output    .= '| ' . __( 'Option', 'serfe-ai-discovery' ) . ' | ' . __( 'Price', 'serfe-ai-discovery' ) . ' | ' . __( 'Availability', 'serfe-ai-discovery' ) . " |\n";
+		$output    .= "| --- | --- | --- |\n";
 		foreach ( $rows as $row ) {
-			$label = str_replace( '|', '\\|', preg_replace( '/\s+/', ' ', $row['label'] ) );
-			$stock = $row['in_stock'] ? __( 'In stock', 'serfe-ai-discovery' ) : __( 'Out of stock', 'serfe-ai-discovery' );
+			$label   = str_replace( '|', '\\|', preg_replace( '/\s+/', ' ', $row['label'] ) );
+			$stock   = $row['in_stock'] ? __( 'In stock', 'serfe-ai-discovery' ) : __( 'Out of stock', 'serfe-ai-discovery' );
 			$output .= '| ' . $label . ' | ' . Markdown::price( $row['price'], $currency ) . ' | ' . $stock . " |\n";
 		}
 		return $output;
@@ -125,7 +130,7 @@ final class Product_Generator {
 				continue;
 			}
 			if ( taxonomy_exists( $taxonomy ) ) {
-				$term = get_term_by( 'slug', $slug, $taxonomy );
+				$term     = get_term_by( 'slug', $slug, $taxonomy );
 				$labels[] = $term ? $term->name : $slug;
 			} else {
 				$labels[] = $slug;

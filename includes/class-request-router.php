@@ -29,7 +29,7 @@ final class Request_Router {
 
 		$accept = isset( $_SERVER['HTTP_ACCEPT'] ) ? wp_unslash( $_SERVER['HTTP_ACCEPT'] ) : '';
 		if ( self::is_negotiable_uri( $uri ) && self::accepts_markdown( $accept ) ) {
-			$this->markdown_request = true;
+			$this->markdown_request  = true;
 			$this->accept_negotiated = true;
 			add_filter( 'woocommerce_set_cookie_enabled', '__return_false', 99 );
 		}

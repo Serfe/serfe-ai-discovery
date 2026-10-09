@@ -14,8 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * plugin name alone, and the checker never calls third-party scanners.
  */
 final class Readiness {
-	const CACHE_KEY = 'serfe_ai_discovery_readiness_v1';
-	const CACHE_TTL = 300;
+	const CACHE_KEY     = 'serfe_ai_discovery_readiness_v1';
+	const CACHE_TTL     = 300;
 	const SKILLS_SCHEMA = 'https://schemas.agentskills.io/discovery/0.2.0/schema.json';
 
 	/** Register the Tools screen and its refresh action. */
@@ -114,9 +114,12 @@ final class Readiness {
 			return;
 		}
 
-		$report         = get_transient( self::CACHE_KEY );
+		$report = get_transient( self::CACHE_KEY );
 		if ( ! is_array( $report ) || ! isset( $report['checks'], $report['checked_at'] ) ) {
-			$report = array( 'checks' => array(), 'checked_at' => '' );
+			$report = array(
+				'checks'     => array(),
+				'checked_at' => '',
+			);
 		}
 		$footer_surface = apply_filters( 'serfe_ai_discovery_footer_surface', 'light' );
 		$footer_surface = $footer_surface === 'dark' ? 'dark' : 'light';
@@ -290,7 +293,7 @@ final class Readiness {
 		}
 
 		$posts_page_id = (int) get_option( 'page_for_posts' );
-		$excluded_ids = array( $posts_page_id );
+		$excluded_ids  = array( $posts_page_id );
 		if ( function_exists( 'wc_get_page_id' ) ) {
 			foreach ( array( 'cart', 'checkout', 'myaccount', 'shop' ) as $page_name ) {
 				$excluded_ids[] = (int) wc_get_page_id( $page_name );
@@ -431,20 +434,20 @@ final class Readiness {
 		$response    = wp_safe_remote_get( $request_url, $args );
 
 		/*
-		 * Docker development hosts such as wordpress.localhost resolve on the
+		 * Docker development hosts such as WordPress.localhost resolve on the
 		 * browser host but not necessarily in the WordPress container. Retry only
 		 * these local hostnames through Apache's loopback address, preserving Host.
 		 */
 		if ( is_wp_error( $response ) && self::is_local_hostname( $request_url ) ) {
-			$parts             = wp_parse_url( $request_url );
-			$host              = $parts['host'];
-			$host_header       = isset( $parts['port'] ) ? $host . ':' . $parts['port'] : $host;
-			$path              = isset( $parts['path'] ) ? $parts['path'] : '/';
-			$path             .= isset( $parts['query'] ) ? '?' . $parts['query'] : '';
-			$loopback_headers  = $headers;
+			$parts                    = wp_parse_url( $request_url );
+			$host                     = $parts['host'];
+			$host_header              = isset( $parts['port'] ) ? $host . ':' . $parts['port'] : $host;
+			$path                     = isset( $parts['path'] ) ? $parts['path'] : '/';
+			$path                    .= isset( $parts['query'] ) ? '?' . $parts['query'] : '';
+			$loopback_headers         = $headers;
 			$loopback_headers['Host'] = $host_header;
-			$args['headers']   = $loopback_headers;
-			$response          = wp_remote_get( 'http://127.0.0.1' . $path, $args );
+			$args['headers']          = $loopback_headers;
+			$response                 = wp_remote_get( 'http://127.0.0.1' . $path, $args );
 		}
 
 		if ( is_wp_error( $response ) ) {
@@ -468,7 +471,7 @@ final class Readiness {
 
 	/** @param string $url Candidate URL. @return bool */
 	public static function is_same_origin_url( $url ) {
-		$home = wp_parse_url( home_url( '/' ) );
+		$home  = wp_parse_url( home_url( '/' ) );
 		$parts = wp_parse_url( $url );
 		if ( ! is_array( $home ) || ! is_array( $parts )
 			|| ! isset( $home['scheme'], $home['host'], $parts['scheme'], $parts['host'] )
@@ -476,7 +479,7 @@ final class Readiness {
 			return false;
 		}
 		$home_scheme = strtolower( $home['scheme'] );
-		$scheme = strtolower( $parts['scheme'] );
+		$scheme      = strtolower( $parts['scheme'] );
 		if ( ! in_array( $scheme, array( 'http', 'https' ), true )
 			|| $scheme !== $home_scheme
 			|| strtolower( $parts['host'] ) !== strtolower( $home['host'] ) ) {
@@ -505,7 +508,12 @@ final class Readiness {
 
 	/** @return string */
 	private function status_icon( $status ) {
-		$icons = array( 'pass' => '✅', 'fail' => '❌', 'unknown' => '⚠', 'na' => '—' );
+		$icons = array(
+			'pass'    => '✅',
+			'fail'    => '❌',
+			'unknown' => '⚠',
+			'na'      => '—',
+		);
 		return isset( $icons[ $status ] ) ? $icons[ $status ] : '⚠';
 	}
 
@@ -570,7 +578,11 @@ final class Readiness {
 	 */
 	public static function validate_skills_index( $index ) {
 		if ( ! is_array( $index ) || ( $index['$schema'] ?? '' ) !== self::SKILLS_SCHEMA || ! isset( $index['skills'] ) || ! is_array( $index['skills'] ) ) {
-			return array( 'valid' => false, 'count' => 0, 'detail' => __( 'No valid Agent Skills v0.2.0 index was found.', 'serfe-ai-discovery' ) );
+			return array(
+				'valid'  => false,
+				'count'  => 0,
+				'detail' => __( 'No valid Agent Skills v0.2.0 index was found.', 'serfe-ai-discovery' ),
+			);
 		}
 
 		foreach ( $index['skills'] as $skill ) {
@@ -583,10 +595,18 @@ final class Readiness {
 				|| ! in_array( $skill['type'], array( 'skill-md', 'archive' ), true )
 				|| empty( $skill['digest'] )
 				|| ! preg_match( '/^sha256:[a-f0-9]{64}$/', $skill['digest'] ) ) {
-				return array( 'valid' => false, 'count' => 0, 'detail' => __( 'The Agent Skills index has an invalid skill entry.', 'serfe-ai-discovery' ) );
+				return array(
+					'valid'  => false,
+					'count'  => 0,
+					'detail' => __( 'The Agent Skills index has an invalid skill entry.', 'serfe-ai-discovery' ),
+				);
 			}
 		}
 
-		return array( 'valid' => true, 'count' => count( $index['skills'] ), 'detail' => '' );
+		return array(
+			'valid'  => true,
+			'count'  => count( $index['skills'] ),
+			'detail' => '',
+		);
 	}
 }

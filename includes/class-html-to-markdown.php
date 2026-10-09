@@ -48,7 +48,7 @@ final class Html_To_Markdown {
 			return '';
 		}
 
-		$tag   = strtolower( $node->nodeName );
+		$tag = strtolower( $node->nodeName );
 		if ( $node->hasAttribute( 'hidden' )
 			|| strtolower( $node->getAttribute( 'aria-hidden' ) ) === 'true'
 			|| preg_match( '/(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*hidden)\s*(?:;|$)/i', $node->getAttribute( 'style' ) )
@@ -58,14 +58,22 @@ final class Html_To_Markdown {
 		$inner = $this->walk( $node->childNodes );
 
 		switch ( $tag ) {
-			case 'h1': return "\n\n# " . trim( $inner ) . "\n\n";
-			case 'h2': return "\n\n## " . trim( $inner ) . "\n\n";
-			case 'h3': return "\n\n### " . trim( $inner ) . "\n\n";
-			case 'h4': return "\n\n#### " . trim( $inner ) . "\n\n";
-			case 'h5': return "\n\n##### " . trim( $inner ) . "\n\n";
-			case 'h6': return "\n\n###### " . trim( $inner ) . "\n\n";
-			case 'p': return "\n\n" . trim( $inner ) . "\n\n";
-			case 'br': return "  \n";
+			case 'h1':
+				return "\n\n# " . trim( $inner ) . "\n\n";
+			case 'h2':
+				return "\n\n## " . trim( $inner ) . "\n\n";
+			case 'h3':
+				return "\n\n### " . trim( $inner ) . "\n\n";
+			case 'h4':
+				return "\n\n#### " . trim( $inner ) . "\n\n";
+			case 'h5':
+				return "\n\n##### " . trim( $inner ) . "\n\n";
+			case 'h6':
+				return "\n\n###### " . trim( $inner ) . "\n\n";
+			case 'p':
+				return "\n\n" . trim( $inner ) . "\n\n";
+			case 'br':
+				return "  \n";
 			case 'strong':
 			case 'b':
 				$text = trim( $inner );
@@ -80,33 +88,46 @@ final class Html_To_Markdown {
 				$text = trim( $inner );
 				return $text === '' ? '' : '~~' . $text . '~~';
 			case 'a':
-				$href = $node->getAttribute( 'href' );
-				$text = trim( $inner );
+				$href  = $node->getAttribute( 'href' );
+				$text  = trim( $inner );
 				$title = $this->markdown_title( $node->getAttribute( 'title' ) );
 				return $href === '' ? $text : '[' . ( $text !== '' ? $text : $href ) . '](' . $href . $title . ')';
 			case 'img':
-				$src = $node->getAttribute( 'src' );
+				$src   = $node->getAttribute( 'src' );
 				$title = $this->markdown_title( $node->getAttribute( 'title' ) );
 				return $src === '' ? '' : '![' . $node->getAttribute( 'alt' ) . '](' . $src . $title . ')';
-			case 'ul': return "\n" . $this->list_items( $node, false ) . "\n";
-			case 'ol': return "\n" . $this->list_items( $node, true ) . "\n";
-			case 'table': return $this->table( $node );
-			case 'dl': return $this->definition_list( $node );
-			case 'figcaption': return "\n\n" . trim( $inner ) . "\n\n";
+			case 'ul':
+				return "\n" . $this->list_items( $node, false ) . "\n";
+			case 'ol':
+				return "\n" . $this->list_items( $node, true ) . "\n";
+			case 'table':
+				return $this->table( $node );
+			case 'dl':
+				return $this->definition_list( $node );
+			case 'figcaption':
+				return "\n\n" . trim( $inner ) . "\n\n";
 			case 'blockquote':
 				$lines = array_map(
-					function ( $line ) { return '> ' . $line; },
+					function ( $line ) {
+						return '> ' . $line; },
 					explode( "\n", trim( $inner ) )
 				);
 				return "\n\n" . implode( "\n", $lines ) . "\n\n";
-			case 'pre': return $this->fenced_code( $node );
-			case 'code': return $this->inline_code( $node->textContent );
+			case 'pre':
+				return $this->fenced_code( $node );
+			case 'code':
+				return $this->inline_code( $node->textContent );
 			case 'kbd':
-			case 'samp': return $this->inline_code( $node->textContent );
-			case 'hr': return "\n\n---\n\n";
-			case 'input': return '';
-			case 'li': return trim( $inner );
-			default: return $inner;
+			case 'samp':
+				return $this->inline_code( $node->textContent );
+			case 'hr':
+				return "\n\n---\n\n";
+			case 'input':
+				return '';
+			case 'li':
+				return trim( $inner );
+			default:
+				return $inner;
 		}
 	}
 
@@ -129,12 +150,12 @@ final class Html_To_Markdown {
 				$content .= $this->node( $item_child );
 			}
 
-			$task = $this->task_checkbox( $child );
+			$task    = $this->task_checkbox( $child );
 			$output .= ( $ordered ? $index . '. ' : '- ' ) . $task . trim( $content ) . "\n";
 			if ( $nested !== '' ) {
 				$output .= $this->indent_lines( rtrim( $nested ), 4 ) . "\n";
 			}
-			$index++;
+			++$index;
 		}
 		return $output;
 	}
@@ -185,7 +206,7 @@ final class Html_To_Markdown {
 		}
 
 		$alignments = $this->table_alignments( $node, $columns );
-		$output = array(
+		$output     = array(
 			$this->table_row( $rows[0], $columns ),
 			'| ' . implode( ' | ', $alignments ) . ' |',
 		);
@@ -211,8 +232,8 @@ final class Html_To_Markdown {
 				continue;
 			}
 
-			$text = trim( $this->walk( $cell->childNodes ) );
-			$text = preg_replace( '/\s+/', ' ', $text );
+			$text    = trim( $this->walk( $cell->childNodes ) );
+			$text    = preg_replace( '/\s+/', ' ', $text );
 			$cells[] = str_replace( '|', '\\|', (string) $text );
 		}
 
@@ -252,7 +273,7 @@ final class Html_To_Markdown {
 			} elseif ( $align === 'right' ) {
 				$alignment[ $index ] = '---:';
 			}
-			$index++;
+			++$index;
 		}
 
 		return $alignment;

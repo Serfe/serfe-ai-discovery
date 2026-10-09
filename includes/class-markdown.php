@@ -18,5 +18,4 @@ final class Markdown {
 	public static function price( $amount, $currency ) {
 		return $currency . ' ' . number_format( (float) $amount, 2, '.', ',' );
 	}
-
 }
