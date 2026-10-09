@@ -92,6 +92,10 @@ function is_home() {
 	return ! empty( $GLOBALS['discovery_test_context']['home'] );
 }
 
+function is_front_page() {
+	return ! empty( $GLOBALS['discovery_test_context']['front_page'] );
+}
+
 function is_category() {
 	return ! empty( $GLOBALS['discovery_test_context']['category'] );
 }
@@ -347,6 +351,9 @@ $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects produc
 $GLOBALS['discovery_test_context']['post'] = new WP_Post( 5, 'page' );
 $GLOBALS['discovery_test_enabled_items'][5] = '1';
 $assert_same( true, $discovery->current_content_has_markdown(), 'Exposes published page' );
+$GLOBALS['discovery_test_context']['front_page'] = true;
+$assert_same( true, $discovery->current_content_has_markdown(), 'Exposes the static front page through the Pages setting' );
+$GLOBALS['discovery_test_context']['front_page'] = false;
 foreach ( array( 'cart', 'checkout', 'myaccount', 'pay', 'view_order', 'shop' ) as $wc_page ) {
 	$GLOBALS['discovery_test_wc_pages'][ $wc_page ] = 5;
 	$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects opted-in WooCommerce ' . $wc_page . ' page' );
