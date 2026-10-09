@@ -34,7 +34,7 @@ final class Discovery_Files_Admin {
 		check_admin_referer( self::ACTION );
 		$name = isset( $_POST['file'] ) && is_string( $_POST['file'] ) ? sanitize_text_field( wp_unslash( $_POST['file'] ) ) : '';
 		$mode = isset( $_POST['mode'] ) && is_string( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : '';
-		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) || ! in_array( $mode, array( 'publish', 'restore', 'template', 'validate' ), true ) || ( 'template' === $mode && 'llms.txt' !== $name ) ) {
+		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) || ! in_array( $mode, array( 'publish', 'restore', 'template', 'validate', 'activate_content_signals', 'remove_content_signals', 'protect_blog_ai_train' ), true ) || ( 'template' === $mode && 'llms.txt' !== $name ) ) {
 			wp_die( esc_html__( 'Invalid discovery file action.', 'serfe-ai-discovery' ) );
 		}
 		// Preserve approved plain text exactly; Discovery_Files::normalize_content() validates it before publication.
@@ -56,6 +56,19 @@ final class Discovery_Files_Admin {
 				'candidate' => self::starter_template(),
 			);
 		} else {
+			if ( in_array( $mode, array( 'activate_content_signals', 'protect_blog_ai_train', 'remove_content_signals' ), true ) ) {
+				if ( 'activate_content_signals' === $mode ) {
+					$candidate = trim( preg_replace( '/# START SERFE BLOCK.*?# END SERFE BLOCK\n?/s', '', $candidate ) ) . "\n\n" . self::content_signals_block( false ) . "\n";
+				} elseif ( 'protect_blog_ai_train' === $mode ) {
+					$candidate = trim( preg_replace( '/# START SERFE BLOCK.*?# END SERFE BLOCK\n?/s', '', $candidate ) ) . "\n\n" . self::content_signals_block( true ) . "\n";
+				} elseif ( 'remove_content_signals' === $mode ) {
+					$candidate = trim( preg_replace( '/# START SERFE BLOCK.*?# END SERFE BLOCK\n?/s', '', $candidate ) ) . "\n";
+				}
+				$takeover = true;
+				// Proceed to publish after modifying candidate
+				$mode = 'publish';
+			}
+
 			if ( 'validate' === $mode ) {
 				$result = Discovery_Files::validate_current( $name );
 			} elseif ( 'restore' === $mode ) {
@@ -200,10 +213,7 @@ final class Discovery_Files_Admin {
 		$virtual  = ! $state['exists'] && is_array( $notice ) && isset( $notice['file'] ) && $name === $notice['file'] && ! empty( $notice['virtual'] );
 		$conflict = $known !== $state['checksum'] || $virtual;
 		if ( ! $state['exists'] ) {
-			echo '<div class="notice notice-info inline"><p>' . esc_html__( 'No physical file exists at the public root. WordPress, Yoast SEO, Rank Math, or another plugin may still serve a virtual public response. Select Validate public file to inspect it before publishing a physical file.', 'serfe-ai-discovery' ) . '</p></div>';
-			if ( 'robots.txt' === $name ) {
-				printf( '<p class="description"><a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a> · <a href="%3$s" target="_blank" rel="noopener noreferrer">%4$s</a></p>', esc_url( 'https://yoast.com/help/how-to-edit-robots-txt-through-yoast-seo/' ), esc_html__( 'Yoast SEO robots.txt guide', 'serfe-ai-discovery' ), esc_url( 'https://rankmath.com/kb/how-to-edit-robots-txt-with-rank-math/' ), esc_html__( 'Rank Math robots.txt guide', 'serfe-ai-discovery' ) );
-			}
+			echo '<div class="notice notice-info inline"><p>' . esc_html__( 'No physical file exists at the public root. A virtual public response might still be served. Select Validate public file to inspect it before publishing a physical file.', 'serfe-ai-discovery' ) . '</p></div>';
 		}
 		if ( $conflict ) {
 			echo '<div class="notice notice-warning inline"><p>' . esc_html__( 'This public response is unmanaged or changed outside the plugin. Review its current content before taking control.', 'serfe-ai-discovery' ) . '</p></div>';
@@ -219,9 +229,22 @@ final class Discovery_Files_Admin {
 		}
 		$editor        = is_array( $notice ) && isset( $notice['file'], $notice['candidate'] ) && $name === $notice['file'] ? $notice['candidate'] : $state['content'];
 		$display_state = $state;
+
+		if ( ! $state['exists'] && '' === $editor ) {
+			$live_result = Discovery_Files::validate_current( $name );
+			if ( ! is_wp_error( $live_result ) && ! empty( $live_result['virtual'] ) ) {
+				$editor = $live_result['content'];
+				$display_state['content']  = $live_result['content'];
+				$display_state['checksum'] = isset( $live_result['checksum'] ) ? $live_result['checksum'] : '';
+				// Setting virtual to true so conflict checks work identically.
+				$virtual = true;
+				$conflict = true;
+			}
+		}
+
 		if ( $virtual ) {
-			$display_state['content']  = isset( $notice['public_content'] ) ? $notice['public_content'] : '';
-			$display_state['checksum'] = $notice['checksum'];
+			$display_state['content']  = isset( $notice['public_content'] ) ? $notice['public_content'] : $display_state['content'];
+			$display_state['checksum'] = isset( $notice['checksum'] ) ? $notice['checksum'] : $display_state['checksum'];
 			if ( '' === $editor ) {
 				$editor = $display_state['content'];
 			}
@@ -229,7 +252,7 @@ final class Discovery_Files_Admin {
 		if ( 'llms.txt' === $name ) {
 			echo '<p>' . esc_html__( 'Start with the site name and a concise description. Group current public canonical links under useful headings such as Products, Services, Resources, Support, Documentation, and Legal. Review this guide after important content or URL changes.', 'serfe-ai-discovery' ) . '</p>';
 		}
-		printf( '<p><strong>%s</strong> <a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_html__( 'Public URL:', 'serfe-ai-discovery' ), esc_url( home_url( '/' . $name ) ), esc_html( home_url( '/' . $name ) ) );
+		printf( '<p><strong>%s</strong> <a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_html__( 'If your file is present, you could see content here:', 'serfe-ai-discovery' ), esc_url( home_url( '/' . $name ) ), esc_html( home_url( '/' . $name ) ) );
 		if ( isset( $state['meta']['published_at'], $state['meta']['user_id'] ) ) {
 			printf( '<p class="description">%s</p>', esc_html( sprintf( /* translators: 1: date and time, 2: administrator ID. */ __( 'Last published: %1$s by administrator %2$d.', 'serfe-ai-discovery' ), $state['meta']['published_at'], $state['meta']['user_id'] ) ) );
 		}
@@ -237,19 +260,48 @@ final class Discovery_Files_Admin {
 		printf( '<form action="%s" method="post">', esc_url( admin_url( 'admin-post.php' ) ) );
 		wp_nonce_field( self::ACTION );
 		printf( '<input type="hidden" name="action" value="%s"><input type="hidden" name="file" value="%s"><input type="hidden" name="checksum" value="%s">', esc_attr( self::ACTION ), esc_attr( $name ), esc_attr( $display_state['checksum'] ) );
+
 		printf( '<p><label for="serfe-file-%s"><strong>%s</strong></label></p><textarea id="serfe-file-%s" name="content" rows="15" class="large-text code">%s</textarea>', esc_attr( $name ), esc_html__( 'Editor content', 'serfe-ai-discovery' ), esc_attr( $name ), esc_textarea( $editor ) );
-		if ( $conflict ) {
-			echo '<p><label><input type="checkbox" name="takeover" value="1"> ' . esc_html__( 'I reviewed the current public file and confirm that this plugin may take control of it.', 'serfe-ai-discovery' ) . '</label></p>';
-		}
+		$is_checked = ! $conflict ? ' checked' : '';
+		echo '<p><label><input type="checkbox" name="takeover" value="1" required' . $is_checked . '> ' . esc_html__( 'I reviewed the current public file and confirm that this plugin may take control of it.', 'serfe-ai-discovery' ) . '</label></p>';
 		echo '<p><button type="submit" name="mode" value="publish" class="button button-primary">' . esc_html__( 'Publish file', 'serfe-ai-discovery' ) . '</button> ';
-		echo '<button type="submit" name="mode" value="validate" class="button">' . esc_html__( 'Validate public file', 'serfe-ai-discovery' ) . '</button> ';
+		if ( 'robots.txt' === $name ) {
+			$has_signals = false !== strpos( $editor, 'Content-Signal:' ) || false !== strpos( $editor, '# START SERFE BLOCK' );
+			if ( $has_signals ) {
+				echo '<button type="submit" name="mode" value="remove_content_signals" class="button" style="background: #d63638; color: #fff; border-color: #d63638;">' . esc_html__( 'Remove Content Signals', 'serfe-ai-discovery' ) . '</button> ';
+			} else {
+				echo '<button type="submit" name="mode" value="activate_content_signals" class="button button-primary">' . esc_html__( 'Activate Content Signals', 'serfe-ai-discovery' ) . '</button> ';
+			}
+			$blog_slug = self::get_blog_slug();
+			if ( $blog_slug ) {
+				echo '<button type="submit" name="mode" value="protect_blog_ai_train" class="button button-primary">' . esc_html__( 'Protect Blog from AI Train', 'serfe-ai-discovery' ) . '</button> ';
+			}
+		}
+		echo '<button type="submit" name="mode" value="validate" class="button" formnovalidate>' . esc_html__( 'Reset and load current', 'serfe-ai-discovery' ) . '</button> ';
 		if ( 'llms.txt' === $name ) {
-			echo '<button type="submit" name="mode" value="template" class="button">' . esc_html__( 'Insert starter template', 'serfe-ai-discovery' ) . '</button> ';
+			echo '<button type="submit" name="mode" value="template" class="button" formnovalidate>' . esc_html__( 'Insert starter template', 'serfe-ai-discovery' ) . '</button> ';
 		}
 		if ( is_string( $state['backup'] ) ) {
-			echo '<button type="submit" name="mode" value="restore" class="button">' . esc_html__( 'Restore previous version', 'serfe-ai-discovery' ) . '</button>';
+			echo '<button type="submit" name="mode" value="restore" class="button" formnovalidate>' . esc_html__( 'Restore previous version', 'serfe-ai-discovery' ) . '</button>';
 		}
 		echo '</p></form>';
+		if ( 'robots.txt' === $name ) {
+			echo '<p><a href="https://contentsignals.org/?utm_source=serfe-ai-discovery" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Learn more about Content Signals options', 'serfe-ai-discovery' ) . '</a></p>';
+			
+			$seo_links = array();
+			$seo_names = array();
+			if ( defined( 'WPSEO_VERSION' ) ) {
+				$seo_links[] = sprintf( '<a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>', esc_url( 'https://yoast.com/help/how-to-edit-robots-txt-through-yoast-seo/' ), esc_html__( 'Yoast SEO robots.txt guide', 'serfe-ai-discovery' ) );
+				$seo_names[] = 'Yoast SEO';
+			}
+			if ( defined( 'RANK_MATH_VERSION' ) ) {
+				$seo_links[] = sprintf( '<a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>', esc_url( 'https://rankmath.com/kb/how-to-edit-robots-txt-with-rank-math/' ), esc_html__( 'Rank Math robots.txt guide', 'serfe-ai-discovery' ) );
+				$seo_names[] = 'Rank Math';
+			}
+			if ( ! empty( $seo_names ) ) {
+				echo '<p class="description">' . sprintf( esc_html__( 'We detected you have %1$s installed, keep in mind that other plugins may edit your robots.txt even without your explicit action.', 'serfe-ai-discovery' ), implode( ' and ', $seo_names ) ) . '<br>' . implode( ' &middot; ', $seo_links ) . '</p>';
+			}
+		}
 		if ( $conflict || ( is_array( $notice ) && isset( $notice['file'], $notice['code'] ) && $name === $notice['file'] ) ) {
 			$this->render_review( $name, $display_state, $editor );
 		}
@@ -296,5 +348,29 @@ final class Discovery_Files_Admin {
 	/** Isolate admin notices per administrator without putting content in URLs. */
 	private static function notice_key() {
 		return 'serfe_ai_discovery_file_notice_' . get_current_user_id();
+	}
+	private static function content_signals_block( $with_blog = false ) {
+		$block = "# START SERFE BLOCK\n# ---------------------------\n# Allow unfettered access to your / page\nUser-Agent: *\nContent-Signal: / ai-train=yes, search=yes, ai-input=yes\nAllow: /\n";
+		if ( $with_blog ) {
+			$blog_slug = self::get_blog_slug();
+			if ( $blog_slug ) {
+				$block .= "\n# Search-only access to your blog\nUser-Agent: *\nContent-Signal: " . $blog_slug . " ai-train=no, search=yes, ai-input=no\nAllow: " . $blog_slug . "\n";
+			}
+		}
+		$block .= "\n# ---------------------------\n# END SERFE BLOCK";
+		return $block;
+	}
+
+	private static function get_blog_slug() {
+		if ( 'page' === get_option( 'show_on_front' ) ) {
+			$page_for_posts = get_option( 'page_for_posts' );
+			if ( $page_for_posts ) {
+				$post = get_post( $page_for_posts );
+				if ( $post ) {
+					return '/' . $post->post_name . '/';
+				}
+			}
+		}
+		return false;
 	}
 }
