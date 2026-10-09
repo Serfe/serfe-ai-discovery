@@ -6,11 +6,36 @@
    fill="none"
    version="1.1"
    id="svg18"
+   sodipodi:docname="wp_serfe_logo_gray.svg"
+   inkscape:version="1.3.2 (1:1.3.2+202311252150+091e20ef0f)"
+   inkscape:export-filename="wp_serfe_logo_color.png"
+   inkscape:export-xdpi="94.363266"
+   inkscape:export-ydpi="94.363266"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="13.670731"
+     inkscape:cx="16.312222"
+     inkscape:cy="11.557539"
+     inkscape:window-width="1856"
+     inkscape:window-height="1136"
+     inkscape:window-x="64"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg18" />
   <metadata
      id="metadata24">
     <rdf:RDF>
@@ -28,22 +53,16 @@
      id="g1"
      transform="matrix(0.62499999,0,0,0.62499999,-0.4272024,-0.31295445)">
     <path
-       d="m 16.805164,32.039496 c 8.597708,0 15.567568,-6.96986 15.567568,-15.567568 0,-8.5977269 -6.96986,-15.56756946 -15.567568,-15.56756946 -8.5977267,0 -15.5675693,6.96984256 -15.5675693,15.56756946 0,8.597708 6.9698426,15.567568 15.5675693,15.567568 z"
-       fill="#004f94"
        id="path2"
-       style="fill:#666666;stroke:#ffffff;stroke-width:0.864863;stroke-opacity:0.5301" />
-    <path
-       d="m 16.80525,30.405247 c 7.695135,0 13.933319,-6.238098 13.933319,-13.933319 0,-7.6951618 -6.238184,-13.9333293 -13.933319,-13.9333293 -7.6951966,0 -13.9333633,6.2381675 -13.9333633,13.9333293 0,7.695221 6.2381667,13.933319 13.9333633,13.933319 z"
-       fill="#ffffff"
-       id="path4"
-       style="stroke-width:0.864863" />
+       style="fill:#666666;stroke:#ffffff;stroke-width:0.864863;stroke-opacity:0.5301"
+       d="M 16.805399 0.90385213 C 8.207681 0.90385213 1.2366489 7.8748841 1.2366489 16.472602 C 1.2366489 25.070302 8.207681 32.038228 16.805399 32.038228 C 25.403099 32.038228 32.374149 25.070302 32.374149 16.472602 C 32.374149 7.8748841 25.403099 0.90385213 16.805399 0.90385213 z M 16.805399 2.5382272 C 24.500526 2.5382272 30.739774 8.7774483 30.739774 16.472602 C 30.739774 24.167816 24.500526 30.403853 16.805399 30.403853 C 9.1102102 30.403853 2.8710239 24.167816 2.8710239 16.472602 C 2.8710239 8.7774483 9.1102102 2.5382272 16.805399 2.5382272 z " />
     <path
        fill-rule="evenodd"
        clip-rule="evenodd"
        d="m 13.664061,7.4200347 c 0,3.1410603 3.947588,3.9688213 6.791611,6.3989193 3.714162,3.183568 3.671697,8.786595 0.498767,12.108109 -3.003157,3.141103 -7.576909,3.363979 -11.1530733,0.95507 -3.3427285,-2.260324 -5.5393815,-6.069968 -5.5393815,-10.410205 0,-6.6642172 5.1998012,-12.1293336 11.7685188,-12.5113617 0.116758,-0.010612 0.116758,0.1167308 0.03182,0.1379546 -1.390097,0.4563114 -2.39827,1.7721774 -2.39827,3.3215138 z"
        fill="#ed6d0f"
        id="path6"
-       style="fill:#999999;stroke-width:0.864863" />
+       style="fill:#b3b3b3;stroke-width:0.864863" />
   </g>
   <path
      fill-rule="evenodd"
