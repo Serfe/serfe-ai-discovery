@@ -510,7 +510,8 @@ final class Settings {
 			array( 'llms.txt', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Review or publish the public file.', 'serfe-ai-discovery' ), '' ),
 			array( __( 'XML Sitemap', 'serfe-ai-discovery' ), __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks.', 'serfe-ai-discovery' ), __( 'XML sitemap', 'serfe-ai-discovery' ) ),
 			array( __( 'API Catalog', 'serfe-ai-discovery' ), 1 === (int) $choices['api_catalog_enabled'] ? __( 'Enabled', 'serfe-ai-discovery' ) : __( 'Disabled', 'serfe-ai-discovery' ), __( 'Review its public response in Discovery.', 'serfe-ai-discovery' ), 'API Catalog' ),
-			array( __( 'MCP / Server Card', 'serfe-ai-discovery' ), __( 'Not validated', 'serfe-ai-discovery' ), __( 'Declare a qualifying MCP endpoint before enabling a Server Card.', 'serfe-ai-discovery' ), __( 'MCP server', 'serfe-ai-discovery' ) ),
+			array( __( 'MCP server', 'serfe-ai-discovery' ), __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks for an explicitly registered service.', 'serfe-ai-discovery' ), __( 'MCP server', 'serfe-ai-discovery' ) ),
+			array( __( 'MCP Server Card', 'serfe-ai-discovery' ), __( 'Not available', 'serfe-ai-discovery' ), __( 'Server Card configuration and publication are not available in this version.', 'serfe-ai-discovery' ), '' ),
 		);
 		foreach ( $rows as &$row ) {
 			if ( '' === $row[3] ) {
@@ -576,7 +577,7 @@ final class Settings {
 	/** Provide maintained local documentation and clear feature limits. */
 	private function render_help_tab() {
 		echo '<h2>' . esc_html__( 'Help & Support', 'serfe-ai-discovery' ) . '</h2>';
-		echo '<p>' . esc_html__( 'This starter plugin serves approved public content as Markdown, can publish robots.txt and llms.txt, and publishes an optional API Catalog. MCP Server Cards and a site-wide cache generator are not available yet.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'This starter plugin serves approved public content as Markdown, can publish robots.txt and llms.txt, and publishes an optional API Catalog. Generated Markdown uses a server-side cache with invalidation; HTTP responses remain private and no-store. MCP Server Cards are not available yet.', 'serfe-ai-discovery' ) . '</p>';
 		printf( '<p><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_url( 'https://github.com/Serfe-com' ), esc_html__( 'Serfe open-source repositories', 'serfe-ai-discovery' ) );
 		echo '<p>' . esc_html__( 'For support and security reporting, use the channels documented in the plugin repository.', 'serfe-ai-discovery' ) . '</p>';
 
