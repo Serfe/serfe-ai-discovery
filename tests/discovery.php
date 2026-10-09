@@ -114,8 +114,8 @@ function home_url( $path = '' ) {
 	return ( isset( $GLOBALS['discovery_test_home_url'] ) ? $GLOBALS['discovery_test_home_url'] : 'https://example.com' ) . $path;
 }
 
-function wp_parse_url( $url ) {
-	return parse_url( $url );
+function wp_parse_url( $url, $component = -1 ) {
+	return parse_url( $url, $component );
 }
 
 function has_term( $term_id, $taxonomy, $post ) {

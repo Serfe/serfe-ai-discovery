@@ -15,6 +15,10 @@ use Serfe\AI_Discovery\Request_Router;
 use Serfe\AI_Discovery\Discovery;
 use Serfe\AI_Discovery\Response;
 
+function wp_parse_url( $url, $component = -1 ) {
+	return parse_url( $url, $component );
+}
+
 $failures = array();
 $tests    = 0;
 

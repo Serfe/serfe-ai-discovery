@@ -101,6 +101,7 @@ final class Readiness {
 			array(
 				'page'      => 'serfe-agent-readiness',
 				'refreshed' => '1',
+				'_wpnonce'  => wp_create_nonce( 'serfe_ai_discovery_readiness_refreshed' ),
 			),
 			admin_url( 'tools.php' )
 		);
@@ -136,7 +137,7 @@ final class Readiness {
 			</div>
 			<p class="description"><?php esc_html_e( 'Checks run only when you select Run checks, then the result is cached for five minutes. A warning means the local loopback request could not be completed, not that the capability is absent.', 'serfe-ai-discovery' ); ?></p>
 
-			<?php if ( isset( $_GET['refreshed'] ) ) : ?>
+			<?php if ( isset( $_GET['refreshed'], $_GET['_wpnonce'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['refreshed'] ) ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'serfe_ai_discovery_readiness_refreshed' ) ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Checks refreshed.', 'serfe-ai-discovery' ); ?></p></div>
 			<?php endif; ?>
 

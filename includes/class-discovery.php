@@ -28,7 +28,7 @@ final class Discovery {
 
 	/** Serve the RFC 9727 API catalog from its standard well-known URI. */
 	public function send_api_catalog() {
-		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Preserve encoded URI bytes for an exact path comparison; no raw value is rendered.
 		if ( ! Settings::api_catalog_enabled() || ! self::is_api_catalog_request( $uri ) ) {
 			return;
 		}
@@ -61,8 +61,8 @@ final class Discovery {
 
 	/** @param string $uri Request URI. @return bool */
 	public static function is_api_catalog_request( $uri ) {
-		$expected_path = (string) parse_url( home_url( self::API_CATALOG_PATH ), PHP_URL_PATH );
-		return rtrim( (string) parse_url( (string) $uri, PHP_URL_PATH ), '/' ) === rtrim( $expected_path, '/' );
+		$expected_path = (string) wp_parse_url( home_url( self::API_CATALOG_PATH ), PHP_URL_PATH );
+		return rtrim( (string) wp_parse_url( (string) $uri, PHP_URL_PATH ), '/' ) === rtrim( $expected_path, '/' );
 	}
 
 	/** @return array<string, array<int, array<string, mixed>>> */
@@ -174,7 +174,7 @@ final class Discovery {
 	 */
 	public static function markdown_url( $permalink ) {
 		$permalink = (string) $permalink;
-		$path      = (string) parse_url( $permalink, PHP_URL_PATH );
+		$path      = (string) wp_parse_url( $permalink, PHP_URL_PATH );
 		if ( $path === '' || $path === '/' ) {
 			return rtrim( $permalink, '/\\' ) . '/.md';
 		}
