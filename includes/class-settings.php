@@ -365,8 +365,8 @@ final class Settings {
 			'overview'  => __( 'Overview', 'serfe-ai-discovery' ),
 			'markdown'  => __( 'Markdown', 'serfe-ai-discovery' ),
 			'robots'    => __( 'Robots.txt', 'serfe-ai-discovery' ),
-			'llms'      => __( 'llms.txt', 'serfe-ai-discovery' ),
-			'discovery' => __( 'Discovery', 'serfe-ai-discovery' ),
+			'llms'      => __( 'AI Files (llms.txt)', 'serfe-ai-discovery' ),
+			'discovery' => __( 'Discovery Checks', 'serfe-ai-discovery' ),
 			'help'      => __( 'Help & Support', 'serfe-ai-discovery' ),
 		);
 		// The tab selects read-only output; no state changes occur from this query parameter.
@@ -535,7 +535,8 @@ final class Settings {
 		unset( $row );
 		$rows[1] = $this->file_overview_row( 'robots.txt' );
 		$rows[2] = $this->file_overview_row( 'llms.txt' );
-		echo '<p>' . esc_html__( 'Public discovery features are opt-in. Validation runs only when an administrator requests it.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<h2>' . esc_html__( 'WordPress AI discovery overview', 'serfe-ai-discovery' ) . '</h2>';
+		echo '<div class="notice notice-info inline"><p>' . esc_html__( 'Public discovery features are opt-in. Validation runs only when an administrator requests it.', 'serfe-ai-discovery' ) . '</p></div>';
 		echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Capability', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'State', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Last validation', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Next action', 'serfe-ai-discovery' ) . '</th></tr></thead><tbody>';
 		foreach ( $rows as $row ) {
 			$checked = ! empty( $row[4] ) ? ( is_string( $row[4] ) ? $row[4] : $date ) : __( 'Not validated', 'serfe-ai-discovery' );
