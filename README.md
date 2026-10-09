@@ -33,6 +33,7 @@ When API Catalog publication is enabled in the settings, the homepage additional
 
 - Published WordPress posts.
 - Published WordPress pages.
+- The WordPress Posts page archive, including pagination, when the site has one configured.
 - Published WooCommerce products that meet the plugin's exposure rules, including their public WooCommerce descriptions, price, and availability.
 - Enabled WooCommerce shop, product category, and product tag archives, listing approved public products with their public price and availability.
 - Selected public, publicly queryable Custom Post Types, enabled one by one.

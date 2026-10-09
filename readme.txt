@@ -11,7 +11,7 @@ Publish approved public WordPress content as Markdown and manage selected discov
 
 == Description ==
 
-Serfe WordPress AI Discovery is an opt-in starter kit for public content. It returns Markdown for approved posts, pages, WooCommerce products and catalog archives, and selected public Custom Post Types. Browsers continue to receive canonical HTML.
+Serfe WordPress AI Discovery is an opt-in starter kit for public content. It returns Markdown for approved posts, pages, the configured WordPress Posts page archive, WooCommerce products and catalog archives, and selected public Custom Post Types. Browsers continue to receive canonical HTML.
 
 An administrator can also review and publish root robots.txt and llms.txt files, enable a catalog of existing public APIs, and run bounded local checks for discovery resources. These features do not create an MCP server, agent tools, authentication, or new API permissions.
 

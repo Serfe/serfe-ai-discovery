@@ -88,6 +88,10 @@ function is_post_type_archive() {
 	return ! empty( $GLOBALS['discovery_test_context']['archive'] );
 }
 
+function is_home() {
+	return ! empty( $GLOBALS['discovery_test_context']['home'] );
+}
+
 function is_shop() {
 	return ! empty( $GLOBALS['discovery_test_context']['shop'] );
 }
@@ -121,6 +125,9 @@ function get_post_type_archive_link( $type ) {
 }
 
 function get_pagenum_link( $page, $escape = true ) {
+	if ( ! empty( $GLOBALS['discovery_test_context']['home'] ) ) {
+		return 'https://example.com/blog/page/' . $page . '/';
+	}
 	if ( ! empty( $GLOBALS['discovery_test_context']['shop'] ) ) {
 		return 'https://example.com/product/page/' . $page . '/';
 	}
@@ -172,6 +179,9 @@ function wp_parse_args( $args, $defaults ) {
 }
 
 function get_permalink( $post ) {
+	if ( is_int( $post ) || ( is_string( $post ) && ctype_digit( $post ) ) ) {
+		return 7 === (int) $post ? 'https://example.com/blog/' : 'https://example.com/item-' . (int) $post . '/';
+	}
 	return 'https://example.com/item-' . $post->ID . '/';
 }
 
@@ -265,6 +275,7 @@ $assert_same( true, $discovery->current_content_has_markdown(), 'Exposes publish
 $GLOBALS['discovery_test_options'][ Settings::OPTION ] = array(
 	'schema_version' => 2,
 	'markdown_enabled' => 1,
+	'markdown_all_content' => 0,
 	'detail_post_types' => array( 'post', 'page', 'product' ),
 	'blocked_post_types' => array( 'post' ),
 	'blocked_paths' => array(),
@@ -340,6 +351,23 @@ $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects embed'
 $GLOBALS['discovery_test_context']['embed']    = false;
 $GLOBALS['discovery_test_context']['singular'] = false;
 $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects archive' );
+$GLOBALS['discovery_test_context']['home'] = true;
+$GLOBALS['discovery_test_options']['page_for_posts'] = 7;
+$GLOBALS['discovery_test_options']['show_on_front'] = 'page';
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array( 'post' );
+$assert_same( array( 'type' => 'post', 'page' => 1, 'url' => 'https://example.com/blog/' ), $discovery->current_archive_context(), 'Allows the assigned Posts page archive' );
+$GLOBALS['discovery_test_context']['paged'] = 2;
+$assert_same( array( 'type' => 'post', 'page' => 2, 'url' => 'https://example.com/blog/page/2/' ), $discovery->current_archive_context(), 'Allows Posts page archive pagination' );
+$GLOBALS['discovery_test_context']['paged'] = 0;
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_paths'] = array( '/blog' );
+$assert_same( null, $discovery->current_archive_context(), 'Blocked Posts page path overrides publication' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_paths'] = array();
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array();
+$assert_same( null, $discovery->current_archive_context(), 'Posts page archive requires opt-in when granular publication is used' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['markdown_all_content'] = 1;
+$assert_same( array( 'type' => 'post', 'page' => 1, 'url' => 'https://example.com/blog/' ), $discovery->current_archive_context(), 'Publishes the Posts page archive with full publication enabled' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['markdown_all_content'] = 0;
+$GLOBALS['discovery_test_context']['home'] = false;
 $GLOBALS['discovery_test_context']['archive'] = true;
 $GLOBALS['discovery_test_context']['post'] = new WP_Post_Type( 'book' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array( 'book' );

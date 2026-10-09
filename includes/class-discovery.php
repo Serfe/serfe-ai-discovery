@@ -128,6 +128,21 @@ final class Discovery {
 			return null;
 		}
 		$page = max( 1, (int) get_query_var( 'paged' ) );
+		if ( is_home() ) {
+			$post_type = get_post_type_object( 'post' );
+			$posts_id  = (int) get_option( 'page_for_posts' );
+			$url       = $posts_id > 0 ? get_permalink( $posts_id ) : home_url( '/' );
+			$url       = 1 === $page ? $url : get_pagenum_link( $page, false );
+			if ( ! $post_type || ! $post_type->public || ! $post_type->publicly_queryable || ! Settings::archive_enabled_for( 'post' )
+				|| ! is_string( $url ) || '' === $url || Exclusions::blocks_archive( 'post', $url ) ) {
+				return null;
+			}
+			return array(
+				'type' => 'post',
+				'page' => $page,
+				'url'  => $url,
+			);
+		}
 		if ( function_exists( 'is_shop' ) && is_shop() ) {
 			$type = get_post_type_object( 'product' );
 			$url  = 1 === $page ? get_post_type_archive_link( 'product' ) : get_pagenum_link( $page, false );

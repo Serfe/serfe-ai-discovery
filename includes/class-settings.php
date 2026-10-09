@@ -153,6 +153,9 @@ final class Settings {
 	/** @return array<int, string> Public archive keys available for opt-in. */
 	public static function supported_archive_keys() {
 		$archives = array();
+		if ( (int) get_option( 'page_for_posts' ) > 0 || 'posts' === get_option( 'show_on_front' ) ) {
+			$archives[] = 'post';
+		}
 		foreach ( self::supported_post_types() as $type ) {
 			$object = get_post_type_object( $type );
 			if ( $object && ! empty( $object->public ) && ! empty( $object->publicly_queryable ) && ! empty( $object->has_archive ) ) {
@@ -269,14 +272,15 @@ final class Settings {
 		}
 
 		return array(
-			'schema_version'      => self::SCHEMA_VERSION,
-			'markdown_enabled'    => isset( $input['markdown_enabled'] ) && in_array( $input['markdown_enabled'], array( '1', 1 ), true ) ? 1 : 0,
-			'detail_post_types'   => array_values( array_unique( $allowed_types ) ),
-			'enabled_archives'    => array_values( array_unique( $allowed_archives ) ),
-			'blocked_post_types'  => array_values( array_unique( $allowed_blocked_types ) ),
-			'blocked_paths'       => array_values( array_unique( $blocked_paths ) ),
-			'blocked_terms'       => array_values( array_unique( $blocked_terms ) ),
-			'api_catalog_enabled' => isset( $input['api_catalog_enabled'] ) && in_array( $input['api_catalog_enabled'], array( '1', 1 ), true ) ? 1 : 0,
+			'schema_version'       => self::SCHEMA_VERSION,
+			'markdown_enabled'     => isset( $input['markdown_enabled'] ) && in_array( $input['markdown_enabled'], array( '1', 1 ), true ) ? 1 : 0,
+			'markdown_all_content' => 1,
+			'detail_post_types'    => array_values( array_unique( $allowed_types ) ),
+			'enabled_archives'     => array_values( array_unique( $allowed_archives ) ),
+			'blocked_post_types'   => array_values( array_unique( $allowed_blocked_types ) ),
+			'blocked_paths'        => array_values( array_unique( $blocked_paths ) ),
+			'blocked_terms'        => array_values( array_unique( $blocked_terms ) ),
+			'api_catalog_enabled'  => isset( $input['api_catalog_enabled'] ) && in_array( $input['api_catalog_enabled'], array( '1', 1 ), true ) ? 1 : 0,
 		);
 	}
 
