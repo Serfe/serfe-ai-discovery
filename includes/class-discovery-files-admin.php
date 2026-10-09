@@ -34,7 +34,7 @@ final class Discovery_Files_Admin {
 		check_admin_referer( self::ACTION );
 		$name = isset( $_POST['file'] ) && is_string( $_POST['file'] ) ? wp_unslash( $_POST['file'] ) : '';
 		$mode = isset( $_POST['mode'] ) && is_string( $_POST['mode'] ) ? wp_unslash( $_POST['mode'] ) : '';
-		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) || ! in_array( $mode, array( 'publish', 'restore', 'template' ), true ) || ( 'template' === $mode && 'llms.txt' !== $name ) ) {
+		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) || ! in_array( $mode, array( 'publish', 'restore', 'template', 'validate' ), true ) || ( 'template' === $mode && 'llms.txt' !== $name ) ) {
 			wp_die( esc_html__( 'Invalid discovery file action.', 'serfe-ai-discovery' ) );
 		}
 		$candidate = isset( $_POST['content'] ) && is_string( $_POST['content'] ) ? wp_unslash( $_POST['content'] ) : '';
@@ -54,9 +54,13 @@ final class Discovery_Files_Admin {
 				'candidate' => self::starter_template(),
 			);
 		} else {
-			$result = 'restore' === $mode
-				? Discovery_Files::restore( $name, $takeover, $expected )
-				: Discovery_Files::publish( $name, $candidate, $takeover, $expected );
+			if ( 'validate' === $mode ) {
+				$result = Discovery_Files::validate_current( $name );
+			} elseif ( 'restore' === $mode ) {
+				$result = Discovery_Files::restore( $name, $takeover, $expected );
+			} else {
+				$result = Discovery_Files::publish( $name, $candidate, $takeover, $expected );
+			}
 			if ( is_wp_error( $result ) ) {
 				$notice = array(
 					'file'      => $name,
@@ -67,12 +71,16 @@ final class Discovery_Files_Admin {
 				);
 			} else {
 				$notice = array(
-					'file'    => $name,
-					'type'    => $result['verified'] ? 'success' : 'warning',
-					'message' => $result['verified']
-						? __( 'The public file was published and its response was verified.', 'serfe-ai-discovery' )
-						: __( 'The file was written, but the public response did not match. Check your web server or cache.', 'serfe-ai-discovery' ),
+					'file'     => $name,
+					'type'     => $result['verified'] && empty( $result['warnings'] ) ? 'success' : 'warning',
+					'message'  => 'validate' === $mode
+						? __( 'The current public file was checked.', 'serfe-ai-discovery' )
+						: __( 'The public file was written and checked.', 'serfe-ai-discovery' ),
+					'warnings' => $result['warnings'],
 				);
+				if ( 'validate' === $mode && strlen( $candidate ) <= Discovery_Files::MAX_LIMIT ) {
+					$notice['candidate'] = $candidate;
+				}
 			}
 		}
 		set_transient( self::notice_key(), $notice, 300 );
@@ -125,6 +133,11 @@ final class Discovery_Files_Admin {
 		if ( is_array( $notice ) && isset( $notice['file'] ) && $name === $notice['file'] ) {
 			$type = isset( $notice['type'] ) && in_array( $notice['type'], array( 'success', 'warning', 'error', 'info' ), true ) ? $notice['type'] : 'info';
 			echo '<div class="notice notice-' . esc_attr( $type ) . ' inline"><p>' . esc_html( $notice['message'] ) . '</p></div>';
+			if ( isset( $notice['warnings'] ) && is_array( $notice['warnings'] ) ) {
+				foreach ( $notice['warnings'] as $warning ) {
+					echo '<div class="notice notice-warning inline"><p>' . esc_html( $warning ) . '</p></div>';
+				}
+			}
 		}
 		$editor = is_array( $notice ) && isset( $notice['file'], $notice['candidate'] ) && $name === $notice['file'] ? $notice['candidate'] : $state['content'];
 		if ( 'llms.txt' === $name ) {
@@ -143,6 +156,7 @@ final class Discovery_Files_Admin {
 			echo '<p><label><input type="checkbox" name="takeover" value="1"> ' . esc_html__( 'I reviewed the current public file and confirm that this plugin may take control of it.', 'serfe-ai-discovery' ) . '</label></p>';
 		}
 		echo '<p><button type="submit" name="mode" value="publish" class="button button-primary">' . esc_html__( 'Publish file', 'serfe-ai-discovery' ) . '</button> ';
+		echo '<button type="submit" name="mode" value="validate" class="button">' . esc_html__( 'Validate public file', 'serfe-ai-discovery' ) . '</button> ';
 		if ( 'llms.txt' === $name ) {
 			echo '<button type="submit" name="mode" value="template" class="button">' . esc_html__( 'Insert starter template', 'serfe-ai-discovery' ) . '</button> ';
 		}

@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Added a tabbed administrator overview with local feature states and guidance for Markdown, discovery files, and support.
 - Added protected editors for public-root robots.txt and llms.txt, with independent backup, restore, takeover review, a starter template, and a manual-copy fallback.
+- Added explicit public-file validation and non-blocking robots.txt sitemap and crawler-policy warnings.
 - Added opt-in Markdown for WooCommerce shop, product category, and product tag archives with approved public product listings.
 - Added opt-in Markdown for public Custom Post Type archives and their pagination, listing only individually approved public items.
 - Added administrator settings and per-item controls for Markdown publication.

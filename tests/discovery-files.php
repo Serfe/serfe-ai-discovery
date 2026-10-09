@@ -67,8 +67,17 @@ function get_current_user_id() {
 }
 
 function wp_safe_remote_get( $url, $args ) {
+	if ( false !== strpos( $url, 'sitemap.xml' ) ) {
+		$GLOBALS['test_sitemap_gets'][] = $url;
+		return array( 'code' => 200, 'body' => '<urlset/>' );
+	}
 	$path = $GLOBALS['test_root'] . '/' . basename( $url );
-	return array( 'code' => 200, 'body' => file_get_contents( $path ) );
+	return array( 'code' => 200, 'body' => ! empty( $GLOBALS['test_public_mismatch'] ) ? 'stale cache' : file_get_contents( $path ) );
+}
+
+function wp_safe_remote_head( $url, $args ) {
+	$GLOBALS['test_head_calls'][] = $url;
+	return array( 'code' => isset( $GLOBALS['test_sitemap_status'] ) ? $GLOBALS['test_sitemap_status'] : 200 );
 }
 
 function wp_remote_retrieve_response_code( $response ) {
@@ -126,6 +135,38 @@ $assert_same( true, $result['verified'], 'Confirms a published file through its 
 $assert_same( "User-agent: *\n", file_get_contents( $base . '/robots.txt' ), 'Publishes normalized content' );
 $assert_same( $current['content'], get_option( 'serfe_ai_discovery_robots_txt_backup' ), 'Keeps the previous public file' );
 $assert_same( 7, get_option( 'serfe_ai_discovery_robots_txt_meta' )['user_id'], 'Stores publisher identity' );
+$assert_same( true, get_option( 'serfe_ai_discovery_robots_txt_meta' )['verified'], 'Stores public response verification' );
+$assert_same( true, in_array( 'No sitemap is declared in robots.txt.', $result['warnings'], true ), 'Warns when robots.txt has no sitemap' );
+$GLOBALS['test_head_calls'] = array();
+$warnings = Discovery_Files::robots_warnings( "Sitemap: not-a-url\n" );
+$assert_same( true, in_array( 'A Sitemap URL is malformed. Review its absolute public URL.', $warnings, true ), 'Warns about a malformed sitemap URL' );
+$assert_same( array(), $GLOBALS['test_head_calls'], 'Does not request malformed sitemap URLs' );
+$GLOBALS['test_sitemap_status'] = 404;
+$warnings = Discovery_Files::robots_warnings( "Sitemap: https://example.com/sitemap.xml\n" );
+$assert_same( true, in_array( 'The Sitemap URL could not be reached: https://example.com/sitemap.xml', $warnings, true ), 'Warns about an unreachable sitemap' );
+$assert_same( array( 'https://example.com/sitemap.xml' ), $GLOBALS['test_head_calls'], 'Uses a safe HEAD request for a sitemap' );
+$GLOBALS['test_sitemap_status'] = 405;
+$GLOBALS['test_sitemap_gets']   = array();
+$warnings = Discovery_Files::robots_warnings( "Sitemap: https://example.com/sitemap.xml\n" );
+$assert_same( array(), $warnings, 'Accepts a sitemap when HEAD is unsupported but GET succeeds' );
+$assert_same( array( 'https://example.com/sitemap.xml' ), $GLOBALS['test_sitemap_gets'], 'Falls back to a bounded safe GET after HTTP 405' );
+$GLOBALS['test_sitemap_status'] = 200;
+$GLOBALS['test_head_calls'] = array();
+$sitemap_lines = '';
+for ( $i = 1; $i <= 6; $i++ ) {
+	$sitemap_lines .= "Sitemap: https://example.com/sitemap-{$i}.xml\n";
+}
+Discovery_Files::robots_warnings( $sitemap_lines );
+$assert_same( Discovery_Files::MAX_SITEMAPS, count( $GLOBALS['test_head_calls'] ), 'Bounds sitemap requests on validation' );
+$GLOBALS['test_public_mismatch'] = true;
+$validation = Discovery_Files::validate_current( 'robots.txt' );
+$assert_same( false, $validation['verified'], 'Detects a stale public response' );
+$assert_same( false, get_option( 'serfe_ai_discovery_robots_txt_meta' )['verified'], 'Stores failed public verification' );
+$GLOBALS['test_public_mismatch'] = false;
+$assert_same( true, Discovery_Files::validate_current( 'robots.txt' )['verified'], 'Recovers after the public response matches' );
+$GLOBALS['test_can_manage'] = false;
+$assert_error( 'forbidden', Discovery_Files::validate_current( 'robots.txt' ), 'Requires administrator capability for validation' );
+$GLOBALS['test_can_manage'] = true;
 $assert_error( 'stale_file', Discovery_Files::publish( 'robots.txt', "User-agent: *\nDisallow: /new/\n" ), 'Rejects an editor without the current checksum' );
 file_put_contents( $base . '/llms.txt', "# Existing\n" );
 $llms = Discovery_Files::inspect( 'llms.txt' );

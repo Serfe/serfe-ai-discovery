@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Discovery_Files {
 	const MAX_BYTES = 131072;
 	const MAX_LIMIT = 1048576;
+	const MAX_SITEMAPS = 5;
 
 	/** Resolve the public root only when the WordPress URL and directory layout agree. */
 	public static function resolve_public_root( $wp_root, $home_url, $site_url ) {
@@ -157,6 +158,37 @@ final class Discovery_Files {
 			return new \WP_Error( 'write_failed', __( 'The public file could not be replaced atomically.', 'serfe-ai-discovery' ) );
 		}
 		$checksum = hash( 'sha256', $content );
+		update_option(
+			self::meta_key( $name ),
+			array(
+				'checksum'     => $checksum,
+				'published_at' => current_time( 'mysql' ),
+				'user_id'      => get_current_user_id(),
+			),
+			false
+		);
+		$check = self::validate_current( $name );
+		$url   = home_url( '/' . $name );
+		return array(
+			'checksum' => $checksum,
+			'verified' => ! is_wp_error( $check ) && $check['verified'],
+			'warnings' => is_wp_error( $check ) ? array( $check->get_error_message() ) : $check['warnings'],
+			'url'      => $url,
+		);
+	}
+
+	/** Check the current public response and declared sitemap URLs only on an admin action. */
+	public static function validate_current( $name ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new \WP_Error( 'forbidden', __( 'You are not allowed to validate discovery files.', 'serfe-ai-discovery' ) );
+		}
+		$state = self::inspect( $name );
+		if ( is_wp_error( $state ) ) {
+			return $state;
+		}
+		if ( ! $state['exists'] ) {
+			return new \WP_Error( 'no_file', __( 'No public file exists at the resolved site root.', 'serfe-ai-discovery' ) );
+		}
 		$url      = home_url( '/' . $name );
 		$response = wp_safe_remote_get(
 			$url,
@@ -166,23 +198,65 @@ final class Discovery_Files {
 				'limit_response_size' => self::MAX_LIMIT + 1,
 			)
 		);
-		$verified = ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) && wp_remote_retrieve_body( $response ) === $content;
-		update_option(
-			self::meta_key( $name ),
-			array(
-				'checksum'     => $checksum,
-				'published_at' => current_time( 'mysql' ),
-				'validated_at' => current_time( 'mysql' ),
-				'verified'     => $verified,
-				'user_id'      => get_current_user_id(),
-			),
-			false
-		);
+		$verified = ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) && wp_remote_retrieve_body( $response ) === $state['content'];
+		$warnings = array();
+		if ( ! $verified ) {
+			$warnings[] = __( 'The public response does not match the current root file, or it could not be reached.', 'serfe-ai-discovery' );
+		}
+		if ( 'robots.txt' === $name ) {
+			$warnings = array_merge( $warnings, self::robots_warnings( $state['content'] ) );
+		}
+		$meta = $state['meta'];
+		if ( isset( $meta['checksum'] ) && $meta['checksum'] === $state['checksum'] ) {
+			$meta['validated_at'] = current_time( 'mysql' );
+			$meta['verified']     = $verified;
+			update_option( self::meta_key( $name ), $meta, false );
+		}
 		return array(
-			'checksum' => $checksum,
 			'verified' => $verified,
-			'url'      => $url,
+			'warnings' => $warnings,
 		);
+	}
+
+	/** Collect non-blocking policy and sitemap warnings for robots.txt. */
+	public static function robots_warnings( $content ) {
+		$warnings = array();
+		if ( ! preg_match_all( '/^\s*Sitemap\s*:\s*(.*?)\s*$/im', $content, $matches ) ) {
+			$warnings[] = __( 'No sitemap is declared in robots.txt.', 'serfe-ai-discovery' );
+		}
+		if ( preg_match( '/^\s*Disallow\s*:\s*\/\s*$/im', $content ) ) {
+			$warnings[] = __( 'A rule appears to block the entire public site. Review whether this matches your crawler policy.', 'serfe-ai-discovery' );
+		}
+		foreach ( array_slice( isset( $matches[1] ) ? $matches[1] : array(), 0, self::MAX_SITEMAPS ) as $url ) {
+			$parts = wp_parse_url( $url );
+			if ( ! is_array( $parts ) || ! isset( $parts['scheme'], $parts['host'] ) || ! in_array( strtolower( $parts['scheme'] ), array( 'http', 'https' ), true )
+				|| isset( $parts['user'] ) || isset( $parts['pass'] ) || isset( $parts['fragment'] ) || ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+				$warnings[] = __( 'A Sitemap URL is malformed. Review its absolute public URL.', 'serfe-ai-discovery' );
+				continue;
+			}
+			$response = wp_safe_remote_head(
+				$url,
+				array(
+					'redirection' => 0,
+					'timeout'     => 3,
+				)
+			);
+			if ( ! is_wp_error( $response ) && 405 === wp_remote_retrieve_response_code( $response ) ) {
+				$response = wp_safe_remote_get(
+					$url,
+					array(
+						'redirection'         => 0,
+						'timeout'             => 3,
+						'limit_response_size' => 512,
+					)
+				);
+			}
+			if ( is_wp_error( $response ) || 200 > wp_remote_retrieve_response_code( $response ) || 299 < wp_remote_retrieve_response_code( $response ) ) {
+				/* translators: %s: Sitemap URL from robots.txt. */
+				$warnings[] = sprintf( __( 'The Sitemap URL could not be reached: %s', 'serfe-ai-discovery' ), $url );
+			}
+		}
+		return $warnings;
 	}
 
 	/** Restore the one previous version using the same conflict checks as publication. */
