@@ -37,6 +37,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Product Markdown now uses WooCommerce's public short and full descriptions, visible variations, and the site's configured currency.
 - Migrated v1 settings to v2 without enabling any archive; existing individual-content choices remain in effect.
 
+### Fixed
+
+- Marked the documented HTTP smoke-check script as executable so contributors can run it directly.
+
 ### Removed
 
 - Removed site-specific product fields, shortcode integration, currency mutation, and plan grouping from product output.
