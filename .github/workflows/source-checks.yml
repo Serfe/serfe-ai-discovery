@@ -1,0 +1,34 @@
+name: Source checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.1', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: none
+          coverage: none
+      - name: Check PHP syntax
+        run: |
+          find includes tests -type f -name '*.php' -print0 | xargs -0 -n 1 php -l
+          php -l serfe-ai-discovery.php
+      - name: Run source tests
+        run: |
+          for test_file in tests/*.php; do php "$test_file"; done
+      - name: Check HTTP smoke script syntax
+        run: bash -n tests/http-smoke.sh
