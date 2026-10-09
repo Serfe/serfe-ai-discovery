@@ -34,6 +34,20 @@ final class WP_Post_Type {
 	}
 }
 
+final class WP_Term {
+	public $term_id;
+	public $taxonomy;
+	public $name;
+	public $description;
+
+	public function __construct( $term_id, $taxonomy, $name, $description = '' ) {
+		$this->term_id = $term_id;
+		$this->taxonomy = $taxonomy;
+		$this->name = $name;
+		$this->description = $description;
+	}
+}
+
 final class WP_Block_Type_Registry {
 	public static function get_instance() {
 		return new self();
@@ -74,6 +88,22 @@ function is_post_type_archive() {
 	return ! empty( $GLOBALS['discovery_test_context']['archive'] );
 }
 
+function is_shop() {
+	return ! empty( $GLOBALS['discovery_test_context']['shop'] );
+}
+
+function is_product_category() {
+	return ! empty( $GLOBALS['discovery_test_context']['product_cat'] );
+}
+
+function is_product_tag() {
+	return ! empty( $GLOBALS['discovery_test_context']['product_tag'] );
+}
+
+function get_term_link( $term ) {
+	return 'product_tag' === $term->taxonomy ? 'https://example.com/product-tag/featured/' : 'https://example.com/product-category/widgets/';
+}
+
 function is_404() {
 	return ! empty( $GLOBALS['discovery_test_context']['not_found'] );
 }
@@ -91,6 +121,9 @@ function get_post_type_archive_link( $type ) {
 }
 
 function get_pagenum_link( $page, $escape = true ) {
+	if ( ! empty( $GLOBALS['discovery_test_context']['shop'] ) ) {
+		return 'https://example.com/product/page/' . $page . '/';
+	}
 	return 'https://example.com/book/page/' . $page . '/';
 }
 
@@ -272,7 +305,7 @@ $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects produc
 $GLOBALS['discovery_test_context']['post'] = new WP_Post( 5, 'page' );
 $GLOBALS['discovery_test_enabled_items'][5] = '1';
 $assert_same( true, $discovery->current_content_has_markdown(), 'Exposes published page' );
-foreach ( array( 'cart', 'checkout', 'myaccount', 'pay', 'view_order' ) as $wc_page ) {
+foreach ( array( 'cart', 'checkout', 'myaccount', 'pay', 'view_order', 'shop' ) as $wc_page ) {
 	$GLOBALS['discovery_test_wc_pages'][ $wc_page ] = 5;
 	$assert_same( false, $discovery->current_content_has_markdown(), 'Rejects opted-in WooCommerce ' . $wc_page . ' page' );
 	unset( $GLOBALS['discovery_test_wc_pages'][ $wc_page ] );
@@ -330,7 +363,30 @@ $GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = arr
 $assert_same( null, $discovery->current_archive_context(), 'Archive requires independent opt-in' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array( 'product' );
 $GLOBALS['discovery_test_context']['post'] = new WP_Post_Type( 'product' );
-$assert_same( null, $discovery->current_archive_context(), 'Product archives remain unavailable in this stage' );
+$assert_same( null, $discovery->current_archive_context(), 'Product archive requires WooCommerce shop context' );
+$GLOBALS['discovery_test_context']['shop'] = true;
+$assert_same( array( 'type' => 'product', 'page' => 1, 'url' => 'https://example.com/product/' ), $discovery->current_archive_context(), 'Allows independently enabled WooCommerce shop archive' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_paths'] = array( '/product' );
+$assert_same( null, $discovery->current_archive_context(), 'Blocked shop path overrides opt-in' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_paths'] = array();
+$GLOBALS['discovery_test_context']['shop'] = false;
+$GLOBALS['discovery_test_context']['archive'] = false;
+$GLOBALS['discovery_test_context']['product_cat'] = true;
+$term = new WP_Term( 123, 'product_cat', 'Widgets', '<p>Public description</p>' );
+$GLOBALS['discovery_test_context']['post'] = $term;
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array( 'product_cat' );
+$assert_same( array( 'type' => 'product_cat', 'page' => 1, 'url' => 'https://example.com/product-category/widgets/', 'term' => $term ), $discovery->current_archive_context(), 'Allows enabled product category independently of shop' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_terms'] = array( 'product_cat:123' );
+$assert_same( null, $discovery->current_archive_context(), 'Blocked category overrides archive opt-in' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_terms'] = array();
+$GLOBALS['discovery_test_context']['product_cat'] = false;
+$GLOBALS['discovery_test_context']['product_tag'] = true;
+$tag = new WP_Term( 456, 'category', 'Featured' );
+$GLOBALS['discovery_test_context']['post'] = $tag;
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array( 'product_tag' );
+$assert_same( null, $discovery->current_archive_context(), 'Rejects a mismatched taxonomy object' );
+$tag->taxonomy = 'product_tag';
+$assert_same( array( 'type' => 'product_tag', 'page' => 1, 'url' => 'https://example.com/product-tag/featured/', 'term' => $tag ), $discovery->current_archive_context(), 'Allows enabled product tag archive' );
 $assert_same( true, Discovery::is_api_catalog_request( '/.well-known/api-catalog' ), 'Detects the API catalog URI' );
 $assert_same( true, Discovery::is_api_catalog_request( '/.well-known/api-catalog/?source=agent' ), 'Allows API catalog query strings' );
 $assert_same( false, Discovery::is_api_catalog_request( '/.well-known/other' ), 'Rejects other well-known URIs' );

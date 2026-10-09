@@ -25,6 +25,7 @@ require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-blog-generator.php';
 require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-archive-generator.php';
 require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-editorial-content.php';
 require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-product-generator.php';
+require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-catalog-generator.php';
 require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-settings.php';
 require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-exclusions.php';
 require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-discovery.php';

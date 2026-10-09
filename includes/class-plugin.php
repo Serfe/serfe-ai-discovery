@@ -22,6 +22,8 @@ final class Plugin {
 	private $product_generator;
 	/** @var Archive_Generator */
 	private $archive_generator;
+	/** @var Catalog_Generator */
+	private $catalog_generator;
 	/** @var Discovery */
 	private $discovery;
 	/** @var Readiness */
@@ -43,6 +45,7 @@ final class Plugin {
 		$this->blog_generator    = new Blog_Generator( new Html_To_Markdown() );
 		$this->product_generator = new Product_Generator();
 		$this->archive_generator = new Archive_Generator();
+		$this->catalog_generator = new Catalog_Generator( $this->product_generator );
 		$this->discovery         = new Discovery( $this->product_generator );
 		$this->readiness         = new Readiness();
 		$this->settings          = new Settings();
@@ -72,7 +75,10 @@ final class Plugin {
 			if ( ! ( $wp_query instanceof \WP_Query ) ) {
 				$this->response->not_found();
 			}
-			$this->response->markdown( $this->archive_generator->generate( $archive['type'], $archive['url'], $archive['page'], (int) $wp_query->max_num_pages, $wp_query->posts ), $this->router->is_accept_negotiated(), $archive['url'] );
+			$markdown = in_array( $archive['type'], array( 'product', 'product_cat', 'product_tag' ), true )
+				? $this->catalog_generator->generate( $archive, (int) $wp_query->max_num_pages, $wp_query->posts )
+				: $this->archive_generator->generate( $archive['type'], $archive['url'], $archive['page'], (int) $wp_query->max_num_pages, $wp_query->posts );
+			$this->response->markdown( $markdown, $this->router->is_accept_negotiated(), $archive['url'] );
 		}
 
 		if ( ! $this->discovery->current_content_has_markdown() ) {

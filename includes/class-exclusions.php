@@ -8,6 +8,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** Applies administrator denials after an item has otherwise qualified. */
 final class Exclusions {
+	/** Block a configured public taxonomy term before exposing its archive. */
+	public static function blocks_term( $taxonomy, $term_id ) {
+		$choices = Settings::choices();
+		return in_array( $taxonomy . ':' . (int) $term_id, $choices['blocked_terms'], true );
+	}
+
 	/** Apply configured type and exact-path exclusions to an archive. */
 	public static function blocks_archive( $type, $canonical_url ) {
 		$choices = Settings::choices();

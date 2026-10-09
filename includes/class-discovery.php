@@ -112,9 +112,50 @@ final class Discovery {
 		return 'product' === $post->post_type && $this->product_generator->is_exposable( $post->ID );
 	}
 
-	/** Return an enabled public Custom Post Type archive and its canonical page URL. */
+	/** Return an enabled public archive and its canonical page URL. */
 	public function current_archive_context() {
-		if ( ! is_post_type_archive() || is_404() || is_feed() || is_embed() || is_search() || is_user_logged_in() ) {
+		if ( is_404() || is_feed() || is_embed() || is_search() || is_user_logged_in() ) {
+			return null;
+		}
+		$page = max( 1, (int) get_query_var( 'paged' ) );
+		if ( function_exists( 'is_shop' ) && is_shop() ) {
+			$type = get_post_type_object( 'product' );
+			$url  = 1 === $page ? get_post_type_archive_link( 'product' ) : get_pagenum_link( $page, false );
+			if ( ! $type || ! $type->public || ! $type->publicly_queryable || ! Settings::archive_enabled_for( 'product' )
+				|| ! is_string( $url ) || Exclusions::blocks_archive( 'product', $url ) ) {
+				return null;
+			}
+			return array(
+				'type' => 'product',
+				'page' => $page,
+				'url'  => $url,
+			);
+		}
+		foreach ( array(
+			'product_cat' => 'is_product_category',
+			'product_tag' => 'is_product_tag',
+		) as $taxonomy => $condition ) {
+			if ( ! function_exists( $condition ) || ! call_user_func( $condition ) ) {
+				continue;
+			}
+			$term   = get_queried_object();
+			$object = taxonomy_exists( $taxonomy ) ? get_taxonomy( $taxonomy ) : null;
+			if ( ! ( $term instanceof \WP_Term ) || $taxonomy !== $term->taxonomy || ! $object || ! $object->public || ! $object->publicly_queryable
+				|| ! Settings::archive_enabled_for( $taxonomy ) || Exclusions::blocks_term( $taxonomy, $term->term_id ) ) {
+				return null;
+			}
+			$url = 1 === $page ? get_term_link( $term ) : get_pagenum_link( $page, false );
+			if ( ! is_string( $url ) || Exclusions::blocks_archive( 'product', $url ) || Exclusions::blocks_archive( $taxonomy, $url ) ) {
+				return null;
+			}
+			return array(
+				'type' => $taxonomy,
+				'page' => $page,
+				'url'  => $url,
+				'term' => $term,
+			);
+		}
+		if ( ! is_post_type_archive() ) {
 			return null;
 		}
 		$object = get_queried_object();
@@ -125,8 +166,7 @@ final class Discovery {
 		if ( ! $type || ! $type->public || ! $type->publicly_queryable || ! $type->has_archive ) {
 			return null;
 		}
-		$page = max( 1, (int) get_query_var( 'paged' ) );
-		$url  = 1 === $page ? get_post_type_archive_link( $type->name ) : get_pagenum_link( $page, false );
+		$url = 1 === $page ? get_post_type_archive_link( $type->name ) : get_pagenum_link( $page, false );
 		if ( ! is_string( $url ) || '' === $url || Exclusions::blocks_archive( $type->name, $url ) ) {
 			return null;
 		}
@@ -144,7 +184,7 @@ final class Discovery {
 		}
 
 		if ( function_exists( 'wc_get_page_id' ) ) {
-			foreach ( array( 'cart', 'checkout', 'myaccount', 'pay', 'view_order' ) as $page ) {
+			foreach ( array( 'cart', 'checkout', 'myaccount', 'pay', 'view_order', 'shop' ) as $page ) {
 				if ( (int) wc_get_page_id( $page ) === (int) $post->ID ) {
 					return true;
 				}
