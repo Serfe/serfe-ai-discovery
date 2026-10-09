@@ -390,7 +390,7 @@ final class Settings {
 		$rows    = array(
 			array( __( 'Markdown Negotiation', 'serfe-ai-discovery' ), 1 === (int) $choices['markdown_enabled'] ? __( 'Enabled', 'serfe-ai-discovery' ) : __( 'Disabled', 'serfe-ai-discovery' ), __( 'Select content types and approve individual items in the Markdown tab.', 'serfe-ai-discovery' ), '' ),
 			array( 'robots.txt', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks.', 'serfe-ai-discovery' ), 'robots.txt' ),
-			array( 'llms.txt', __( 'Not managed', 'serfe-ai-discovery' ), __( 'File publication is not available yet.', 'serfe-ai-discovery' ), '' ),
+			array( 'llms.txt', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Review or publish the public file.', 'serfe-ai-discovery' ), '' ),
 			array( __( 'XML Sitemap', 'serfe-ai-discovery' ), __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks.', 'serfe-ai-discovery' ), __( 'XML sitemap', 'serfe-ai-discovery' ) ),
 			array( __( 'API Catalog', 'serfe-ai-discovery' ), 1 === (int) $choices['api_catalog_enabled'] ? __( 'Enabled', 'serfe-ai-discovery' ) : __( 'Disabled', 'serfe-ai-discovery' ), __( 'Review its public response in Discovery.', 'serfe-ai-discovery' ), 'API Catalog' ),
 			array( __( 'MCP / Server Card', 'serfe-ai-discovery' ), __( 'Not validated', 'serfe-ai-discovery' ), __( 'Declare a qualifying MCP endpoint before enabling a Server Card.', 'serfe-ai-discovery' ), __( 'MCP server', 'serfe-ai-discovery' ) ),
@@ -408,20 +408,39 @@ final class Settings {
 			}
 		}
 		unset( $row );
+		$rows[1] = $this->file_overview_row( 'robots.txt' );
+		$rows[2] = $this->file_overview_row( 'llms.txt' );
 		echo '<p>' . esc_html__( 'Public discovery features are opt-in. Validation runs only when an administrator requests it.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Capability', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'State', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Last validation', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Next action', 'serfe-ai-discovery' ) . '</th></tr></thead><tbody>';
 		foreach ( $rows as $row ) {
-			$checked = ! empty( $row[4] ) ? $date : __( 'Not validated', 'serfe-ai-discovery' );
+			$checked = ! empty( $row[4] ) ? ( is_string( $row[4] ) ? $row[4] : $date ) : __( 'Not validated', 'serfe-ai-discovery' );
 			printf( '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', esc_html( $row[0] ), esc_html( $row[1] ), esc_html( $checked ), esc_html( $row[2] ) );
 		}
 		echo '</tbody></table>';
 	}
 
-	/** Explain file signals while publication controls are being implemented. */
+	/** Summarize the file actually present at the resolved public root. */
+	private function file_overview_row( $name ) {
+		$state = Discovery_Files::inspect( $name );
+		if ( is_wp_error( $state ) ) {
+			return array( $name, __( 'Needs review', 'serfe-ai-discovery' ), $state->get_error_message(), '', false );
+		}
+		$meta = $state['meta'];
+		$date = isset( $meta['validated_at'] ) ? $meta['validated_at'] : false;
+		if ( ! $state['exists'] ) {
+			return array( $name, __( 'Not published', 'serfe-ai-discovery' ), __( 'Review and publish the file in Robots.txt & llms.txt.', 'serfe-ai-discovery' ), '', $date );
+		}
+		if ( ! isset( $meta['checksum'] ) || $meta['checksum'] !== $state['checksum'] ) {
+			return array( $name, __( 'External change', 'serfe-ai-discovery' ), __( 'Review the current file and confirm takeover before publishing.', 'serfe-ai-discovery' ), '', $date );
+		}
+		return ! empty( $meta['verified'] )
+			? array( $name, __( 'Published and verified', 'serfe-ai-discovery' ), __( 'Review the content after material site changes.', 'serfe-ai-discovery' ), '', $date )
+			: array( $name, __( 'Published; response needs review', 'serfe-ai-discovery' ), __( 'Check the public URL and any web server or cache rules.', 'serfe-ai-discovery' ), '', $date );
+	}
+
+	/** Render the public-root file editors. */
 	private function render_files_tab() {
-		echo '<h2>' . esc_html__( 'Why these files matter', 'serfe-ai-discovery' ) . '</h2>';
-		echo '<p>' . esc_html__( 'robots.txt communicates crawler access rules and can point to the XML sitemap. llms.txt is an optional public guide to curated content. A sitemap lists canonical public URLs. These signals do not guarantee indexing, traffic, rankings, or AI citations.', 'serfe-ai-discovery' ) . '</p>';
-		echo '<p>' . esc_html__( 'Editing and publishing these root files is not available yet. Review any existing files on the public site before changing them.', 'serfe-ai-discovery' ) . '</p>';
+		( new Discovery_Files_Admin() )->render_tab();
 	}
 
 	/** Show the read-only diagnostic without triggering a request. */
@@ -436,7 +455,7 @@ final class Settings {
 	/** Provide maintained local documentation and clear feature limits. */
 	private function render_help_tab() {
 		echo '<h2>' . esc_html__( 'Help & Support', 'serfe-ai-discovery' ) . '</h2>';
-		echo '<p>' . esc_html__( 'This starter plugin serves approved public content as Markdown and publishes an optional API Catalog. File publication, MCP Server Cards, and a site-wide cache generator are not available yet.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'This starter plugin serves approved public content as Markdown, can publish robots.txt and llms.txt, and publishes an optional API Catalog. MCP Server Cards and a site-wide cache generator are not available yet.', 'serfe-ai-discovery' ) . '</p>';
 		printf( '<p><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_url( 'https://github.com/Serfe-com' ), esc_html__( 'Serfe open-source repositories', 'serfe-ai-discovery' ) );
 		echo '<p>' . esc_html__( 'For support and security reporting, use the channels documented in the plugin repository.', 'serfe-ai-discovery' ) . '</p>';
 	}

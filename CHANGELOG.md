@@ -9,6 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Added a tabbed administrator overview with local feature states and guidance for Markdown, discovery files, and support.
+- Added protected editors for public-root robots.txt and llms.txt, with independent backup, restore, takeover review, a starter template, and a manual-copy fallback.
 - Added opt-in Markdown for WooCommerce shop, product category, and product tag archives with approved public product listings.
 - Added opt-in Markdown for public Custom Post Type archives and their pagination, listing only individually approved public items.
 - Added administrator settings and per-item controls for Markdown publication.
@@ -32,7 +33,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Security
 
-- Added a guarded public-root file publication service with fixed filenames, UTF-8 validation, atomic replacement, previous-version backups, and checksum-based takeover checks. Admin editing controls are still pending.
+- Added a guarded public-root file publication service with fixed filenames, UTF-8 validation, atomic replacement, previous-version backups, and checksum-based takeover checks.
 - Ignored catalog child objects that are not WooCommerce product variations before reading variation-only properties.
 - Verified the Agent Readiness refresh notice with a nonce and sanitized the request's `Accept` header before negotiation.
 - Added `Vary: Accept` to eligible HTML responses and protected internal paths under a site URL prefix from Markdown negotiation.

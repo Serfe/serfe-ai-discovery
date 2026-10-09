@@ -157,15 +157,6 @@ final class Discovery_Files {
 			return new \WP_Error( 'write_failed', __( 'The public file could not be replaced atomically.', 'serfe-ai-discovery' ) );
 		}
 		$checksum = hash( 'sha256', $content );
-		update_option(
-			self::meta_key( $name ),
-			array(
-				'checksum'     => $checksum,
-				'published_at' => current_time( 'mysql' ),
-				'user_id'      => get_current_user_id(),
-			),
-			false
-		);
 		$url      = home_url( '/' . $name );
 		$response = wp_safe_remote_get(
 			$url,
@@ -176,6 +167,17 @@ final class Discovery_Files {
 			)
 		);
 		$verified = ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) && wp_remote_retrieve_body( $response ) === $content;
+		update_option(
+			self::meta_key( $name ),
+			array(
+				'checksum'     => $checksum,
+				'published_at' => current_time( 'mysql' ),
+				'validated_at' => current_time( 'mysql' ),
+				'verified'     => $verified,
+				'user_id'      => get_current_user_id(),
+			),
+			false
+		);
 		return array(
 			'checksum' => $checksum,
 			'verified' => $verified,

@@ -30,6 +30,8 @@ final class Plugin {
 	private $readiness;
 	/** @var Settings */
 	private $settings;
+	/** @var Discovery_Files_Admin */
+	private $discovery_files_admin;
 
 	/** @return self */
 	public static function instance() {
@@ -40,15 +42,16 @@ final class Plugin {
 	}
 
 	private function __construct() {
-		$this->router            = new Request_Router();
-		$this->response          = new Response();
-		$this->blog_generator    = new Blog_Generator( new Html_To_Markdown() );
-		$this->product_generator = new Product_Generator();
-		$this->archive_generator = new Archive_Generator();
-		$this->catalog_generator = new Catalog_Generator( $this->product_generator );
-		$this->discovery         = new Discovery( $this->product_generator );
-		$this->readiness         = new Readiness();
-		$this->settings          = new Settings();
+		$this->router                = new Request_Router();
+		$this->response              = new Response();
+		$this->blog_generator        = new Blog_Generator( new Html_To_Markdown() );
+		$this->product_generator     = new Product_Generator();
+		$this->archive_generator     = new Archive_Generator();
+		$this->catalog_generator     = new Catalog_Generator( $this->product_generator );
+		$this->discovery             = new Discovery( $this->product_generator );
+		$this->readiness             = new Readiness();
+		$this->settings              = new Settings();
+		$this->discovery_files_admin = new Discovery_Files_Admin();
 	}
 
 	/** Register the plugin once, early enough to alter REQUEST_URI. */
@@ -62,6 +65,7 @@ final class Plugin {
 		$this->discovery->register_hooks();
 		$this->readiness->register_hooks();
 		$this->settings->register_hooks();
+		$this->discovery_files_admin->register_hooks();
 	}
 
 	/** Render the resolved object when this is a Markdown request. */
