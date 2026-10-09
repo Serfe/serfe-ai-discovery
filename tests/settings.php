@@ -318,6 +318,28 @@ $settings->render_page();
 $llms_page = ob_get_clean();
 $assert_same( true, strpos( $llms_page, 'tab=llms' ) !== false, 'Nav tab selects llms.txt' );
 
+$state_icon   = new ReflectionMethod( Settings::class, 'state_icon' );
+$check_state  = new ReflectionMethod( Settings::class, 'check_state' );
+$checks_by_id = new ReflectionMethod( Settings::class, 'checks_by_id' );
+if ( PHP_VERSION_ID < 80100 ) {
+	$state_icon->setAccessible( true );
+	$check_state->setAccessible( true );
+	$checks_by_id->setAccessible( true );
+}
+$assert_same( '✅', $state_icon->invoke( null, 'ok' ), 'Overview icon for ready state' );
+$assert_same( '⚠️', $state_icon->invoke( null, 'warn' ), 'Overview icon for attention state' );
+$assert_same( '❌', $state_icon->invoke( null, 'fail' ), 'Overview icon for unavailable state' );
+$assert_same( '➖', $state_icon->invoke( null, 'na' ), 'Overview icon for neutral state' );
+$assert_same( '➖', $state_icon->invoke( null, 'unexpected' ), 'Unknown level falls back to neutral icon' );
+$assert_same( array( 'ok', 'Available', 'detail', 'now' ), $check_state->invoke( null, array( 'status' => 'pass', 'detail' => 'detail' ), 'now' ), 'Passing check is ready' );
+$assert_same( 'fail', $check_state->invoke( null, array( 'status' => 'fail' ), 'now' )[0], 'Failing check is unavailable' );
+$assert_same( 'warn', $check_state->invoke( null, array( 'status' => 'unknown' ), 'now' )[0], 'Unverifiable check needs attention' );
+$assert_same( 'na', $check_state->invoke( null, array( 'status' => 'na' ), 'now' )[0], 'Not applicable check is neutral' );
+$assert_same( null, $check_state->invoke( null, null, 'now' ), 'Missing check yields no state' );
+$indexed = $checks_by_id->invoke( null, array( 'checks' => array( array( 'id' => 'sitemap', 'status' => 'pass' ), array( 'status' => 'pass', 'label' => 'stale' ) ) ) );
+$assert_same( array( 'sitemap' ), array_keys( $indexed ), 'Checks are indexed by stable id and stale entries are ignored' );
+$assert_same( array(), $checks_by_id->invoke( null, false ), 'No cached report yields no checks' );
+
 if ( $failures ) {
 	fwrite( STDERR, implode( "\n", $failures ) . "\n" );
 	exit( 1 );

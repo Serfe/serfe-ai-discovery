@@ -542,63 +542,189 @@ final class Settings {
 		echo '</div>';
 	}
 
-	/** Summarize only states that this plugin can currently establish locally. */
-	private function render_overview_tab() {
-		$choices = self::choices();
-		$report  = get_transient( Readiness::CACHE_KEY );
-		$date    = is_array( $report ) && ! empty( $report['checked_at'] ) ? $report['checked_at'] : __( 'Not validated', 'serfe-ai-discovery' );
-		$checks  = is_array( $report ) && ! empty( $report['checks'] ) && is_array( $report['checks'] ) ? $report['checks'] : array();
-		$rows    = array(
-			array( __( 'Markdown Negotiation', 'serfe-ai-discovery' ), 1 === (int) $choices['markdown_enabled'] ? __( 'Enabled', 'serfe-ai-discovery' ) : __( 'Disabled', 'serfe-ai-discovery' ), __( 'Select content types and approve individual items in the Markdown tab.', 'serfe-ai-discovery' ), '' ),
-			array( 'robots.txt', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks.', 'serfe-ai-discovery' ), 'robots.txt' ),
-			array( 'llms.txt', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Review or publish the public file.', 'serfe-ai-discovery' ), '' ),
-			array( __( 'XML Sitemap', 'serfe-ai-discovery' ), __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks.', 'serfe-ai-discovery' ), __( 'XML sitemap', 'serfe-ai-discovery' ) ),
-			array( __( 'API Catalog', 'serfe-ai-discovery' ), 1 === (int) $choices['api_catalog_enabled'] ? __( 'Enabled', 'serfe-ai-discovery' ) : __( 'Disabled', 'serfe-ai-discovery' ), __( 'Review its public response in Discovery.', 'serfe-ai-discovery' ), 'API Catalog' ),
-			array( __( 'MCP server', 'serfe-ai-discovery' ), __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks for an explicitly registered service.', 'serfe-ai-discovery' ), __( 'MCP server', 'serfe-ai-discovery' ) ),
-			array( __( 'MCP Server Card', 'serfe-ai-discovery' ), __( 'Not available', 'serfe-ai-discovery' ), __( 'Server Card configuration and publication are not available in this version.', 'serfe-ai-discovery' ), '' ),
+	/**
+	 * Emoji for a state level. The emoji complements, and never replaces, the translated text.
+	 *
+	 * @param string $level One of ok, warn, fail or na.
+	 * @return string
+	 */
+	private static function state_icon( $level ) {
+		$icons = array(
+			'ok'   => '✅',
+			'warn' => '⚠️',
+			'fail' => '❌',
+			'na'   => '➖',
 		);
-		foreach ( $rows as &$row ) {
-			if ( '' === $row[3] ) {
-				continue;
-			}
-			foreach ( $checks as $check ) {
-				if ( isset( $check['label'], $check['status'] ) && $row[3] === $check['label'] ) {
-					$row[1] = 'pass' === $check['status'] ? __( 'Available', 'serfe-ai-discovery' ) : ( 'unknown' === $check['status'] ? __( 'Needs review', 'serfe-ai-discovery' ) : __( 'Not available', 'serfe-ai-discovery' ) );
-					$row[2] = isset( $check['detail'] ) ? $check['detail'] : $row[2];
-					$row[4] = true;
+		return isset( $icons[ $level ] ) ? $icons[ $level ] : $icons['na'];
+	}
+
+	/**
+	 * Build one Overview row.
+	 *
+	 * @param string $label     Capability name.
+	 * @param string $level     ok, warn, fail or na.
+	 * @param string $state     Translated state text.
+	 * @param string $next      Translated next action.
+	 * @param string $validated Last validation date, or an empty string.
+	 * @return array<string, string>
+	 */
+	private static function overview_row( $label, $level, $state, $next, $validated = '' ) {
+		return array(
+			'label'     => $label,
+			'level'     => $level,
+			'state'     => $state,
+			'next'      => $next,
+			'validated' => $validated,
+		);
+	}
+
+	/**
+	 * Translate a Readiness check into an Overview state.
+	 *
+	 * @param array<string, string>|null $check   Check result from the last "Run checks".
+	 * @param string                     $checked Date of that run.
+	 * @return array{0: string, 1: string, 2: string, 3: string}|null Level, state, detail, date.
+	 */
+	private static function check_state( $check, $checked ) {
+		if ( ! is_array( $check ) || ! isset( $check['status'] ) ) {
+			return null;
+		}
+		$detail = isset( $check['detail'] ) ? (string) $check['detail'] : '';
+		switch ( $check['status'] ) {
+			case 'pass':
+				return array( 'ok', __( 'Available', 'serfe-ai-discovery' ), $detail, $checked );
+			case 'fail':
+				return array( 'fail', __( 'Not available', 'serfe-ai-discovery' ), $detail, $checked );
+			case 'na':
+				return array( 'na', __( 'Not applicable', 'serfe-ai-discovery' ), $detail, $checked );
+			default:
+				return array( 'warn', __( 'Needs review', 'serfe-ai-discovery' ), $detail, $checked );
+		}
+	}
+
+	/**
+	 * Index the cached Readiness checks by their stable id.
+	 *
+	 * @param mixed $report Cached report.
+	 * @return array<string, array<string, string>>
+	 */
+	private static function checks_by_id( $report ) {
+		$indexed = array();
+		if ( is_array( $report ) && ! empty( $report['checks'] ) && is_array( $report['checks'] ) ) {
+			foreach ( $report['checks'] as $check ) {
+				if ( is_array( $check ) && isset( $check['id'] ) ) {
+					$indexed[ $check['id'] ] = $check;
 				}
 			}
 		}
-		unset( $row );
-		$rows[1] = $this->file_overview_row( 'robots.txt' );
-		$rows[2] = $this->file_overview_row( 'llms.txt' );
-		echo '<h2>' . esc_html__( 'WordPress AI discovery overview', 'serfe-ai-discovery' ) . '</h2>';
-		echo '<div class="notice notice-info inline"><p>' . esc_html__( 'Public discovery features are opt-in. Validation runs only when an administrator requests it.', 'serfe-ai-discovery' ) . '</p></div>';
-		echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Capability', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'State', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Last validation', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Next action', 'serfe-ai-discovery' ) . '</th></tr></thead><tbody>';
-		foreach ( $rows as $row ) {
-			$checked = ! empty( $row[4] ) ? ( is_string( $row[4] ) ? $row[4] : $date ) : __( 'Not validated', 'serfe-ai-discovery' );
-			printf( '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', esc_html( $row[0] ), esc_html( $row[1] ), esc_html( $checked ), esc_html( $row[2] ) );
-		}
-		echo '</tbody></table>';
+		return $indexed;
 	}
 
-	/** Summarize the file actually present at the resolved public root. */
-	private function file_overview_row( $name ) {
+	/**
+	 * Compute every Overview row from current settings and the cached discovery checks.
+	 *
+	 * @return array<int, array<string, string>>
+	 */
+	public function overview_rows() {
+		$choices = self::choices();
+		$report  = get_transient( Readiness::CACHE_KEY );
+		$checked = is_array( $report ) && ! empty( $report['checked_at'] ) ? (string) $report['checked_at'] : '';
+		$checks  = self::checks_by_id( $report );
+		$rows    = array();
+
+		if ( 1 !== (int) $choices['markdown_enabled'] ) {
+			$rows[] = self::overview_row( __( 'Markdown Negotiation', 'serfe-ai-discovery' ), 'na', __( 'Disabled', 'serfe-ai-discovery' ), __( 'Enable Markdown negotiation in the Markdown tab.', 'serfe-ai-discovery' ) );
+		} else {
+			$found  = self::check_state( isset( $checks['markdown'] ) ? $checks['markdown'] : null, $checked );
+			$rows[] = $found
+				? self::overview_row( __( 'Markdown Negotiation', 'serfe-ai-discovery' ), $found[0], $found[1], $found[2], $found[3] )
+				: self::overview_row( __( 'Markdown Negotiation', 'serfe-ai-discovery' ), 'ok', __( 'Enabled', 'serfe-ai-discovery' ), __( 'Run the discovery checks to verify a public Markdown response.', 'serfe-ai-discovery' ) );
+		}
+
+		$rows[] = $this->file_overview_row( 'robots.txt', isset( $checks['robots'] ) ? $checks['robots'] : null, $checked );
+		$rows[] = $this->file_overview_row( 'llms.txt', null, $checked );
+
+		$found  = self::check_state( isset( $checks['sitemap'] ) ? $checks['sitemap'] : null, $checked );
+		$rows[] = $found
+			? self::overview_row( __( 'XML Sitemap', 'serfe-ai-discovery' ), $found[0], $found[1], $found[2], $found[3] )
+			: self::overview_row( __( 'XML Sitemap', 'serfe-ai-discovery' ), 'na', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the discovery checks.', 'serfe-ai-discovery' ) );
+
+		if ( 1 !== (int) $choices['api_catalog_enabled'] ) {
+			$rows[] = self::overview_row( __( 'API Catalog', 'serfe-ai-discovery' ), 'na', __( 'Disabled', 'serfe-ai-discovery' ), __( 'Enable the API Catalog in the Markdown tab.', 'serfe-ai-discovery' ) );
+		} else {
+			$found  = self::check_state( isset( $checks['api_catalog'] ) ? $checks['api_catalog'] : null, $checked );
+			$rows[] = $found
+				? self::overview_row( __( 'API Catalog', 'serfe-ai-discovery' ), $found[0], $found[1], $found[2], $found[3] )
+				: self::overview_row( __( 'API Catalog', 'serfe-ai-discovery' ), 'ok', __( 'Enabled', 'serfe-ai-discovery' ), __( 'Run the discovery checks to verify its public response.', 'serfe-ai-discovery' ) );
+		}
+
+		$found  = self::check_state( isset( $checks['mcp'] ) ? $checks['mcp'] : null, $checked );
+		$rows[] = $found
+			? self::overview_row( __( 'MCP server', 'serfe-ai-discovery' ), $found[0], $found[1], $found[2], $found[3] )
+			: self::overview_row( __( 'MCP server', 'serfe-ai-discovery' ), 'na', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks for an explicitly registered service.', 'serfe-ai-discovery' ) );
+
+		$rows[] = self::overview_row( __( 'MCP Server Card', 'serfe-ai-discovery' ), 'na', __( 'Not available', 'serfe-ai-discovery' ), __( 'Server Card configuration and publication are not available in this version.', 'serfe-ai-discovery' ) );
+
+		return $rows;
+	}
+
+	/** Summarize only states that this plugin can currently establish locally. */
+	private function render_overview_tab() {
+		echo '<h2>' . esc_html__( 'WordPress AI discovery overview', 'serfe-ai-discovery' ) . '</h2>';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only confirmation flag after a nonce-protected redirect.
+		if ( isset( $_GET['refreshed'] ) && '1' === $_GET['refreshed'] ) {
+			echo '<div class="notice notice-success inline"><p>' . esc_html__( 'Checks refreshed.', 'serfe-ai-discovery' ) . '</p></div>';
+		}
+		echo '<div class="notice notice-info inline"><p>' . esc_html__( 'Public discovery features are opt-in. Validation runs only when an administrator requests it.', 'serfe-ai-discovery' ) . '</p></div>';
+		echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Capability', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'State', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Last validation', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Next action', 'serfe-ai-discovery' ) . '</th></tr></thead><tbody>';
+		foreach ( $this->overview_rows() as $row ) {
+			$validated = '' !== $row['validated'] ? $row['validated'] : __( 'Not validated', 'serfe-ai-discovery' );
+			printf(
+				'<tr><td>%s</td><td><span aria-hidden="true">%s</span> %s</td><td>%s</td><td>%s</td></tr>',
+				esc_html( $row['label'] ),
+				esc_html( self::state_icon( $row['level'] ) ),
+				esc_html( $row['state'] ),
+				esc_html( $validated ),
+				esc_html( $row['next'] )
+			);
+		}
+		echo '</tbody></table>';
+		echo '<p class="description" style="margin-top: 14px;">' . esc_html__( '✅ ready · ⚠️ needs attention · ❌ not available · ➖ disabled, not validated or not applicable.', 'serfe-ai-discovery' ) . '</p>';
+		printf( '<form method="post" action="%s" style="margin-top: 12px;"><input type="hidden" name="action" value="serfe_ai_discovery_readiness_refresh"><input type="hidden" name="return_tab" value="overview">', esc_url( admin_url( 'admin-post.php' ) ) );
+		wp_nonce_field( 'serfe_ai_discovery_readiness_refresh' );
+		submit_button( __( 'Run checks again', 'serfe-ai-discovery' ), 'secondary', 'submit', false );
+		echo '</form>';
+	}
+
+	/**
+	 * Summarize the file actually present at the resolved public root.
+	 *
+	 * @param string                     $name    robots.txt or llms.txt.
+	 * @param array<string, string>|null $check   Matching public-response check, if one ran.
+	 * @param string                     $checked Date of the last discovery check run.
+	 * @return array<string, string>
+	 */
+	private function file_overview_row( $name, $check, $checked ) {
 		$state = Discovery_Files::inspect( $name );
 		if ( is_wp_error( $state ) ) {
-			return array( $name, __( 'Needs review', 'serfe-ai-discovery' ), $state->get_error_message(), '', false );
+			return self::overview_row( $name, 'warn', __( 'Needs review', 'serfe-ai-discovery' ), $state->get_error_message() );
 		}
 		$meta = $state['meta'];
-		$date = isset( $meta['validated_at'] ) ? $meta['validated_at'] : false;
+		$date = isset( $meta['validated_at'] ) && is_string( $meta['validated_at'] ) ? $meta['validated_at'] : '';
 		if ( ! $state['exists'] ) {
-			return array( $name, __( 'No physical file', 'serfe-ai-discovery' ), __( 'Validate the public response; WordPress or an SEO plugin may serve a virtual file.', 'serfe-ai-discovery' ), '', $date );
+			$next = __( 'Validate the public response; WordPress or an SEO plugin may serve a virtual file.', 'serfe-ai-discovery' );
+			if ( is_array( $check ) && ! empty( $check['detail'] ) ) {
+				$next = (string) $check['detail'];
+				$date = '' !== $checked ? $checked : $date;
+			}
+			return self::overview_row( $name, 'warn', __( 'No physical file', 'serfe-ai-discovery' ), $next, $date );
 		}
 		if ( ! isset( $meta['checksum'] ) || $meta['checksum'] !== $state['checksum'] ) {
-			return array( $name, __( 'External change', 'serfe-ai-discovery' ), __( 'Review the current file and confirm takeover before publishing.', 'serfe-ai-discovery' ), '', $date );
+			return self::overview_row( $name, 'warn', __( 'External change', 'serfe-ai-discovery' ), __( 'Review the current file and confirm takeover before publishing.', 'serfe-ai-discovery' ), $date );
 		}
 		return ! empty( $meta['verified'] )
-			? array( $name, __( 'Published and verified', 'serfe-ai-discovery' ), __( 'Review the content after material site changes.', 'serfe-ai-discovery' ), '', $date )
-			: array( $name, __( 'Published; response needs review', 'serfe-ai-discovery' ), __( 'Check the public URL and any web server or cache rules.', 'serfe-ai-discovery' ), '', $date );
+			? self::overview_row( $name, 'ok', __( 'Published and verified', 'serfe-ai-discovery' ), __( 'Review the content after material site changes.', 'serfe-ai-discovery' ), $date )
+			: self::overview_row( $name, 'warn', __( 'Published; response needs review', 'serfe-ai-discovery' ), __( 'Check the public URL and any web server or cache rules.', 'serfe-ai-discovery' ), $date );
 	}
 
 	/** Render the public-root file editors. */

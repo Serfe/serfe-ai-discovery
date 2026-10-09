@@ -32,10 +32,13 @@ final class Readiness {
 		check_admin_referer( 'serfe_ai_discovery_readiness_refresh' );
 		delete_transient( self::CACHE_KEY );
 		$this->inspect( true );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by check_admin_referer() above.
+		$return_tab   = isset( $_POST['return_tab'] ) && is_string( $_POST['return_tab'] ) ? sanitize_key( wp_unslash( $_POST['return_tab'] ) ) : 'discovery';
+		$return_tab   = in_array( $return_tab, array( 'overview', 'discovery' ), true ) ? $return_tab : 'discovery';
 		$redirect_url = add_query_arg(
 			array(
 				'page'      => Settings::PAGE,
-				'tab'       => 'discovery',
+				'tab'       => $return_tab,
 				'refreshed' => '1',
 				'_wpnonce'  => wp_create_nonce( 'serfe_ai_discovery_readiness_refreshed' ),
 			),
@@ -126,18 +129,23 @@ final class Readiness {
 			return $cached;
 		}
 
+		$results = array(
+			'robots'      => $this->check_robots(),
+			'sitemap'     => $this->check_sitemap(),
+			'api_catalog' => $this->check_api_catalog(),
+			'markdown'    => $this->check_markdown(),
+			'mcp'         => $this->check_mcp(),
+			'oauth'       => $this->check_oauth(),
+			'skills'      => $this->check_skills(),
+			'commerce'    => $this->check_commerce(),
+		);
+		// A stable id lets other screens match a check without depending on its translated label.
+		foreach ( $results as $id => $result ) {
+			$results[ $id ]['id'] = $id;
+		}
 		$report = array(
 			'checked_at' => current_time( 'mysql' ),
-			'checks'     => array(
-				$this->check_robots(),
-				$this->check_sitemap(),
-				$this->check_api_catalog(),
-				$this->check_markdown(),
-				$this->check_mcp(),
-				$this->check_oauth(),
-				$this->check_skills(),
-				$this->check_commerce(),
-			),
+			'checks'     => array_values( $results ),
 		);
 
 		set_transient( self::CACHE_KEY, $report, self::CACHE_TTL );
