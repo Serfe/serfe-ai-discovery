@@ -32,6 +32,8 @@ final class Plugin {
 	private $settings;
 	/** @var Discovery_Files_Admin */
 	private $discovery_files_admin;
+	/** @var Markdown_Cache */
+	private $markdown_cache;
 
 	/** @return self */
 	public static function instance() {
@@ -52,6 +54,7 @@ final class Plugin {
 		$this->readiness             = new Readiness();
 		$this->settings              = new Settings();
 		$this->discovery_files_admin = new Discovery_Files_Admin();
+		$this->markdown_cache        = new Markdown_Cache();
 	}
 
 	/** Register the plugin once, early enough to alter REQUEST_URI. */
@@ -66,6 +69,7 @@ final class Plugin {
 		$this->readiness->register_hooks();
 		$this->settings->register_hooks();
 		$this->discovery_files_admin->register_hooks();
+		$this->markdown_cache->register_hooks();
 	}
 
 	/** Render the resolved object when this is a Markdown request. */
@@ -73,32 +77,48 @@ final class Plugin {
 		if ( ! $this->router->is_markdown_request() ) {
 			return;
 		}
-		$archive = $this->discovery->current_archive_context();
+		$negotiated = $this->router->is_accept_negotiated();
+		$archive    = $this->discovery->current_archive_context();
 		if ( $archive ) {
 			global $wp_query;
 			if ( ! ( $wp_query instanceof \WP_Query ) ) {
 				$this->response->not_found();
 			}
-			$markdown = in_array( $archive['type'], array( 'product', 'product_cat', 'product_tag' ), true )
-				? $this->catalog_generator->generate( $archive, (int) $wp_query->max_num_pages, $wp_query->posts )
-				: $this->archive_generator->generate( $archive['type'], $archive['url'], $archive['page'], (int) $wp_query->max_num_pages, $wp_query->posts );
-			$this->response->markdown( $markdown, $this->router->is_accept_negotiated(), $archive['url'] );
+			$catalog   = $this->catalog_generator;
+			$generator = $this->archive_generator;
+			$query     = $wp_query;
+			$result    = Markdown_Cache::remember(
+				'archive',
+				$archive['type'] . '|' . (int) $query->max_num_pages . '|' . implode( ',', wp_list_pluck( (array) $query->posts, 'ID' ) ),
+				$archive['url'],
+				static function () use ( $archive, $catalog, $generator, $query ) {
+					return in_array( $archive['type'], array( 'product', 'product_cat', 'product_tag' ), true )
+						? $catalog->generate( $archive, (int) $query->max_num_pages, $query->posts )
+						: $generator->generate( $archive['type'], $archive['url'], $archive['page'], (int) $query->max_num_pages, $query->posts );
+				}
+			);
+			$this->response->markdown( $result['markdown'], $negotiated, $archive['url'], $result['hit'] );
 		}
 
 		if ( ! $this->discovery->current_content_has_markdown() ) {
+			if ( $negotiated ) {
+				// Accept is a preference, not a route: ineligible content keeps its normal HTML response.
+				return;
+			}
 			$this->response->not_found();
 		}
 
-		$post = get_queried_object();
-		switch ( $post->post_type ) {
-			case 'product':
-				$this->response->markdown( $this->product_generator->generate( $post ), $this->router->is_accept_negotiated(), get_permalink( $post ) );
-				break;
-			default:
-				$this->response->markdown( $this->blog_generator->generate( $post ), $this->router->is_accept_negotiated(), get_permalink( $post ) );
-				break;
-		}
-
-		$this->response->not_found();
+		$post      = get_queried_object();
+		$canonical = (string) get_permalink( $post );
+		$generator = 'product' === $post->post_type ? $this->product_generator : $this->blog_generator;
+		$result    = Markdown_Cache::remember(
+			'post',
+			(string) $post->ID,
+			$canonical,
+			static function () use ( $generator, $post ) {
+				return $generator->generate( $post );
+			}
+		);
+		$this->response->markdown( $result['markdown'], $negotiated, $canonical, $result['hit'] );
 	}
 }

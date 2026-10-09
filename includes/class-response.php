@@ -8,8 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** Sends terminal HTTP responses for Markdown requests. */
 final class Response {
-	/** @param string $markdown Markdown document. @param bool $negotiated Selected via Accept. @param string $canonical_url HTML permalink. */
-	public function markdown( $markdown, $negotiated = false, $canonical_url = '' ) {
+	/** @param string $markdown Markdown document. @param bool $negotiated Selected via Accept. @param string $canonical_url HTML permalink. @param bool|null $cache_hit Server-side cache result. */
+	public function markdown( $markdown, $negotiated = false, $canonical_url = '', $cache_hit = null ) {
 		if ( ! headers_sent() ) {
 			header_remove( 'Set-Cookie' );
 			status_header( 200 );
@@ -24,6 +24,9 @@ final class Response {
 			header( 'X-Markdown-Tokens: ' . self::estimate_tokens( $markdown ) );
 			header( 'X-Robots-Tag: noindex, follow' );
 			header( 'Cache-Control: private, no-store' );
+			if ( null !== $cache_hit ) {
+				header( 'X-Markdown-Cache: ' . ( $cache_hit ? 'hit' : 'miss' ) );
+			}
 		}
 
 		echo $markdown; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Plain Markdown response.
@@ -44,9 +47,14 @@ final class Response {
 
 	/** Send a controlled not-found response. */
 	public function not_found() {
-		status_header( 404 );
-		header( 'Content-Type: text/plain; charset=utf-8' );
-		header( 'X-Robots-Tag: noindex' );
+		if ( ! headers_sent() ) {
+			header_remove( 'Set-Cookie' );
+			status_header( 404 );
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			header( 'X-Content-Type-Options: nosniff' );
+			header( 'X-Robots-Tag: noindex' );
+			header( 'Cache-Control: private, no-store' );
+		}
 		echo "404 Not Found\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Constant response.
 		exit;
 	}

@@ -94,6 +94,16 @@ final class Discovery {
 		}
 
 		$post = get_queried_object();
+		return $post instanceof \WP_Post && ! self::is_woocommerce_request_endpoint() && $this->post_is_eligible( $post );
+	}
+
+	/**
+	 * Request-independent publication policy for one item.
+	 *
+	 * @param \WP_Post $post Candidate item.
+	 * @return bool
+	 */
+	public function post_is_eligible( $post ) {
 		if ( ! ( $post instanceof \WP_Post )
 			|| 'publish' !== $post->post_status
 			|| ! empty( $post->post_password )
@@ -109,7 +119,7 @@ final class Discovery {
 			return Editorial_Content::is_static( $post );
 		}
 
-		return 'product' === $post->post_type && $this->product_generator->is_exposable( $post->ID );
+		return $this->product_generator->is_exposable( $post->ID );
 	}
 
 	/** Return an enabled public archive and its canonical page URL. */
@@ -177,20 +187,23 @@ final class Discovery {
 		);
 	}
 
-	/** @param \WP_Post $post Queried post. @return bool */
+	/** @param \WP_Post $post Candidate post. @return bool */
 	private static function is_sensitive_woocommerce_page( $post ) {
-		if ( 'page' !== $post->post_type ) {
+		if ( 'page' !== $post->post_type || ! function_exists( 'wc_get_page_id' ) ) {
 			return false;
 		}
 
-		if ( function_exists( 'wc_get_page_id' ) ) {
-			foreach ( array( 'cart', 'checkout', 'myaccount', 'pay', 'view_order', 'shop' ) as $page ) {
-				if ( (int) wc_get_page_id( $page ) === (int) $post->ID ) {
-					return true;
-				}
+		foreach ( array( 'cart', 'checkout', 'myaccount', 'pay', 'view_order', 'shop' ) as $page ) {
+			if ( (int) wc_get_page_id( $page ) === (int) $post->ID ) {
+				return true;
 			}
 		}
 
+		return false;
+	}
+
+	/** @return bool Whether the current front-end request is a WooCommerce cart, checkout, account or endpoint view. */
+	private static function is_woocommerce_request_endpoint() {
 		foreach ( array( 'is_cart', 'is_checkout', 'is_account_page', 'is_wc_endpoint_url' ) as $condition ) {
 			if ( function_exists( $condition ) && call_user_func( $condition ) ) {
 				return true;

@@ -23,6 +23,27 @@ final class Settings {
 		add_action( 'admin_menu', array( $this, 'register_page' ) );
 		add_action( 'add_meta_boxes', array( $this, 'register_item_boxes' ) );
 		add_action( 'save_post', array( $this, 'save_item_choice' ), 10, 2 );
+		add_action( 'admin_post_serfe_ai_discovery_markdown_cache', array( $this, 'regenerate_markdown_cache' ) );
+	}
+
+	/** Discard every generated Markdown document after an explicit administrator action. */
+	public function regenerate_markdown_cache() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to manage the Markdown cache.', 'serfe-ai-discovery' ) );
+		}
+		check_admin_referer( 'serfe_ai_discovery_markdown_cache' );
+		Markdown_Cache::invalidate( 'manual' );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'        => self::PAGE,
+					'tab'         => 'markdown',
+					'regenerated' => '1',
+				),
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
 	}
 
 	/** @return array<string, mixed> */
@@ -371,6 +392,8 @@ final class Settings {
 				do_settings_sections( self::PAGE );
 				submit_button();
 				echo '</form>';
+				$this->render_markdown_urls();
+				$this->render_markdown_cache();
 				break;
 			case 'files':
 				$this->render_files_tab();
@@ -393,6 +416,86 @@ final class Settings {
 		echo '<p>' . esc_html__( 'What it does: Returns an alternative Markdown representation of approved public content when a compatible client requests it.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Why it helps: Removes unnecessary presentation markup while browsers continue receiving HTML.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Important: HTML remains the canonical customer-facing version. Markdown availability does not guarantee crawler usage or AI citations.', 'serfe-ai-discovery' ) . '</p></details>';
+	}
+
+	/** List the individual items and archives that currently pass the publication policy. */
+	private function render_markdown_urls() {
+		$choices = self::choices();
+		echo '<h2>' . esc_html__( 'Enabled HTML and Markdown URLs', 'serfe-ai-discovery' ) . '</h2>';
+		if ( 1 !== (int) $choices['markdown_enabled'] ) {
+			echo '<p>' . esc_html__( 'Markdown is disabled, so no URL is published.', 'serfe-ai-discovery' ) . '</p>';
+			return;
+		}
+		$discovery = new Discovery( new Product_Generator() );
+		$rows      = array();
+		if ( $choices['detail_post_types'] ) {
+			$posts = get_posts(
+				array(
+					'post_type'        => $choices['detail_post_types'],
+					'post_status'      => 'publish',
+					'posts_per_page'   => 50,
+					'orderby'          => 'modified',
+					'order'            => 'DESC',
+					'has_password'     => false,
+					'suppress_filters' => false,
+					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Bounded admin-only list of opted-in items.
+					'meta_query'       => array(
+						array(
+							'key'   => self::ITEM_META,
+							'value' => '1',
+						),
+					),
+				)
+			);
+			foreach ( $posts as $post ) {
+				$url = get_permalink( $post );
+				if ( is_string( $url ) && $discovery->post_is_eligible( $post ) ) {
+					$rows[] = array( get_the_title( $post ), $url );
+				}
+			}
+		}
+		foreach ( $choices['enabled_archives'] as $archive ) {
+			if ( in_array( $archive, array( 'product_cat', 'product_tag' ), true ) ) {
+				continue;
+			}
+			$url    = get_post_type_archive_link( $archive );
+			$object = get_post_type_object( $archive );
+			if ( is_string( $url ) && $object && ! Exclusions::blocks_archive( $archive, $url ) ) {
+				/* translators: %s: post type plural label. */
+				$rows[] = array( sprintf( __( '%s archive', 'serfe-ai-discovery' ), $object->labels->name ), $url );
+			}
+		}
+		if ( ! $rows ) {
+			echo '<p>' . esc_html__( 'No item or archive currently passes the publication policy. Enable a content type and approve items in their editor.', 'serfe-ai-discovery' ) . '</p>';
+		} else {
+			echo '<table class="widefat striped" style="max-width: 1000px;"><thead><tr><th>' . esc_html__( 'Content', 'serfe-ai-discovery' ) . '</th><th>HTML</th><th>Markdown</th></tr></thead><tbody>';
+			foreach ( $rows as $row ) {
+				$markdown = Discovery::markdown_url( $row[1] );
+				printf( '<tr><td>%s</td><td><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></td><td><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></td></tr>', esc_html( $row[0] ), esc_url( $row[1] ), esc_html( $row[1] ), esc_url( $markdown ), esc_html( $markdown ) );
+			}
+			echo '</tbody></table>';
+		}
+		echo '<p class="description">' . esc_html__( 'Shows up to 50 recently modified approved items. Product category and tag archives follow the same rules for each public term.', 'serfe-ai-discovery' ) . '</p>';
+	}
+
+	/** Show the generated-content cache state and its explicit regeneration action. */
+	private function render_markdown_cache() {
+		$state = Markdown_Cache::state();
+		echo '<h2>' . esc_html__( 'Generated Markdown cache', 'serfe-ai-discovery' ) . '</h2>';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only confirmation flag after a nonce-protected redirect.
+		if ( isset( $_GET['regenerated'] ) && '1' === $_GET['regenerated'] ) {
+			echo '<div class="notice notice-success inline"><p>' . esc_html__( 'Generated Markdown will be rebuilt on the next request for each URL.', 'serfe-ai-discovery' ) . '</p></div>';
+		}
+		echo '<p>' . esc_html__( 'Generated Markdown is stored on this server for up to one day and discarded whenever content, visibility, prices, stock, catalog terms, approvals, or these settings change. Eligibility is checked on every request before a stored document is used. Markdown responses always send Cache-Control: private, no-store, so proxies and CDNs do not keep them.', 'serfe-ai-discovery' ) . '</p>';
+		printf(
+			'<p><strong>%s</strong> %s</p>',
+			esc_html__( 'Last invalidation:', 'serfe-ai-discovery' ),
+			esc_html( '' !== $state['invalidated_at'] ? sprintf( /* translators: 1: date and time, 2: reason code. */ __( '%1$s (%2$s)', 'serfe-ai-discovery' ), $state['invalidated_at'], $state['reason'] ) : __( 'Not yet invalidated', 'serfe-ai-discovery' ) )
+		);
+		printf( '<form method="post" action="%s"><input type="hidden" name="action" value="serfe_ai_discovery_markdown_cache">', esc_url( admin_url( 'admin-post.php' ) ) );
+		wp_nonce_field( 'serfe_ai_discovery_markdown_cache' );
+		submit_button( __( 'Regenerate Markdown cache', 'serfe-ai-discovery' ), 'secondary', 'submit', false );
+		echo '</form>';
 	}
 
 	/** Summarize only states that this plugin can currently establish locally. */
