@@ -143,7 +143,7 @@ $settings = new Settings();
 $assert_same( false, Settings::markdown_enabled_for( 'post' ), 'Default disables Markdown' );
 $assert_same( false, Settings::archive_enabled_for( 'book' ), 'Default disables archives' );
 $assert_same( false, Settings::api_catalog_enabled(), 'Default disables API Catalog' );
-$assert_same( false, Settings::item_enabled( 10 ), 'Default disables each item' );
+$assert_same( true, Settings::item_enabled( 10 ), 'Default enables each item' );
 
 $clean = $settings->sanitize( array(
 	'markdown_enabled' => '1',

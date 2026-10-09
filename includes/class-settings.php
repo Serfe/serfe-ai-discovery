@@ -157,7 +157,7 @@ final class Settings {
 
 	/** @param int $post_id Post ID. @return bool */
 	public static function item_enabled( $post_id ) {
-		return '1' === get_post_meta( $post_id, self::ITEM_META, true );
+		return '0' !== get_post_meta( $post_id, self::ITEM_META, true );
 	}
 
 	/** @return bool */
@@ -639,7 +639,7 @@ final class Settings {
 		if ( isset( $_POST['serfe_ai_discovery_item_enabled'] ) && '1' === $_POST['serfe_ai_discovery_item_enabled'] ) {
 			update_post_meta( $post_id, self::ITEM_META, '1' );
 		} else {
-			delete_post_meta( $post_id, self::ITEM_META );
+			update_post_meta( $post_id, self::ITEM_META, '0' );
 		}
 	}
 }
