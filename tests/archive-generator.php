@@ -50,7 +50,7 @@ $GLOBALS['archive_test_options'][ Settings::OPTION ] = array(
 	'blocked_paths' => array( '/book-3' ),
 	'blocked_terms' => array( 'category:123' ),
 );
-$GLOBALS['archive_test_items'] = array( 1 => '1', 3 => '1', 4 => '1', 5 => '1', 6 => '1', 7 => '1', 8 => '1' );
+$GLOBALS['archive_test_items'] = array( 1 => '1', 2 => '0', 3 => '1', 4 => '1', 5 => '1', 6 => '1', 7 => '1', 8 => '1' );
 $posts = array(
 	new WP_Post( 1, 'Public [book]' ),
 	new WP_Post( 2, 'Not approved' ),
@@ -80,8 +80,14 @@ foreach ( array( 'Not approved', 'Blocked path', 'Blocked category', 'Protected'
 		$failures[] = 'Unexpected: ' . $forbidden;
 	}
 }
+$taxonomy_output = ( new Archive_Generator() )->generate( 'post', 'https://example.com/category/news/', 1, 1, $posts, 'News', 'category' );
+foreach ( array( 'title: "News"', 'type: "category-archive"', '# News' ) as $expected ) {
+	if ( false === strpos( $taxonomy_output, $expected ) ) {
+		$failures[] = 'Missing taxonomy metadata: ' . $expected;
+	}
+}
 if ( $failures ) {
 	fwrite( STDERR, implode( "\n", $failures ) . "\n" );
 	exit( 1 );
 }
-echo "All 12 archive generator checks passed.\n";
+echo "All 15 archive generator checks passed.\n";

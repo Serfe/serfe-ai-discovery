@@ -143,6 +143,26 @@ final class Discovery {
 				'url'  => $url,
 			);
 		}
+		if ( ( function_exists( 'is_category' ) && is_category() ) || ( function_exists( 'is_tag' ) && is_tag() ) || ( function_exists( 'is_tax' ) && is_tax() ) ) {
+			$term     = get_queried_object();
+			$taxonomy = $term instanceof \WP_Term ? get_taxonomy( $term->taxonomy ) : null;
+			if ( ! ( $term instanceof \WP_Term ) || ! $taxonomy || empty( $taxonomy->public ) || empty( $taxonomy->publicly_queryable )
+				|| ! in_array( 'post', (array) $taxonomy->object_type, true ) || ! Settings::archive_enabled_for( 'post' )
+				|| Exclusions::blocks_term( $term->taxonomy, $term->term_id ) ) {
+				return null;
+			}
+			$url = 1 === $page ? get_term_link( $term ) : get_pagenum_link( $page, false );
+			if ( ! is_string( $url ) || '' === $url || Exclusions::blocks_archive( 'post', $url ) || Exclusions::blocks_archive( $term->taxonomy, $url ) ) {
+				return null;
+			}
+			return array(
+				'type'         => 'post',
+				'page'         => $page,
+				'url'          => $url,
+				'term'         => $term,
+				'archive_type' => $term->taxonomy,
+			);
+		}
 		if ( function_exists( 'is_shop' ) && is_shop() ) {
 			$type = get_post_type_object( 'product' );
 			$url  = 1 === $page ? get_post_type_archive_link( 'product' ) : get_pagenum_link( $page, false );

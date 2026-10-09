@@ -9,13 +9,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 /** Generates a public, item-approved Custom Post Type archive. */
 final class Archive_Generator {
 	/** Build a Markdown list from the already resolved main query page. */
-	public function generate( $type, $canonical_url, $page, $max_pages, $posts ) {
+	public function generate( $type, $canonical_url, $page, $max_pages, $posts, $title = '', $archive_type = '' ) {
 		$object = get_post_type_object( $type );
-		$title  = $object && isset( $object->labels->name ) ? wp_strip_all_tags( $object->labels->name ) : $type;
+		$title  = is_string( $title ) && '' !== $title ? wp_strip_all_tags( $title ) : ( $object && isset( $object->labels->name ) ? wp_strip_all_tags( $object->labels->name ) : $type );
+		$kind   = is_string( $archive_type ) && '' !== $archive_type ? $archive_type : $type;
 		$front  = "---\n";
 		$front .= 'title: ' . Markdown::yaml_scalar( $title ) . "\n";
 		$front .= 'url: ' . Markdown::yaml_scalar( $canonical_url ) . "\n";
-		$front .= 'type: ' . Markdown::yaml_scalar( $type . '-archive' ) . "\n";
+		$front .= 'type: ' . Markdown::yaml_scalar( $kind . '-archive' ) . "\n";
 		$front .= 'page: ' . (int) $page . "\n";
 		$front .= "---\n\n";
 		$body   = '# ' . $title . "\n\n";

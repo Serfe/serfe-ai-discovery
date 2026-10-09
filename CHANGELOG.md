@@ -11,7 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- Added Markdown responses for the configured WordPress Posts page archive and its pagination.
+- Added Markdown responses for the configured WordPress Posts page archive, categories, tags, and public post taxonomies, including pagination. These follow the Posts individual-content setting.
 - Added explicit inspection of virtual public discovery-file responses, including robots.txt served by WordPress or SEO plugins.
 - Added a generation-keyed server-side Markdown cache with automatic invalidation on content, visibility, price, stock, taxonomy, opt-in and setting changes.
 - Added enabled URL table and Markdown cache status controls to the Serfe AI Discovery → Markdown tab.

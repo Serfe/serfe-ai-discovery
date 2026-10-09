@@ -117,6 +117,9 @@ final class Settings {
 
 	/** @param string $archive Archive post type or supported product taxonomy. @return bool */
 	public static function archive_enabled_for( $archive ) {
+		if ( 'post' === $archive ) {
+			return self::markdown_enabled_for( 'post' );
+		}
 		$choices = self::choices();
 		if ( 1 !== (int) $choices['markdown_enabled'] || ! in_array( $archive, self::supported_archive_keys(), true ) ) {
 			return false;
@@ -153,9 +156,6 @@ final class Settings {
 	/** @return array<int, string> Public archive keys available for opt-in. */
 	public static function supported_archive_keys() {
 		$archives = array();
-		if ( (int) get_option( 'page_for_posts' ) > 0 || 'posts' === get_option( 'show_on_front' ) ) {
-			$archives[] = 'post';
-		}
 		foreach ( self::supported_post_types() as $type ) {
 			$object = get_post_type_object( $type );
 			if ( $object && ! empty( $object->public ) && ! empty( $object->publicly_queryable ) && ! empty( $object->has_archive ) ) {
@@ -363,7 +363,7 @@ final class Settings {
 			}
 			printf( '<label><input type="checkbox" name="%s[enabled_archives][]" value="%s" %s> %s</label><br>', esc_attr( self::OPTION ), esc_attr( $archive ), checked( in_array( $archive, $choices['enabled_archives'], true ), true, false ), esc_html( $label ) );
 		}
-		echo '<p class="description">' . esc_html__( 'Enabled public archives list only individually approved items. WooCommerce shop, product category, and product tag archives can be enabled separately.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Posts archives, categories, tags, and public post taxonomies follow the Posts choice above. Other enabled public archives list only individually approved items.', 'serfe-ai-discovery' ) . '</p>';
 	}
 
 	/** Render the API Catalog switch. */

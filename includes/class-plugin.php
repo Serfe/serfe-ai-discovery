@@ -94,7 +94,15 @@ final class Plugin {
 				static function () use ( $archive, $catalog, $generator, $query ) {
 					return in_array( $archive['type'], array( 'product', 'product_cat', 'product_tag' ), true )
 						? $catalog->generate( $archive, (int) $query->max_num_pages, $query->posts )
-						: $generator->generate( $archive['type'], $archive['url'], $archive['page'], (int) $query->max_num_pages, $query->posts );
+						: $generator->generate(
+							$archive['type'],
+							$archive['url'],
+							$archive['page'],
+							(int) $query->max_num_pages,
+							$query->posts,
+							isset( $archive['term'] ) && $archive['term'] instanceof \WP_Term ? $archive['term']->name : '',
+							isset( $archive['archive_type'] ) ? $archive['archive_type'] : ''
+						);
 				}
 			);
 			$this->response->markdown( $result['markdown'], $negotiated, $archive['url'], $result['hit'] );

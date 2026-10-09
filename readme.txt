@@ -11,7 +11,7 @@ Publish approved public WordPress content as Markdown and manage selected discov
 
 == Description ==
 
-Serfe WordPress AI Discovery is an opt-in starter kit for public content. It returns Markdown for approved posts, pages, the configured WordPress Posts page archive, WooCommerce products and catalog archives, and selected public Custom Post Types. Browsers continue to receive canonical HTML.
+Serfe WordPress AI Discovery is an opt-in starter kit for public content. It returns Markdown for approved posts, pages, the configured WordPress Posts page archive, post categories, tags and public taxonomies, WooCommerce products and catalog archives, and selected public Custom Post Types. Browsers continue to receive canonical HTML.
 
 An administrator can also review and publish root robots.txt and llms.txt files, enable a catalog of existing public APIs, and run bounded local checks for discovery resources. These features do not create an MCP server, agent tools, authentication, or new API permissions.
 
@@ -19,7 +19,7 @@ The plugin does not guarantee crawling, indexing, search rankings, AI citations,
 
 = Markdown publication =
 
-Markdown is disabled by default. Enable the master switch, select a supported content type or public archive, and approve individual content where required. Eligible pages have explicit .md URLs and respond to Accept: text/markdown. Published Markdown has an HTML canonical URL. Generated Markdown can be cached on the WordPress server and is invalidated when relevant public content or settings change; HTTP responses use a private, no-store policy so shared caches do not keep them.
+Markdown is disabled by default. Enable the master switch, select a supported content type or public archive, and approve individual content where required. The Posts choice also covers the configured Posts page archive, categories, tags, and public post taxonomies. Eligible pages have explicit .md URLs and respond to Accept: text/markdown. Published Markdown has an HTML canonical URL. Generated Markdown can be cached on the WordPress server and is invalidated when relevant public content or settings change; HTTP responses use a private, no-store policy so shared caches do not keep them.
 
 = Discovery files =
 

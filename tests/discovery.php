@@ -92,6 +92,18 @@ function is_home() {
 	return ! empty( $GLOBALS['discovery_test_context']['home'] );
 }
 
+function is_category() {
+	return ! empty( $GLOBALS['discovery_test_context']['category'] );
+}
+
+function is_tag() {
+	return ! empty( $GLOBALS['discovery_test_context']['tag'] );
+}
+
+function is_tax() {
+	return ! empty( $GLOBALS['discovery_test_context']['tax'] );
+}
+
 function is_shop() {
 	return ! empty( $GLOBALS['discovery_test_context']['shop'] );
 }
@@ -105,6 +117,12 @@ function is_product_tag() {
 }
 
 function get_term_link( $term ) {
+	if ( 'category' === $term->taxonomy ) {
+		return 'https://example.com/category/news/';
+	}
+	if ( 'topic' === $term->taxonomy ) {
+		return 'https://example.com/topic/research/';
+	}
 	return 'product_tag' === $term->taxonomy ? 'https://example.com/product-tag/featured/' : 'https://example.com/product-category/widgets/';
 }
 
@@ -127,6 +145,12 @@ function get_post_type_archive_link( $type ) {
 function get_pagenum_link( $page, $escape = true ) {
 	if ( ! empty( $GLOBALS['discovery_test_context']['home'] ) ) {
 		return 'https://example.com/blog/page/' . $page . '/';
+	}
+	if ( ! empty( $GLOBALS['discovery_test_context']['category'] ) ) {
+		return 'https://example.com/category/news/page/' . $page . '/';
+	}
+	if ( ! empty( $GLOBALS['discovery_test_context']['tax'] ) ) {
+		return 'https://example.com/topic/research/page/' . $page . '/';
 	}
 	if ( ! empty( $GLOBALS['discovery_test_context']['shop'] ) ) {
 		return 'https://example.com/product/page/' . $page . '/';
@@ -167,11 +191,18 @@ function get_post_type_object( $type ) {
 }
 
 function taxonomy_exists( $taxonomy ) {
-	return in_array( $taxonomy, array( 'product_cat', 'product_tag' ), true );
+	return in_array( $taxonomy, array( 'category', 'post_tag', 'topic', 'product_cat', 'product_tag' ), true );
 }
 
 function get_taxonomy( $taxonomy ) {
-	return taxonomy_exists( $taxonomy ) ? (object) array( 'public' => true, 'publicly_queryable' => true ) : null;
+	if ( ! taxonomy_exists( $taxonomy ) ) {
+		return null;
+	}
+	return (object) array(
+		'public'             => true,
+		'publicly_queryable' => true,
+		'object_type'        => in_array( $taxonomy, array( 'category', 'post_tag', 'topic' ), true ) ? array( 'post' ) : array( 'product' ),
+	);
 }
 
 function wp_parse_args( $args, $defaults ) {
@@ -354,7 +385,6 @@ $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects archiv
 $GLOBALS['discovery_test_context']['home'] = true;
 $GLOBALS['discovery_test_options']['page_for_posts'] = 7;
 $GLOBALS['discovery_test_options']['show_on_front'] = 'page';
-$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array( 'post' );
 $assert_same( array( 'type' => 'post', 'page' => 1, 'url' => 'https://example.com/blog/' ), $discovery->current_archive_context(), 'Allows the assigned Posts page archive' );
 $GLOBALS['discovery_test_context']['paged'] = 2;
 $assert_same( array( 'type' => 'post', 'page' => 2, 'url' => 'https://example.com/blog/page/2/' ), $discovery->current_archive_context(), 'Allows Posts page archive pagination' );
@@ -362,12 +392,29 @@ $GLOBALS['discovery_test_context']['paged'] = 0;
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_paths'] = array( '/blog' );
 $assert_same( null, $discovery->current_archive_context(), 'Blocked Posts page path overrides publication' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_paths'] = array();
-$GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array();
-$assert_same( null, $discovery->current_archive_context(), 'Posts page archive requires opt-in when granular publication is used' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['detail_post_types'] = array( 'page', 'product' );
+$assert_same( null, $discovery->current_archive_context(), 'Posts page archive follows the Posts setting when granular publication is used' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['detail_post_types'] = array( 'post', 'page', 'product', 'book' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['markdown_all_content'] = 1;
 $assert_same( array( 'type' => 'post', 'page' => 1, 'url' => 'https://example.com/blog/' ), $discovery->current_archive_context(), 'Publishes the Posts page archive with full publication enabled' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['markdown_all_content'] = 0;
 $GLOBALS['discovery_test_context']['home'] = false;
+$GLOBALS['discovery_test_context']['category'] = true;
+$category = new WP_Term( 123, 'category', 'News' );
+$GLOBALS['discovery_test_context']['post'] = $category;
+$assert_same( array( 'type' => 'post', 'page' => 1, 'url' => 'https://example.com/category/news/', 'term' => $category, 'archive_type' => 'category' ), $discovery->current_archive_context(), 'Publishes a post category through the Posts setting' );
+$GLOBALS['discovery_test_context']['paged'] = 2;
+$assert_same( array( 'type' => 'post', 'page' => 2, 'url' => 'https://example.com/category/news/page/2/', 'term' => $category, 'archive_type' => 'category' ), $discovery->current_archive_context(), 'Publishes post category pagination through the Posts setting' );
+$GLOBALS['discovery_test_context']['paged'] = 0;
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_terms'] = array( 'category:123' );
+$assert_same( null, $discovery->current_archive_context(), 'Blocked post category overrides the Posts setting' );
+$GLOBALS['discovery_test_options'][ Settings::OPTION ]['blocked_terms'] = array();
+$GLOBALS['discovery_test_context']['category'] = false;
+$GLOBALS['discovery_test_context']['tax'] = true;
+$topic = new WP_Term( 124, 'topic', 'Research' );
+$GLOBALS['discovery_test_context']['post'] = $topic;
+$assert_same( array( 'type' => 'post', 'page' => 1, 'url' => 'https://example.com/topic/research/', 'term' => $topic, 'archive_type' => 'topic' ), $discovery->current_archive_context(), 'Publishes a public post taxonomy through the Posts setting' );
+$GLOBALS['discovery_test_context']['tax'] = false;
 $GLOBALS['discovery_test_context']['archive'] = true;
 $GLOBALS['discovery_test_context']['post'] = new WP_Post_Type( 'book' );
 $GLOBALS['discovery_test_options'][ Settings::OPTION ]['enabled_archives'] = array( 'book' );
