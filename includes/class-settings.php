@@ -259,7 +259,12 @@ final class Settings {
 
 	/** Add Serfe AI Discovery as a top-level admin menu. */
 	public function register_page() {
-		add_menu_page( __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), 'manage_options', self::PAGE, array( $this, 'render_page' ), SERFE_AI_DISCOVERY_URL . 'assets/wp_serfe_logo_gray.svg' );
+		// WordPress centers SVG data URIs as menu backgrounds instead of rendering an img element.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Read-only bundled SVG asset.
+		$svg = file_get_contents( SERFE_AI_DISCOVERY_PATH . 'assets/wp_serfe_logo_gray.svg' );
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- WordPress requires an SVG data URI for centered menu icons.
+		$icon_url = false !== $svg ? 'data:image/svg+xml;base64,' . base64_encode( $svg ) : 'dashicons-admin-generic';
+		add_menu_page( __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), 'manage_options', self::PAGE, array( $this, 'render_page' ), $icon_url );
 	}
 
 	/** Explain the scope of the current switches. */
