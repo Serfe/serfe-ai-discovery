@@ -128,11 +128,6 @@ final class Discovery_Files_Admin {
 		delete_transient( self::notice_key() );
 		echo '<h2>' . esc_html__( 'Why robots.txt matters', 'serfe-ai-discovery' ) . '</h2>';
 		echo '<p>' . esc_html__( 'robots.txt communicates crawler access rules and can point crawlers to the XML sitemap. Access rules must reflect your organization’s policy. Allowing or blocking a crawler does not guarantee crawling, training, indexing, or citation.', 'serfe-ai-discovery' ) . '</p>';
-		$scanner = self::agent_ready_target( home_url( '/' ), wp_get_environment_type() );
-		printf( '<p><a class="button button-secondary" href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_url( $scanner['url'] ), esc_html__( 'Check this site with Is It Agent-Ready', 'serfe-ai-discovery' ) );
-		if ( ! $scanner['public'] ) {
-			echo '<p class="description">' . esc_html__( 'External scanners cannot access local or private environments. Open the scanner and test a public URL after deployment.', 'serfe-ai-discovery' ) . '</p>';
-		}
 		echo '<details style="margin: 16px 0;"><summary>' . esc_html__( 'About robots.txt', 'serfe-ai-discovery' ) . '</summary>';
 		echo '<p>' . esc_html__( 'What it does: Defines crawler access rules and can declare the XML sitemap location.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Why it helps: Clarifies which public areas are intended for crawling and where public URLs can be discovered.', 'serfe-ai-discovery' ) . '</p>';
@@ -149,11 +144,6 @@ final class Discovery_Files_Admin {
 		delete_transient( self::notice_key() );
 		echo '<h2>' . esc_html__( 'Why llms.txt matters', 'serfe-ai-discovery' ) . '</h2>';
 		echo '<p>' . esc_html__( 'llms.txt is an optional public guide containing curated context and links to relevant public content. Include only current, public, canonical URLs. It complements the website, sitemap, structured content, and crawler policy; it does not replace them.', 'serfe-ai-discovery' ) . '</p>';
-		$scanner = self::agent_ready_target( home_url( '/' ), wp_get_environment_type() );
-		printf( '<p><a class="button button-secondary" href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_url( $scanner['url'] ), esc_html__( 'Check this site with Is It Agent-Ready', 'serfe-ai-discovery' ) );
-		if ( ! $scanner['public'] ) {
-			echo '<p class="description">' . esc_html__( 'External scanners cannot access local or private environments. Open the scanner and test a public URL after deployment.', 'serfe-ai-discovery' ) . '</p>';
-		}
 		echo '<details style="margin: 16px 0;"><summary>' . esc_html__( 'About llms.txt', 'serfe-ai-discovery' ) . '</summary>';
 		echo '<p>' . esc_html__( 'What it does: Provides an optional human-readable Markdown overview and curated links to relevant public content.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Why it helps: Makes approved information easier for AI systems and technical tools to identify and interpret.', 'serfe-ai-discovery' ) . '</p>';

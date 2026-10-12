@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- Moved the optional Is It Agent-Ready button from the discovery-file editors to below the Discovery Checks table.
 - Simplified Markdown publication to one global switch; Advanced Settings now exclude only public content types and exact URL paths.
 - Moved API Catalog publication to its own settings tab with explicit enable and disable actions.
 - Renamed the visible plugin name to "Serfe WordPress AI Discovery" in the plugin header, admin screens, and documentation. The slug, text domain, folder, and stored option names are unchanged.

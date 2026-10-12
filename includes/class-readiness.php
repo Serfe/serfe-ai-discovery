@@ -105,6 +105,15 @@ final class Readiness {
 			<p class="description" style="margin-top: 14px;">
 				<?php esc_html_e( '✅ validated · ❌ not configured or not available · ⚠ could not be verified locally · — not applicable to the current site.', 'serfe-ai-discovery' ); ?>
 			</p>
+			<?php $scanner = Discovery_Files_Admin::agent_ready_target( home_url( '/' ), wp_get_environment_type() ); ?>
+			<div class="card" style="max-width: 1000px; padding: 16px 24px; margin: 16px 0;">
+				<h3 style="margin-top: 0;"><?php esc_html_e( 'Optional external validation', 'serfe-ai-discovery' ); ?></h3>
+				<p><?php esc_html_e( 'Open Is It Agent-Ready in a new tab to check the publicly deployed site. No request is sent until you select this button.', 'serfe-ai-discovery' ); ?></p>
+				<p><a class="button button-secondary" href="<?php echo esc_url( $scanner['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Check this site with Is It Agent-Ready', 'serfe-ai-discovery' ); ?></a></p>
+				<?php if ( ! $scanner['public'] ) : ?>
+					<p class="description"><?php esc_html_e( 'External scanners cannot access local or private environments. Open the scanner and test a public URL after deployment.', 'serfe-ai-discovery' ); ?></p>
+				<?php endif; ?>
+			</div>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="serfe_ai_discovery_readiness_refresh">
 				<?php wp_nonce_field( 'serfe_ai_discovery_readiness_refresh' ); ?>
