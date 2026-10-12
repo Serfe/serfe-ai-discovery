@@ -31,6 +31,9 @@ class WP_Block_Type_Registry {
 		if ( 'core/paragraph' === $name ) {
 			return new Test_Block_Type( false );
 		}
+		if ( in_array( $name, array( 'core/heading', 'core/list', 'core/list-item' ), true ) ) {
+			return new Test_Block_Type( true );
+		}
 		if ( 'core/latest-posts' === $name ) {
 			return new Test_Block_Type( true );
 		}
@@ -60,6 +63,12 @@ function parse_blocks( $content ) {
 	if ( strpos( $content, 'core/paragraph' ) !== false ) {
 		return array( array( 'blockName' => 'core/paragraph' ) );
 	}
+	if ( strpos( $content, 'core/heading' ) !== false ) {
+		return array( array( 'blockName' => 'core/heading' ) );
+	}
+	if ( strpos( $content, 'core/list' ) !== false ) {
+		return array( array( 'blockName' => 'core/list', 'innerBlocks' => array( array( 'blockName' => 'core/list-item' ) ) ) );
+	}
 	return array( array( 'blockName' => null ) );
 }
 
@@ -81,6 +90,8 @@ $assert_same = function ( $expected, $actual, $name ) use ( &$failures, &$tests 
 
 $assert_same( true, Editorial_Content::is_static( new WP_Post( '<p>Public text</p>' ) ), 'Allows saved HTML' );
 $assert_same( true, Editorial_Content::is_static( new WP_Post( '<!-- wp:core/paragraph --><p>Public</p><!-- /wp:core/paragraph -->' ) ), 'Allows static block' );
+$assert_same( true, Editorial_Content::is_static( new WP_Post( '<!-- wp:core/heading --><h2>Public</h2><!-- /wp:core/heading -->' ) ), 'Allows saved core heading markup' );
+$assert_same( true, Editorial_Content::is_static( new WP_Post( '<!-- wp:core/list --><ul><li>Public</li></ul><!-- /wp:core/list -->' ) ), 'Allows saved core list markup' );
 $assert_same( false, Editorial_Content::is_static( new WP_Post( '[account_data customer="1"]' ) ), 'Rejects shortcode content' );
 $assert_same( false, Editorial_Content::is_static( new WP_Post( '<!-- wp:core/latest-posts /-->' ) ), 'Rejects nested dynamic block' );
 $assert_same( false, Editorial_Content::is_static( new WP_Post( '<!-- wp:vendor/unknown-block /-->' ) ), 'Rejects unknown block' );

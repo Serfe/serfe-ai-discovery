@@ -51,6 +51,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Allowed saved WordPress core heading and list markup in Markdown responses when WordPress registers those blocks with render callbacks.
 - Kept the full-publication setting when WordPress saves the plugin options.
 - Corrected the Overview and Help & Support text to describe the existing Markdown cache and the unavailable Server Card settings accurately.
 - Marked the documented HTTP smoke-check script as executable so contributors can run it directly.

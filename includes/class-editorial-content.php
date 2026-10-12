@@ -8,6 +8,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** Keeps Markdown output independent of dynamic, visitor-specific rendering. */
 final class Editorial_Content {
+	/**
+	 * WordPress 7 registers these core blocks with render callbacks, but their
+	 * saved markup is self-contained and is the only representation we convert.
+	 *
+	 * @var array<int, string>
+	 */
+	const SAVED_CORE_BLOCKS = array(
+		'core/heading',
+		'core/list',
+		'core/list-item',
+	);
+
 	/** @param \WP_Post $post Public editorial item. @return bool */
 	public static function is_static( $post ) {
 		if ( ! ( $post instanceof \WP_Post ) ) {
@@ -29,7 +41,7 @@ final class Editorial_Content {
 		foreach ( $blocks as $block ) {
 			if ( ! empty( $block['blockName'] ) ) {
 				$type = $registry->get_registered( $block['blockName'] );
-				if ( ! $type || $type->is_dynamic() ) {
+				if ( ! $type || ( $type->is_dynamic() && ! in_array( $block['blockName'], self::SAVED_CORE_BLOCKS, true ) ) ) {
 					return false;
 				}
 			}
