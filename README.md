@@ -29,6 +29,13 @@ When API Catalog publication is enabled in the settings, the homepage additional
 - `rel="api-catalog"` points to `/.well-known/api-catalog`, an RFC 9727 Linkset catalog.
 - `rel="service-desc"` points to the WordPress REST API index.
 
+When public `llms.txt` and XML sitemap responses are valid, the plugin automatically adds RFC 8288 Link headers to public site responses:
+
+- `rel="describedby"` points to `llms.txt` as `text/plain`.
+- `rel="related"` points to the detected XML sitemap as `application/xml`.
+
+The Discovery Checks tab reports the two resources and the Link-header state. Create `llms.txt` or an XML sitemap when either resource is unavailable.
+
 ## Supported content
 
 - Published WordPress posts.
@@ -72,7 +79,7 @@ The Markdown response includes YAML front matter such as title, canonical URL, l
 
 ## Agents Discovery
 
-Under **WP AI Discovery → Discovery**, administrators can start local, read-only capability checks. Opening the page does not send HTTP requests. Selecting **Run checks again** checks the live public response for `robots.txt`, a sitemap, the RFC 9727 API catalog, Markdown negotiation, OAuth Protected Resource Metadata, and an Agent Skills index. It uses no third-party scanner and caches results for five minutes.
+Under **WP AI Discovery → Discovery**, administrators can start local, read-only capability checks. Opening the page does not send HTTP requests. Selecting **Run checks again** checks the live public response for `robots.txt`, `llms.txt`, an XML sitemap, the automatic agent-discovery Link headers, the RFC 9727 API catalog, Markdown negotiation, OAuth Protected Resource Metadata, and an Agent Skills index. It uses no third-party scanner and caches results for five minutes.
 
 Developers can extend the plugin's readiness signals by integrating their own endpoints (such as Model Context Protocol (MCP) or Agentic Commerce functionality). MCP and Agentic Commerce are never inferred from a plugin name or a static card. An implementation must register its real service through these filters:
 

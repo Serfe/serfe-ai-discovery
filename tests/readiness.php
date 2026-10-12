@@ -55,6 +55,36 @@ $valid_catalog = array(
 );
 $assert_same( true, Readiness::valid_api_catalog( $valid_catalog ), 'Accepts a valid RFC 9727 API catalog' );
 $assert_same( false, Readiness::valid_api_catalog( array() ), 'Rejects an invalid API catalog' );
+$assert_same(
+	array(
+		array(
+			'url'  => 'https://example.com/llms.txt',
+			'rel'  => 'describedby',
+			'type' => 'text/plain',
+		),
+		array(
+			'url'  => 'https://example.com/sitemap.xml',
+			'rel'  => 'related',
+			'type' => 'application/xml',
+		),
+	),
+	Readiness::agent_discovery_links_from_checks(
+		array(
+			'status' => 'pass',
+			'url'    => 'https://example.com/llms.txt',
+		),
+		array(
+			'status' => 'pass',
+			'url'    => 'https://example.com/sitemap.xml',
+		)
+	),
+	'Builds RFC 8288 Link header values from validated resources'
+);
+$assert_same(
+	array(),
+	Readiness::agent_discovery_links_from_checks( array( 'status' => 'fail' ), array( 'status' => 'fail' ) ),
+	'Does not announce unavailable discovery resources'
+);
 $assert_same( true, Readiness::is_same_origin_url( 'https://example.com/sitemap.xml' ), 'Allows same-origin validation' );
 $assert_same( false, Readiness::is_same_origin_url( 'https://other.example/sitemap.xml' ), 'Rejects external validation' );
 $assert_same( false, Readiness::is_same_origin_url( 'https://example.com:8443/sitemap.xml' ), 'Rejects a different port' );

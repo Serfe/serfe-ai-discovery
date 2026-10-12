@@ -22,6 +22,7 @@ final class Discovery {
 	public function register_hooks() {
 		add_action( 'template_redirect', array( $this, 'send_api_catalog' ), -1 );
 		add_action( 'template_redirect', array( $this, 'send_homepage_agent_link_headers' ), 0 );
+		add_action( 'template_redirect', array( $this, 'send_agent_discovery_link_headers' ), 1 );
 		add_action( 'wp_head', array( $this, 'render_html_alternate' ) );
 		add_action( 'template_redirect', array( $this, 'send_http_link_header' ), 11 );
 	}
@@ -57,6 +58,28 @@ final class Discovery {
 		$rest_url    = rest_url();
 		header( sprintf( 'Link: <%s>; rel="api-catalog"; type="application/linkset+json"; profile="%s"', esc_url_raw( $catalog_url ), self::API_CATALOG_PROFILE ), false );
 		header( sprintf( 'Link: <%s>; rel="service-desc"; type="application/json"', esc_url_raw( $rest_url ) ), false );
+	}
+
+	/** Announce verified llms.txt and XML sitemap resources with RFC 8288 Link headers. */
+	public function send_agent_discovery_link_headers() {
+		if ( headers_sent() || is_feed() || is_embed() || is_404() || is_search() ) {
+			return;
+		}
+
+		foreach ( ( new Readiness() )->agent_discovery_links() as $link ) {
+			if ( ! isset( $link['url'], $link['rel'], $link['type'] ) ) {
+				continue;
+			}
+			header(
+				sprintf(
+					'Link: <%1$s>; rel="%2$s"; type="%3$s"',
+					esc_url_raw( $link['url'] ),
+					sanitize_key( $link['rel'] ),
+					sanitize_text_field( $link['type'] )
+				),
+				false
+			);
+		}
 	}
 
 	/** @param string $uri Request URI. @return bool */

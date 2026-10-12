@@ -602,8 +602,13 @@ final class Settings {
 			? self::overview_row( __( 'XML Sitemap', 'serfe-ai-discovery' ), $found[0], $found[1], $found[2], $found[3] )
 			: self::overview_row( __( 'XML Sitemap', 'serfe-ai-discovery' ), 'na', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the discovery checks.', 'serfe-ai-discovery' ) );
 
+		$found  = self::check_state( isset( $checks['link_headers'] ) ? $checks['link_headers'] : null, $checked );
+		$rows[] = $found
+			? self::overview_row( __( 'Agent discovery Link headers', 'serfe-ai-discovery' ), $found[0], $found[1], $found[2], $found[3] )
+			: self::overview_row( __( 'Agent discovery Link headers', 'serfe-ai-discovery' ), 'na', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Create llms.txt and an XML sitemap, then run the discovery checks.', 'serfe-ai-discovery' ) );
+
 		if ( 1 !== (int) $choices['api_catalog_enabled'] ) {
-			$rows[] = self::overview_row( __( 'API Catalog', 'serfe-ai-discovery' ), 'na', __( 'Disabled', 'serfe-ai-discovery' ), __( 'Enable the API Catalog in the Markdown tab.', 'serfe-ai-discovery' ) );
+			$rows[] = self::overview_row( __( 'API Catalog', 'serfe-ai-discovery' ), 'na', __( 'Disabled', 'serfe-ai-discovery' ), __( 'Enable the API Catalog in the API Catalog tab.', 'serfe-ai-discovery' ) );
 		} else {
 			$found  = self::check_state( isset( $checks['api_catalog'] ) ? $checks['api_catalog'] : null, $checked );
 			$rows[] = $found
@@ -690,6 +695,7 @@ final class Settings {
 		$choices = self::choices();
 		echo '<h2>' . esc_html__( 'Discovery resources', 'serfe-ai-discovery' ) . '</h2>';
 		printf( '<p>%s</p>', esc_html( 1 === (int) $choices['api_catalog_enabled'] ? __( 'API Catalog publication is enabled.', 'serfe-ai-discovery' ) : __( 'API Catalog publication is disabled. Configure it in the API Catalog tab.', 'serfe-ai-discovery' ) ) );
+		echo '<p>' . esc_html__( 'When valid public llms.txt and XML sitemap responses are detected, the plugin automatically publishes RFC 8288 Link headers. Create either missing resource, then run the checks again.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'The local checks inspect public responses only when you run them. A Server Card requires a validated MCP endpoint and is not available yet.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<details style="margin: 16px 0;"><summary>' . esc_html__( 'About XML Sitemaps', 'serfe-ai-discovery' ) . '</summary>';
 		echo '<p>' . esc_html__( 'What it does: Lists canonical public URLs in a machine-readable format.', 'serfe-ai-discovery' ) . '</p>';

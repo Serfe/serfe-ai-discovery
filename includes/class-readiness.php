@@ -14,9 +14,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * plugin name alone, and the checker never calls third-party scanners.
  */
 final class Readiness {
-	const CACHE_KEY     = 'serfe_ai_discovery_readiness_v1';
-	const CACHE_TTL     = 300;
-	const SKILLS_SCHEMA = 'https://schemas.agentskills.io/discovery/0.2.0/schema.json';
+	const CACHE_KEY              = 'serfe_ai_discovery_readiness_v1';
+	const CACHE_TTL              = 300;
+	const LINK_HEADERS_CACHE_KEY = 'serfe_ai_discovery_agent_links_v1';
+	const LINK_HEADERS_CACHE_TTL = 300;
+	const SKILLS_SCHEMA          = 'https://schemas.agentskills.io/discovery/0.2.0/schema.json';
 
 	/** Register the diagnostic refresh action on the plugin settings screen. */
 	public function register_hooks() {
@@ -129,15 +131,19 @@ final class Readiness {
 			return $cached;
 		}
 
+		$llms    = $this->check_llms();
+		$sitemap = $this->check_sitemap();
 		$results = array(
-			'robots'      => $this->check_robots(),
-			'sitemap'     => $this->check_sitemap(),
-			'api_catalog' => $this->check_api_catalog(),
-			'markdown'    => $this->check_markdown(),
-			'mcp'         => $this->check_mcp(),
-			'oauth'       => $this->check_oauth(),
-			'skills'      => $this->check_skills(),
-			'commerce'    => $this->check_commerce(),
+			'robots'       => $this->check_robots(),
+			'llms'         => $llms,
+			'sitemap'      => $sitemap,
+			'link_headers' => $this->check_agent_link_headers( $llms, $sitemap ),
+			'api_catalog'  => $this->check_api_catalog(),
+			'markdown'     => $this->check_markdown(),
+			'mcp'          => $this->check_mcp(),
+			'oauth'        => $this->check_oauth(),
+			'skills'       => $this->check_skills(),
+			'commerce'     => $this->check_commerce(),
 		);
 		// A stable id lets other screens match a check without depending on its translated label.
 		foreach ( $results as $id => $result ) {
@@ -149,7 +155,46 @@ final class Readiness {
 		);
 
 		set_transient( self::CACHE_KEY, $report, self::CACHE_TTL );
+		set_transient( self::LINK_HEADERS_CACHE_KEY, self::agent_discovery_links_from_checks( $llms, $sitemap ), self::LINK_HEADERS_CACHE_TTL );
 		return $report;
+	}
+
+	/** Return cached or newly verified Link header resources for public requests. */
+	public function agent_discovery_links() {
+		$cached = get_transient( self::LINK_HEADERS_CACHE_KEY );
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
+		$links = self::agent_discovery_links_from_checks( $this->check_llms(), $this->check_sitemap() );
+		set_transient( self::LINK_HEADERS_CACHE_KEY, $links, self::LINK_HEADERS_CACHE_TTL );
+		return $links;
+	}
+
+	/**
+	 * Build RFC 8288 Link header values from verified resource checks.
+	 *
+	 * @param array<string, string> $llms    llms.txt check.
+	 * @param array<string, string> $sitemap XML sitemap check.
+	 * @return array<int, array<string, string>>
+	 */
+	public static function agent_discovery_links_from_checks( $llms, $sitemap ) {
+		$links = array();
+		if ( is_array( $llms ) && 'pass' === ( isset( $llms['status'] ) ? $llms['status'] : '' ) && ! empty( $llms['url'] ) ) {
+			$links[] = array(
+				'url'  => (string) $llms['url'],
+				'rel'  => 'describedby',
+				'type' => 'text/plain',
+			);
+		}
+		if ( is_array( $sitemap ) && 'pass' === ( isset( $sitemap['status'] ) ? $sitemap['status'] : '' ) && ! empty( $sitemap['url'] ) ) {
+			$links[] = array(
+				'url'  => (string) $sitemap['url'],
+				'rel'  => 'related',
+				'type' => 'application/xml',
+			);
+		}
+		return $links;
 	}
 
 	/** @return array<string, string> */
@@ -188,6 +233,34 @@ final class Readiness {
 		}
 
 		return $this->check( 'fail', __( 'XML sitemap', 'serfe-ai-discovery' ), __( 'No XML sitemap was found at the WordPress or common SEO-plugin URLs.', 'serfe-ai-discovery' ) );
+	}
+
+	/** @return array<string, string> */
+	private function check_llms() {
+		$url      = home_url( '/llms.txt' );
+		$response = $this->get( $url );
+		if ( ! $response['ok'] ) {
+			return $this->check( 'unknown', __( 'llms.txt', 'serfe-ai-discovery' ), $response['detail'], $url );
+		}
+		if ( 200 === $response['code'] && 0 === stripos( $response['content_type'], 'text/plain' ) && '' !== trim( $response['body'] ) ) {
+			return $this->check( 'pass', __( 'llms.txt', 'serfe-ai-discovery' ), __( 'A non-empty plain-text llms.txt response is available.', 'serfe-ai-discovery' ), $url );
+		}
+		return $this->check( 'fail', __( 'llms.txt', 'serfe-ai-discovery' ), __( 'No valid llms.txt response was found.', 'serfe-ai-discovery' ), $url );
+	}
+
+	/** @param array<string, string> $llms @param array<string, string> $sitemap @return array<string, string> */
+	private function check_agent_link_headers( $llms, $sitemap ) {
+		$links = self::agent_discovery_links_from_checks( $llms, $sitemap );
+		if ( 2 === count( $links ) ) {
+			return $this->check( 'pass', __( 'Agent discovery Link headers', 'serfe-ai-discovery' ), __( 'Link headers advertise llms.txt and the XML sitemap.', 'serfe-ai-discovery' ) );
+		}
+		if ( $links ) {
+			return $this->check( 'unknown', __( 'Agent discovery Link headers', 'serfe-ai-discovery' ), __( 'Link headers advertise the detected resource. Create the missing llms.txt or XML sitemap to advertise both.', 'serfe-ai-discovery' ) );
+		}
+		if ( 'unknown' === $llms['status'] || 'unknown' === $sitemap['status'] ) {
+			return $this->check( 'unknown', __( 'Agent discovery Link headers', 'serfe-ai-discovery' ), __( 'The local resources could not be verified. Create llms.txt and an XML sitemap, then run the checks again.', 'serfe-ai-discovery' ) );
+		}
+		return $this->check( 'fail', __( 'Agent discovery Link headers', 'serfe-ai-discovery' ), __( 'Create a public llms.txt file and XML sitemap to publish these Link headers.', 'serfe-ai-discovery' ) );
 	}
 
 	/** @return array<string, string> */

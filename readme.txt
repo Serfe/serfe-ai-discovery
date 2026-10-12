@@ -15,6 +15,8 @@ Serfe WordPress AI Discovery is an opt-in starter kit for public content. When M
 
 An administrator can also review and publish root robots.txt and llms.txt files, enable a catalog of existing public APIs, and run bounded local checks for discovery resources. These features do not create an MCP server, agent tools, authentication, or new API permissions.
 
+When valid public llms.txt and XML sitemap responses are detected, the plugin automatically adds RFC 8288 Link headers to public site responses. The Discovery tab reports the resources and Link-header state; create llms.txt or an XML sitemap if either is unavailable.
+
 The plugin does not guarantee crawling, indexing, search rankings, AI citations, traffic, or business results. It does not send content or telemetry to Serfe. Local checks make same-site requests only when an administrator runs them.
 
 = Markdown publication =

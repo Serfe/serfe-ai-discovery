@@ -226,6 +226,9 @@ final class Discovery_Files {
 			),
 			false
 		);
+		if ( 'llms.txt' === $name && class_exists( __NAMESPACE__ . '\\Readiness' ) ) {
+			delete_transient( Readiness::LINK_HEADERS_CACHE_KEY );
+		}
 		$check = self::validate_current( $name );
 		$url   = home_url( '/' . $name );
 		return array(
