@@ -619,14 +619,14 @@ final class Settings {
 	}
 
 	/**
-	 * Compute every Overview row from current settings and the cached discovery checks.
+	 * Compute every Overview row from current settings and the persisted discovery checks.
 	 *
 	 * @return array<int, array<string, string>>
 	 */
 	public function overview_rows() {
 		$choices = self::choices();
-		$report  = get_transient( Readiness::CACHE_KEY );
-		$checked = is_array( $report ) && ! empty( $report['checked_at'] ) ? (string) $report['checked_at'] : '';
+		$report  = Readiness::saved_report();
+		$checked = ! empty( $report['checked_at'] ) ? Readiness::format_checked_at( $report['checked_at'] ) : '';
 		$checks  = self::checks_by_id( $report );
 		$rows    = array();
 
@@ -713,7 +713,7 @@ final class Settings {
 			return self::overview_row( $name, 'warn', __( 'Needs review', 'serfe-ai-discovery' ), $state->get_error_message() );
 		}
 		$meta = $state['meta'];
-		$date = isset( $meta['validated_at'] ) && is_string( $meta['validated_at'] ) ? $meta['validated_at'] : '';
+		$date = isset( $meta['validated_at'] ) && is_string( $meta['validated_at'] ) ? Readiness::format_checked_at( $meta['validated_at'] ) : '';
 		if ( ! $state['exists'] ) {
 			$next = __( 'Validate the public response; WordPress or an SEO plugin may serve a virtual file.', 'serfe-ai-discovery' );
 			if ( is_array( $check ) && ! empty( $check['detail'] ) ) {

@@ -10,6 +10,18 @@ function home_url( $path = '' ) {
 	return 'https://example.com' . $path;
 }
 
+function get_option( $option ) {
+	return 'date_format' === $option ? 'd/m/Y' : 'H:i';
+}
+
+function wp_timezone() {
+	return new DateTimeZone( 'America/Argentina/Buenos_Aires' );
+}
+
+function wp_date( $format, $timestamp, $timezone ) {
+	return ( new DateTimeImmutable( '@' . $timestamp ) )->setTimezone( $timezone )->format( $format );
+}
+
 function wp_parse_url( $url, $component = -1 ) {
 	return parse_url( $url, $component );
 }
@@ -55,6 +67,7 @@ $valid_catalog = array(
 );
 $assert_same( true, Readiness::valid_api_catalog( $valid_catalog ), 'Accepts a valid RFC 9727 API catalog' );
 $assert_same( false, Readiness::valid_api_catalog( array() ), 'Rejects an invalid API catalog' );
+$assert_same( '12/10/2026 20:30', Readiness::format_checked_at( '2026-10-12 20:30:00' ), 'Formats check timestamps with the WordPress date and time settings' );
 $assert_same(
 	array(
 		array(

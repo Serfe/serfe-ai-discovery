@@ -16,6 +16,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Persisted Discovery Checks results and timestamps for Overview, formatted with the site's WordPress date and time settings.
 - Added an immediate AJAX toggle for Markdown support, with separate saving for Advanced Settings exclusions.
 - Added automatic RFC 8288 Link headers for verified public llms.txt and XML sitemap resources, with Link-header status in Overview and Discovery Checks.
 - Added Markdown responses for the configured WordPress Posts page archive, categories, tags, and public post taxonomies, including pagination. These follow the Posts individual-content setting.

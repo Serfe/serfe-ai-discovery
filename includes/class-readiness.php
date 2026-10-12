@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * plugin name alone, and the checker never calls third-party scanners.
  */
 final class Readiness {
+	const REPORT_OPTION          = 'serfe_ai_discovery_readiness_report';
 	const CACHE_KEY              = 'serfe_ai_discovery_readiness_v1';
 	const CACHE_TTL              = 300;
 	const LINK_HEADERS_CACHE_KEY = 'serfe_ai_discovery_agent_links_v1';
@@ -56,7 +57,7 @@ final class Readiness {
 			return;
 		}
 
-		$report = get_transient( self::CACHE_KEY );
+		$report = self::saved_report();
 		if ( ! is_array( $report ) || ! isset( $report['checks'], $report['checked_at'] ) ) {
 			$report = array(
 				'checks'     => array(),
@@ -72,7 +73,7 @@ final class Readiness {
 				<?php if ( $has_checks ) : ?>
 					<p><?php esc_html_e( 'The latest local results are shown below. Review any item marked unavailable or needing verification.', 'serfe-ai-discovery' ); ?></p>
 					<?php /* translators: %s: date and time of the last capability check. */ ?>
-					<p class="description"><?php echo esc_html( sprintf( __( 'Last checked: %s', 'serfe-ai-discovery' ), $report['checked_at'] ) ); ?></p>
+					<p class="description"><?php echo esc_html( sprintf( __( 'Last checked: %s', 'serfe-ai-discovery' ), self::format_checked_at( $report['checked_at'] ) ) ); ?></p>
 				<?php else : ?>
 					<p><?php esc_html_e( 'No checks have run yet. Select Run checks to inspect the public discovery resources for this site.', 'serfe-ai-discovery' ); ?></p>
 				<?php endif; ?>
@@ -139,7 +140,7 @@ final class Readiness {
 	/**
 	 * Inspect the active site. This intentionally has no remote scanner dependency.
 	 *
-	 * @param bool $force Ignore the transient cache.
+	 * @param bool $force Ignore the short-lived request cache.
 	 * @return array<string, mixed>
 	 */
 	public function inspect( $force = false ) {
@@ -172,8 +173,28 @@ final class Readiness {
 		);
 
 		set_transient( self::CACHE_KEY, $report, self::CACHE_TTL );
+		update_option( self::REPORT_OPTION, $report, false );
 		set_transient( self::LINK_HEADERS_CACHE_KEY, self::agent_discovery_links_from_checks( $llms, $sitemap ), self::LINK_HEADERS_CACHE_TTL );
 		return $report;
+	}
+
+	/** Return the persisted report from the most recent administrator-run checks. */
+	public static function saved_report() {
+		$report = get_option( self::REPORT_OPTION, array() );
+		return is_array( $report ) && isset( $report['checks'], $report['checked_at'] ) ? $report : array();
+	}
+
+	/** Format a stored check timestamp using the site's configured date and time formats. */
+	public static function format_checked_at( $checked_at ) {
+		if ( ! is_string( $checked_at ) || '' === $checked_at ) {
+			return '';
+		}
+		$timezone = wp_timezone();
+		$date     = \DateTimeImmutable::createFromFormat( 'Y-m-d H:i:s', $checked_at, $timezone );
+		if ( false === $date ) {
+			return $checked_at;
+		}
+		return wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $date->getTimestamp(), $timezone );
 	}
 
 	/** Return cached or newly verified Link header resources for public requests. */
