@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- Styled the Help & Support contact link as a Serfe-branded button with an animated hover background.
 - Grouped the Discovery Checks guidance, current status, validation controls, and results in one panel with a primary Run checks button.
 - Moved the optional Is It Agent-Ready button from the discovery-file editors to below the Discovery Checks table.
 - Simplified Markdown publication to one global switch; Advanced Settings now exclude only public content types and exact URL paths.

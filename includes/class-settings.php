@@ -414,7 +414,7 @@ final class Settings {
 		if ( 'toplevel_page_' . self::PAGE !== $hook_suffix ) {
 			return;
 		}
-		wp_enqueue_style( 'serfe-ai-discovery-settings', SERFE_AI_DISCOVERY_URL . 'assets/admin-settings.css', array(), '1.0.10' );
+		wp_enqueue_style( 'serfe-ai-discovery-settings', SERFE_AI_DISCOVERY_URL . 'assets/admin-settings.css', array(), '1.0.10.1' );
 		wp_enqueue_script( 'serfe-ai-discovery-settings', SERFE_AI_DISCOVERY_URL . 'assets/admin-settings.js', array( 'jquery' ), '1.0.10', true );
 		wp_localize_script(
 			'serfe-ai-discovery-settings',
@@ -747,11 +747,10 @@ final class Settings {
 		printf( '<p><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_url( 'https://github.com/Serfe-com' ), esc_html__( 'Serfe open-source repositories', 'serfe-ai-discovery' ) );
 		echo '<p>' . esc_html__( 'For support and security reporting, use the channels documented in the plugin repository.', 'serfe-ai-discovery' ) . '</p>';
 
-		$logo       = 'serfe-logo-white.webp';
-		$style      = 'background: #123b68; color: #fff;';
-		$link_style = 'color: #fff;';
+		$logo  = 'serfe-logo-white.webp';
+		$style = 'background: #123b68; color: #fff;';
 		printf(
-			'<div class="serfe-help-serfe-card" style="max-width: 1000px; margin-top: 32px; padding: 20px 24px; border-radius: 4px; %1$s"><a href="%2$s" target="_blank" rel="noopener noreferrer" aria-label="%3$s"><img src="%4$s" alt="%5$s" style="display: block; width: 149px; height: auto; max-width: 100%%;"></a><h3 style="color: inherit;">%6$s</h3><p>%7$s</p><p style="margin-bottom: 0;"><a href="%8$s" target="_blank" rel="noopener noreferrer" style="%9$s">%10$s</a></p></div>',
+			'<div class="serfe-help-serfe-card" style="max-width: 1000px; margin-top: 32px; padding: 20px 24px; border-radius: 4px; %1$s"><a href="%2$s" target="_blank" rel="noopener noreferrer" aria-label="%3$s"><img src="%4$s" alt="%5$s" style="display: block; width: 149px; height: auto; max-width: 100%%;"></a><h3 style="color: inherit;">%6$s</h3><p>%7$s</p><p style="margin-bottom: 0;"><a class="serfe-help-contact-button" href="%8$s" target="_blank" rel="noopener noreferrer">%9$s</a></p></div>',
 			esc_attr( $style ),
 			esc_url( 'https://www.serfe.com?utm_source=serfe-ai-discovery' ),
 			esc_attr__( 'Visit Serfe', 'serfe-ai-discovery' ),
@@ -760,7 +759,6 @@ final class Settings {
 			esc_html__( 'Need a broader AI discovery or GEO assessment?', 'serfe-ai-discovery' ),
 			esc_html__( 'This plugin provides basic public-content and discovery signals only. Serfe can help review technical foundations, content, SEO, risks, and a broader implementation roadmap.', 'serfe-ai-discovery' ),
 			esc_url( 'https://www.serfe.com/en/contact-us?utm_source=serfe-ai-discovery' ),
-			esc_attr( $link_style ),
 			esc_html__( 'Contact Serfe', 'serfe-ai-discovery' )
 		);
 	}

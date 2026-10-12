@@ -50,3 +50,26 @@
 .serfe-markdown-toggle__message {
 	color: #b32d2e;
 }
+
+.serfe-help-contact-button {
+	display: inline-block;
+	padding: 9px 16px;
+	border-radius: 4px;
+	background: #fff;
+	color: #123b68 !important;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.serfe-help-contact-button:hover,
+.serfe-help-contact-button:focus {
+	background: #dceeff;
+	color: #123b68 !important;
+	transform: translateY( -1px );
+}
+
+.serfe-help-contact-button:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: 2px;
+}
