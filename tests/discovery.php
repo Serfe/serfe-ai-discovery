@@ -327,6 +327,7 @@ $assert_same( true, $discovery->current_content_has_markdown(), 'Publishes stati
 $GLOBALS['discovery_test_context']['post']->post_content = '';
 $GLOBALS['discovery_test_context']['logged_in'] = true;
 $assert_same( false, $discovery->current_content_has_markdown(), 'Never exposes Markdown to a logged-in visitor' );
+$assert_same( true, $discovery->current_content_has_markdown( true ), 'Allows an administrator to preview an explicit Markdown URL' );
 $GLOBALS['discovery_test_context']['logged_in'] = false;
 $GLOBALS['discovery_test_context']['publicly_viewable'] = false;
 $assert_same( false, $discovery->current_content_has_markdown(), 'Rejects content that WordPress does not regard as public' );

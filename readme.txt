@@ -43,7 +43,7 @@ The optional API Catalog describes existing public APIs; it does not enable any 
 
 = Does the plugin make private content available to AI agents? =
 
-No. Markdown publication requires public, published content and an unauthenticated request. Review exclusions and public responses before using the feature on a production site.
+No. Public Markdown publication requires public, published content and an unauthenticated request. Administrators can review an explicit .md URL while logged in, but that does not publish private or unpublished content.
 
 = Does it generate an llms.txt file automatically from site content? =
 

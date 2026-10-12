@@ -77,8 +77,9 @@ final class Plugin {
 		if ( ! $this->router->is_markdown_request() ) {
 			return;
 		}
-		$negotiated = $this->router->is_accept_negotiated();
-		$archive    = $this->discovery->current_archive_context();
+		$negotiated          = $this->router->is_accept_negotiated();
+		$allow_admin_preview = ! $negotiated && current_user_can( 'manage_options' );
+		$archive             = $this->discovery->current_archive_context( $allow_admin_preview );
 		if ( $archive ) {
 			global $wp_query;
 			if ( ! ( $wp_query instanceof \WP_Query ) ) {
@@ -108,7 +109,7 @@ final class Plugin {
 			$this->response->markdown( $result['markdown'], $negotiated, $archive['url'], $result['hit'] );
 		}
 
-		if ( ! $this->discovery->current_content_has_markdown() ) {
+		if ( ! $this->discovery->current_content_has_markdown( $allow_admin_preview ) ) {
 			if ( $negotiated ) {
 				// Accept is a preference, not a route: ineligible content keeps its normal HTML response.
 				return;

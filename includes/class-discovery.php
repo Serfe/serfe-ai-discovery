@@ -109,10 +109,11 @@ final class Discovery {
 	/**
 	 * Whether the queried content has a Markdown representation.
 	 *
+	 * @param bool $allow_admin_preview Allow a logged-in administrator to view an explicit .md URL.
 	 * @return bool
 	 */
-	public function current_content_has_markdown() {
-		if ( ! is_singular() || is_feed() || is_embed() || is_user_logged_in() ) {
+	public function current_content_has_markdown( $allow_admin_preview = false ) {
+		if ( ! is_singular() || is_feed() || is_embed() || ( is_user_logged_in() && ! $allow_admin_preview ) ) {
 			return false;
 		}
 
@@ -144,9 +145,14 @@ final class Discovery {
 		return $this->product_generator->is_exposable( $post->ID );
 	}
 
-	/** Return an enabled public archive and its canonical page URL. */
-	public function current_archive_context() {
-		if ( is_404() || is_feed() || is_embed() || is_search() || is_user_logged_in() ) {
+	/**
+	 * Return an enabled public archive and its canonical page URL.
+	 *
+	 * @param bool $allow_admin_preview Allow a logged-in administrator to view an explicit .md URL.
+	 * @return array<string, mixed>|null
+	 */
+	public function current_archive_context( $allow_admin_preview = false ) {
+		if ( is_404() || is_feed() || is_embed() || is_search() || ( is_user_logged_in() && ! $allow_admin_preview ) ) {
 			return null;
 		}
 		$page = max( 1, (int) get_query_var( 'paged' ) );
