@@ -692,15 +692,6 @@ final class Settings {
 
 	/** Show the read-only diagnostic without triggering a request. */
 	private function render_discovery_tab() {
-		$choices = self::choices();
-		echo '<h2>' . esc_html__( 'Discovery resources', 'serfe-ai-discovery' ) . '</h2>';
-		printf( '<p>%s</p>', esc_html( 1 === (int) $choices['api_catalog_enabled'] ? __( 'API Catalog publication is enabled.', 'serfe-ai-discovery' ) : __( 'API Catalog publication is disabled. Configure it in the API Catalog tab.', 'serfe-ai-discovery' ) ) );
-		echo '<p>' . esc_html__( 'When valid public llms.txt and XML sitemap responses are detected, the plugin automatically publishes RFC 8288 Link headers. Create either missing resource, then run the checks again.', 'serfe-ai-discovery' ) . '</p>';
-		echo '<p>' . esc_html__( 'The local checks inspect public responses only when you run them. A Server Card requires a validated MCP endpoint and is not available yet.', 'serfe-ai-discovery' ) . '</p>';
-		echo '<details style="margin: 16px 0;"><summary>' . esc_html__( 'About XML Sitemaps', 'serfe-ai-discovery' ) . '</summary>';
-		echo '<p>' . esc_html__( 'What it does: Lists canonical public URLs in a machine-readable format.', 'serfe-ai-discovery' ) . '</p>';
-		echo '<p>' . esc_html__( 'Why it helps: Gives crawlers and technical tools a consistent public URL map.', 'serfe-ai-discovery' ) . '</p>';
-		echo '<p>' . esc_html__( 'Important: Include live canonical public URLs only. Exclude redirects, noindex content, duplicates, private pages, search pages, cart, checkout, and account pages.', 'serfe-ai-discovery' ) . '</p></details>';
 		( new Readiness() )->render_page();
 	}
 

@@ -63,22 +63,38 @@ final class Readiness {
 				'checked_at' => '',
 			);
 		}
+		$has_checks = ! empty( $report['checks'] );
 		?>
 		<div class="serfe-readiness-panel">
-			<h2><?php esc_html_e( 'Agent Readiness', 'serfe-ai-discovery' ); ?></h2>
+			<h2><?php esc_html_e( 'Discovery Checks', 'serfe-ai-discovery' ); ?></h2>
 			<div class="card" style="max-width: 1000px; padding: 20px 24px; margin: 16px 0;">
-				<h2 style="margin-top: 0;"><?php esc_html_e( 'Build trust for the agentic web.', 'serfe-ai-discovery' ); ?></h2>
-				<p><?php esc_html_e( 'Agent Readiness gives your team a clear, practical view of how easily browsers, crawlers, and AI agents can discover and understand your WordPress site.', 'serfe-ai-discovery' ); ?></p>
-				<p><?php esc_html_e( 'Each validated capability strengthens a reliable path to your public content, catalog, and services. Completing the applicable items improves discoverability, reduces integration friction, and creates a stronger technical foundation for future agent experiences.', 'serfe-ai-discovery' ); ?></p>
-				<p style="margin-bottom: 0;"><?php esc_html_e( 'Use this dashboard to prioritize improvements without compromising intentional security boundaries: private workflows remain private, and a capability is only marked ready when a real implementation is present.', 'serfe-ai-discovery' ); ?></p>
+				<h3 style="margin-top: 0;"><?php esc_html_e( 'Your site discovery status', 'serfe-ai-discovery' ); ?></h3>
+				<?php if ( $has_checks ) : ?>
+					<p><?php esc_html_e( 'The latest local results are shown below. Review any item marked unavailable or needing verification.', 'serfe-ai-discovery' ); ?></p>
+					<?php /* translators: %s: date and time of the last capability check. */ ?>
+					<p class="description"><?php echo esc_html( sprintf( __( 'Last checked: %s', 'serfe-ai-discovery' ), $report['checked_at'] ) ); ?></p>
+				<?php else : ?>
+					<p><?php esc_html_e( 'No checks have run yet. Select Run checks to inspect the public discovery resources for this site.', 'serfe-ai-discovery' ); ?></p>
+				<?php endif; ?>
+				<p><?php esc_html_e( 'These checks make local requests to public URLs for robots.txt, llms.txt, XML sitemaps, Link headers, Markdown, and optional agent services. They do not publish or change site content.', 'serfe-ai-discovery' ); ?></p>
+				<p><?php echo esc_html( Settings::api_catalog_enabled() ? __( 'API Catalog publication is enabled.', 'serfe-ai-discovery' ) : __( 'API Catalog publication is disabled. Configure it in the API Catalog tab.', 'serfe-ai-discovery' ) ); ?></p>
+				<p><?php esc_html_e( 'When valid public llms.txt and XML sitemap responses are detected, the plugin automatically publishes RFC 8288 Link headers.', 'serfe-ai-discovery' ); ?></p>
+				<details style="margin: 16px 0;"><summary><?php esc_html_e( 'About XML Sitemaps', 'serfe-ai-discovery' ); ?></summary>
+					<p><?php esc_html_e( 'An XML sitemap lists canonical public URLs in a machine-readable format, helping crawlers and technical tools find the right pages.', 'serfe-ai-discovery' ); ?></p>
+					<p><?php esc_html_e( 'Include live public URLs only. Exclude redirects, noindex content, duplicates, private pages, search pages, cart, checkout, and account pages.', 'serfe-ai-discovery' ); ?></p>
+				</details>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="serfe_ai_discovery_readiness_refresh">
+					<?php wp_nonce_field( 'serfe_ai_discovery_readiness_refresh' ); ?>
+					<?php submit_button( __( 'Run checks', 'serfe-ai-discovery' ), 'primary', 'submit', false ); ?>
+				</form>
 			</div>
-			<p class="description"><?php esc_html_e( 'Checks run only when you select Run checks, then the result is cached for five minutes. A warning means the local loopback request could not be completed, not that the capability is absent.', 'serfe-ai-discovery' ); ?></p>
 
 			<?php if ( isset( $_GET['refreshed'], $_GET['_wpnonce'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['refreshed'] ) ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'serfe_ai_discovery_readiness_refreshed' ) ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Checks refreshed.', 'serfe-ai-discovery' ); ?></p></div>
 			<?php endif; ?>
 
-			<?php if ( $report['checks'] ) : ?>
+			<?php if ( $has_checks ) : ?>
 			<table class="widefat striped" style="max-width: 1000px; margin-top: 16px;">
 				<thead><tr>
 					<th scope="col" style="width: 52px;"><?php esc_html_e( 'Status', 'serfe-ai-discovery' ); ?></th>
@@ -102,9 +118,11 @@ final class Readiness {
 			</table>
 			<?php endif; ?>
 
-			<p class="description" style="margin-top: 14px;">
-				<?php esc_html_e( '✅ validated · ❌ not configured or not available · ⚠ could not be verified locally · — not applicable to the current site.', 'serfe-ai-discovery' ); ?>
-			</p>
+			<?php if ( $has_checks ) : ?>
+				<p class="description" style="margin-top: 14px;">
+					<?php esc_html_e( '✅ validated · ❌ not configured or not available · ⚠ could not be verified locally · — not applicable to the current site.', 'serfe-ai-discovery' ); ?>
+				</p>
+			<?php endif; ?>
 			<?php $scanner = Discovery_Files_Admin::agent_ready_target( home_url( '/' ), wp_get_environment_type() ); ?>
 			<div class="card" style="max-width: 1000px; padding: 16px 24px; margin: 16px 0;">
 				<h3 style="margin-top: 0;"><?php esc_html_e( 'Optional external validation', 'serfe-ai-discovery' ); ?></h3>
@@ -114,16 +132,6 @@ final class Readiness {
 					<p class="description"><?php esc_html_e( 'External scanners cannot access local or private environments. Open the scanner and test a public URL after deployment.', 'serfe-ai-discovery' ); ?></p>
 				<?php endif; ?>
 			</div>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-				<input type="hidden" name="action" value="serfe_ai_discovery_readiness_refresh">
-				<?php wp_nonce_field( 'serfe_ai_discovery_readiness_refresh' ); ?>
-				<?php submit_button( __( 'Run checks again', 'serfe-ai-discovery' ), 'secondary', 'submit', false ); ?>
-			</form>
-				<?php if ( '' !== $report['checked_at'] ) : ?>
-					<?php /* translators: %s: date and time of the last capability check. */ ?>
-					<p class="description"><?php echo esc_html( sprintf( __( 'Last checked: %s', 'serfe-ai-discovery' ), $report['checked_at'] ) ); ?></p>
-			<?php endif; ?>
-
 		</div>
 		<?php
 	}
