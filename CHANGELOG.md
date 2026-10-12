@@ -15,6 +15,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Added an immediate AJAX toggle for Markdown support, with separate saving for Advanced Settings exclusions.
 - Added automatic RFC 8288 Link headers for verified public llms.txt and XML sitemap resources, with Link-header status in Overview and Discovery Checks.
 - Added Markdown responses for the configured WordPress Posts page archive, categories, tags, and public post taxonomies, including pagination. These follow the Posts individual-content setting.
 - Added explicit inspection of virtual public discovery-file responses, including robots.txt served by WordPress or SEO plugins.

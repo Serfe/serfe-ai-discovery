@@ -1,0 +1,52 @@
+.serfe-markdown-toggle-control {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.serfe-markdown-toggle {
+	box-sizing: border-box;
+	width: 46px;
+	height: 24px;
+	margin: 0;
+	padding: 2px;
+	border: 1px solid #50575e;
+	border-radius: 999px;
+	background: #50575e;
+	cursor: pointer;
+	transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.serfe-markdown-toggle.is-active {
+	border-color: #00a32a;
+	background: #00a32a;
+}
+
+.serfe-markdown-toggle:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
+}
+
+.serfe-markdown-toggle[disabled] {
+	cursor: wait;
+	opacity: 0.65;
+}
+
+.serfe-markdown-toggle__knob {
+	display: block;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: 0 1px 2px rgba( 0, 0, 0, 0.35 );
+	transform: translateX( 0 );
+	transition: transform 120ms ease;
+}
+
+.serfe-markdown-toggle.is-active .serfe-markdown-toggle__knob {
+	transform: translateX( 20px );
+}
+
+.serfe-markdown-toggle__message {
+	color: #b32d2e;
+}

@@ -156,6 +156,13 @@ $assert_same( array( '/private-page' ), $clean['blocked_paths'], 'Keeps only val
 $assert_same( '', Settings::normalize_blocked_path( 'https://example.com/path?query=1' ), 'Rejects URL query in exact path exclusion' );
 $assert_same( '', Settings::normalize_blocked_path( '//external.test/path' ), 'Rejects protocol-relative URL' );
 $GLOBALS['test_options'][ Settings::OPTION ] = $clean;
+$advanced_only = $settings->sanitize(
+	array(
+		'blocked_post_types' => array( 'book' ),
+		'blocked_paths'      => '/private-page/',
+	)
+);
+$assert_same( 1, $advanced_only['markdown_enabled'], 'Advanced Settings save preserves the AJAX Markdown toggle state' );
 $assert_same( true, Settings::markdown_enabled_for( 'post' ), 'Enables public posts' );
 $assert_same( true, Settings::markdown_enabled_for( 'page' ), 'Enables public pages' );
 $assert_same( false, Settings::markdown_enabled_for( 'book' ), 'Excludes selected public CPTs' );

@@ -18,8 +18,10 @@ final class Settings {
 		add_action( 'admin_init', array( $this, 'migrate_legacy_option' ), 5 );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_menu', array( $this, 'register_page' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'admin_post_serfe_ai_discovery_markdown_cache', array( $this, 'regenerate_markdown_cache' ) );
 		add_action( 'admin_post_serfe_ai_discovery_api_catalog', array( $this, 'update_api_catalog' ) );
+		add_action( 'wp_ajax_serfe_ai_discovery_toggle_markdown', array( $this, 'toggle_markdown' ) );
 	}
 
 	/** Discard every generated Markdown document after an explicit administrator action. */
@@ -64,6 +66,25 @@ final class Settings {
 			)
 		);
 		exit;
+	}
+
+	/** Toggle Markdown publication without submitting the Advanced Settings form. */
+	public function toggle_markdown() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to manage Markdown publication.', 'serfe-ai-discovery' ) ), 403 );
+		}
+		check_ajax_referer( 'serfe_ai_discovery_toggle_markdown', 'nonce' );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by check_ajax_referer() above.
+		$enabled                     = isset( $_POST['enabled'] ) && '1' === sanitize_text_field( wp_unslash( $_POST['enabled'] ) );
+		$choices                     = self::choices();
+		$choices['markdown_enabled'] = $enabled ? 1 : 0;
+		update_option( self::OPTION, $choices );
+		wp_send_json_success(
+			array(
+				'enabled' => $enabled,
+				'message' => $enabled ? __( 'Markdown support enabled.', 'serfe-ai-discovery' ) : __( 'Markdown support disabled.', 'serfe-ai-discovery' ),
+			)
+		);
 	}
 
 	/** @return array<string, mixed> */
@@ -242,7 +263,9 @@ final class Settings {
 		}
 		return array(
 			'schema_version'      => self::SCHEMA_VERSION,
-			'markdown_enabled'    => isset( $input['markdown_enabled'] ) && in_array( $input['markdown_enabled'], array( '1', 1 ), true ) ? 1 : 0,
+			'markdown_enabled'    => isset( $input['markdown_enabled'] )
+				? ( in_array( $input['markdown_enabled'], array( '1', 1 ), true ) ? 1 : 0 )
+				: ( isset( $current['markdown_enabled'] ) ? (int) $current['markdown_enabled'] : 0 ),
 			'blocked_post_types'  => array_values( array_unique( $allowed_blocked_types ) ),
 			'blocked_paths'       => array_values( array_unique( $blocked_paths ) ),
 			'api_catalog_enabled' => isset( $input['api_catalog_enabled'] )
@@ -293,11 +316,13 @@ final class Settings {
 	/** Render the Markdown master switch. */
 	public function render_markdown_field() {
 		$choices = self::choices();
+		$enabled = 1 === (int) $choices['markdown_enabled'];
 		printf(
-			'<label><input type="checkbox" name="%s[markdown_enabled]" value="1" %s> <strong>%s</strong></label><p class="description">%s</p>',
-			esc_attr( self::OPTION ),
-			checked( 1, $choices['markdown_enabled'], false ),
-			esc_html__( 'Enable Markdown content negotiation (Full support)', 'serfe-ai-discovery' ),
+			'<div class="serfe-markdown-toggle-control"><button type="button" class="serfe-markdown-toggle %1$s" role="switch" aria-checked="%2$s" aria-label="%3$s" data-enabled="%2$s"><span class="serfe-markdown-toggle__knob" aria-hidden="true"></span></button><strong class="serfe-markdown-toggle__status" aria-live="polite">%4$s</strong><span class="serfe-markdown-toggle__message" aria-live="polite"></span></div><p class="description">%5$s</p>',
+			esc_attr( $enabled ? 'is-active' : '' ),
+			esc_attr( $enabled ? '1' : '0' ),
+			esc_attr( $enabled ? __( 'Disable Markdown support', 'serfe-ai-discovery' ) : __( 'Enable Markdown support', 'serfe-ai-discovery' ) ),
+			esc_html( $enabled ? __( 'Enabled', 'serfe-ai-discovery' ) : __( 'Disabled', 'serfe-ai-discovery' ) ),
 			esc_html__( 'Enables Markdown negotiation for all public published content (Posts, Pages, Products, Custom Post Types) and public archives.', 'serfe-ai-discovery' )
 		);
 	}
@@ -356,7 +381,7 @@ final class Settings {
 				settings_fields( self::GROUP );
 				do_settings_sections( self::PAGE );
 				echo '</details>';
-				submit_button();
+				submit_button( __( 'Save Advanced Settings', 'serfe-ai-discovery' ) );
 				echo '</form>';
 				$this->render_markdown_urls();
 				break;
@@ -382,6 +407,26 @@ final class Settings {
 				$this->render_overview_tab();
 		}
 		echo '</div>';
+	}
+
+	/** Load the behavior and visual states on the plugin settings screen. */
+	public function enqueue_admin_assets( $hook_suffix ) {
+		if ( 'toplevel_page_' . self::PAGE !== $hook_suffix ) {
+			return;
+		}
+		wp_enqueue_style( 'serfe-ai-discovery-settings', SERFE_AI_DISCOVERY_URL . 'assets/admin-settings.css', array(), '1.0.10' );
+		wp_enqueue_script( 'serfe-ai-discovery-settings', SERFE_AI_DISCOVERY_URL . 'assets/admin-settings.js', array( 'jquery' ), '1.0.10', true );
+		wp_localize_script(
+			'serfe-ai-discovery-settings',
+			'serfeAiDiscoveryMarkdownToggle',
+			array(
+				'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
+				'nonce'    => wp_create_nonce( 'serfe_ai_discovery_toggle_markdown' ),
+				'enabled'  => __( 'Enabled', 'serfe-ai-discovery' ),
+				'disabled' => __( 'Disabled', 'serfe-ai-discovery' ),
+				'error'    => __( 'The Markdown setting could not be updated. Please try again.', 'serfe-ai-discovery' ),
+			)
+		);
 	}
 
 	/** Explain Markdown publication before an administrator changes its switches. */

@@ -21,7 +21,7 @@ The plugin does not guarantee crawling, indexing, search rankings, AI citations,
 
 = Markdown publication =
 
-Markdown is disabled by default. Enable the master switch to publish Markdown for all supported public content. Advanced Settings can exclude content types or exact URL paths. Eligible pages have explicit .md URLs and respond to Accept: text/markdown. Published Markdown has an HTML canonical URL. Generated Markdown can be cached on the WordPress server and is invalidated when relevant public content or settings change; HTTP responses use a private, no-store policy so shared caches do not keep them.
+Markdown is disabled by default. Use the master toggle to publish Markdown for all supported public content; it saves immediately. Advanced Settings can exclude content types or exact URL paths and are saved separately. Eligible pages have explicit .md URLs and respond to Accept: text/markdown. Published Markdown has an HTML canonical URL. Generated Markdown can be cached on the WordPress server and is invalidated when relevant public content or settings change; HTTP responses use a private, no-store policy so shared caches do not keep them.
 
 = Discovery files =
 
