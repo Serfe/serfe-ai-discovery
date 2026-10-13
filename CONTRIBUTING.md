@@ -1,4 +1,4 @@
-# Contributing to Serfe WordPress AI Discovery
+# Contributing to Serfe AI Discovery
 
 Thanks for helping improve the plugin. Please keep changes focused on public WordPress sites and explain the user-visible behavior in the change description.
 

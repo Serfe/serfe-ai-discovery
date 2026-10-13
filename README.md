@@ -1,4 +1,4 @@
-# Serfe WordPress AI Discovery
+# Serfe AI Discovery
 
 > Expose published WordPress content as clean Markdown and machine-readable discovery signals for AI agents, LLMs, and semantic search engines.
 
@@ -8,11 +8,11 @@
 
 ---
 
-![Serfe WordPress AI Discovery Banner](assets/Serfe-WordPress-AI-Discovery-Banner.png)
+![Serfe AI Discovery Banner](assets/Serfe-WordPress-AI-Discovery-Banner.png)
 
 ## Plugin Objective
 
-Traditional SEO plugins optimize your website for search engines like Google and Bing. **Serfe WordPress AI Discovery** complements your SEO strategy by making your public content structured and discoverable for the **Agentic Web** (AI Agents, LLMs, and conversational engines).
+Traditional SEO plugins optimize your website for search engines like Google and Bing. **Serfe AI Discovery** complements your SEO strategy by making your public content structured and discoverable for the **Agentic Web** (AI Agents, LLMs, and conversational engines).
 
 By serving clean `.md` representations of your public content alongside machine-readable discovery endpoints (`robots.txt`, `llms.txt`, and RFC 9727 API Catalogs), the plugin bridges the gap between WordPress and AI consumers.
 
@@ -73,7 +73,7 @@ Eligible pages include canonical HTML links in their headers:
 
 ## Usage & Settings
 
-Access the plugin from the WordPress admin menu under **WP AI Discovery**:
+Access the plugin from the WordPress admin menu under **AI Discovery**:
 
 - **Overview**: High-level status of active features, discovery files, and recent checks.
 - **Markdown**: Instant master toggle to enable/disable Markdown publication. Includes **Advanced Settings** to exclude specific post types or exact URL paths (one per line).
@@ -89,7 +89,7 @@ Access the plugin from the WordPress admin menu under **WP AI Discovery**:
 
 ## Agents Discovery
 
-Under **WP AI Discovery → Discovery**, administrators can run local, read-only capability checks without third-party network dependencies. Checks verify:
+Under **AI Discovery → Discovery**, administrators can run local, read-only capability checks without third-party network dependencies. Checks verify:
 - Presence and formatting of `robots.txt` and `llms.txt`.
 - XML Sitemap detection and Link headers.
 - Markdown content negotiation (`Accept: text/markdown`).
@@ -130,7 +130,7 @@ add_filter( 'serfe_agent_readiness_agentic_commerce', function () {
 1. In WordPress, go to **Plugins → Add New → Upload Plugin**.
 2. Upload the `serfe-ai-discovery.zip` package.
 3. Activate the plugin.
-4. Go to **WP AI Discovery → Markdown** and turn on the master toggle.
+4. Go to **AI Discovery → Markdown** and turn on the master toggle.
 5. Visit any public post with `.md` appended to verify.
 
 ---

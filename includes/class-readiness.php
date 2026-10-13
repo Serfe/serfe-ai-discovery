@@ -322,7 +322,7 @@ final class Readiness {
 	/** @return array<string, string> */
 	private function check_markdown() {
 		if ( ! class_exists( __NAMESPACE__ . '\\Plugin' ) || ! class_exists( __NAMESPACE__ . '\\Request_Router' ) ) {
-			return $this->check( 'fail', __( 'Markdown negotiation', 'serfe-ai-discovery' ), __( 'Serfe WordPress AI Discovery is not active.', 'serfe-ai-discovery' ) );
+			return $this->check( 'fail', __( 'Markdown negotiation', 'serfe-ai-discovery' ), __( 'Serfe AI Discovery is not active.', 'serfe-ai-discovery' ) );
 		}
 
 		$posts = get_posts(

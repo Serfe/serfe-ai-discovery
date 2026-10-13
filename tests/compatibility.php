@@ -26,27 +26,32 @@ $assert_true( PHP_VERSION_ID >= 70400, 'Current PHP runtime satisfies PHP 7.4+ r
 $main_file = file_get_contents( dirname( __DIR__ ) . '/serfe-ai-discovery.php' );
 $assert_true( false !== $main_file, 'serfe-ai-discovery.php is readable' );
 
+preg_match( '/\*\s*Plugin Name:\s*(.+)$/m', $main_file, $name_match );
 preg_match( '/\*\s*Version:\s*(.+)$/m', $main_file, $version_match );
 preg_match( '/\*\s*Requires at least:\s*(.+)$/m', $main_file, $wp_min_match );
 preg_match( '/\*\s*Requires PHP:\s*(.+)$/m', $main_file, $php_min_match );
 
+$plugin_name    = isset( $name_match[1] ) ? trim( $name_match[1] ) : '';
 $plugin_version = isset( $version_match[1] ) ? trim( $version_match[1] ) : '';
 $plugin_wp_min  = isset( $wp_min_match[1] ) ? trim( $wp_min_match[1] ) : '';
 $plugin_php_min = isset( $php_min_match[1] ) ? trim( $php_min_match[1] ) : '';
 
 $assert_same( '6.2', $plugin_wp_min, 'serfe-ai-discovery.php declares "Requires at least: 6.2"' );
 $assert_same( '7.4', $plugin_php_min, 'serfe-ai-discovery.php declares "Requires PHP: 7.4"' );
+$assert_same( 'Serfe AI Discovery', $plugin_name, 'serfe-ai-discovery.php has the expected Plugin Name' );
 $assert_same( '1.0.11', $plugin_version, 'serfe-ai-discovery.php has expected version 1.0.11' );
 
 // 3. Check WordPress.org Readme Headers (readme.txt).
 $readme_file = file_get_contents( dirname( __DIR__ ) . '/readme.txt' );
 $assert_true( false !== $readme_file, 'readme.txt is readable' );
 
+preg_match( '/^===\s*(.+?)\s*===$/m', $readme_file, $readme_name_match );
 preg_match( '/^Requires at least:\s*(.+)$/m', $readme_file, $readme_wp_min_match );
 preg_match( '/^Tested up to:\s*(.+)$/m', $readme_file, $readme_tested_match );
 preg_match( '/^Requires PHP:\s*(.+)$/m', $readme_file, $readme_php_min_match );
 preg_match( '/^Stable tag:\s*(.+)$/m', $readme_file, $readme_stable_match );
 
+$readme_name    = isset( $readme_name_match[1] ) ? trim( $readme_name_match[1] ) : '';
 $readme_wp_min  = isset( $readme_wp_min_match[1] ) ? trim( $readme_wp_min_match[1] ) : '';
 $readme_tested  = isset( $readme_tested_match[1] ) ? trim( $readme_tested_match[1] ) : '';
 $readme_php_min = isset( $readme_php_min_match[1] ) ? trim( $readme_php_min_match[1] ) : '';
@@ -55,6 +60,7 @@ $readme_stable  = isset( $readme_stable_match[1] ) ? trim( $readme_stable_match[
 $assert_same( '6.2', $readme_wp_min, 'readme.txt declares "Requires at least: 6.2"' );
 $assert_same( '7.1', $readme_tested, 'readme.txt declares "Tested up to: 7.1"' );
 $assert_same( '7.4', $readme_php_min, 'readme.txt declares "Requires PHP: 7.4"' );
+$assert_same( $plugin_name, $readme_name, 'readme.txt name matches the plugin header Plugin Name' );
 $assert_same( $plugin_version, $readme_stable, 'readme.txt Stable tag matches plugin header Version' );
 
 // 4. Validate PHPStan Target Configuration (phpVersion: 70400).

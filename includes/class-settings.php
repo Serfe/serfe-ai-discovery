@@ -285,14 +285,14 @@ final class Settings {
 		add_settings_field( 'blocked_paths', __( 'Excluded URL paths', 'serfe-ai-discovery' ), array( $this, 'render_blocked_paths_field' ), self::PAGE, 'serfe_ai_discovery_advanced' );
 	}
 
-	/** Add Serfe WordPress AI Discovery as a top-level admin menu. */
+	/** Add Serfe AI Discovery as a top-level admin menu. */
 	public function register_page() {
 		// WordPress centers SVG data URIs as menu backgrounds instead of rendering an img element.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Read-only bundled SVG asset.
 		$svg = file_get_contents( SERFE_AI_DISCOVERY_PATH . 'assets/wp_serfe_logo_gray.svg' );
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- WordPress requires an SVG data URI for centered menu icons.
 		$icon_url = false !== $svg ? 'data:image/svg+xml;base64,' . base64_encode( $svg ) : 'dashicons-admin-generic';
-		add_menu_page( __( 'Serfe WordPress AI Discovery', 'serfe-ai-discovery' ), __( 'WP AI Discovery', 'serfe-ai-discovery' ), 'manage_options', self::PAGE, array( $this, 'render_page' ), $icon_url );
+		add_menu_page( __( 'Serfe AI Discovery', 'serfe-ai-discovery' ), __( 'AI Discovery', 'serfe-ai-discovery' ), 'manage_options', self::PAGE, array( $this, 'render_page' ), $icon_url );
 	}
 
 	/** Explain the scope of the current switches. */
@@ -362,7 +362,7 @@ final class Settings {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only navigation.
 		$requested = isset( $_GET['tab'] ) && is_string( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'overview';
 		$tab       = isset( $tabs[ $requested ] ) ? $requested : ( 'files' === $requested ? 'robots' : 'overview' );
-		echo '<div class="wrap"><h1>' . esc_html__( 'Serfe WordPress AI Discovery', 'serfe-ai-discovery' ) . '</h1><nav class="nav-tab-wrapper" aria-label="' . esc_attr__( 'Serfe WordPress AI Discovery sections', 'serfe-ai-discovery' ) . '">';
+		echo '<div class="wrap"><h1>' . esc_html__( 'Serfe AI Discovery', 'serfe-ai-discovery' ) . '</h1><nav class="nav-tab-wrapper" aria-label="' . esc_attr__( 'Serfe AI Discovery sections', 'serfe-ai-discovery' ) . '">';
 		foreach ( $tabs as $key => $label ) {
 			$url = add_query_arg(
 				array(
@@ -743,11 +743,11 @@ final class Settings {
 	/** Provide community support guidance and professional services information. */
 	private function render_help_tab() {
 		echo '<h2>' . esc_html__( 'Help & Support', 'serfe-ai-discovery' ) . '</h2>';
-		echo '<p>' . esc_html__( 'Find help, report issues, and contribute to the Serfe WordPress AI Discovery open-source project.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p>' . esc_html__( 'Find help, report issues, and contribute to the Serfe AI Discovery open-source project.', 'serfe-ai-discovery' ) . '</p>';
 
-		echo '<div class="card" style="max-width: 1000px; padding: 20px 24px; margin: 20px 0; border: 1px solid #c3c4c7; background: #fff; border-radius: 4px;">';
+		echo '<div class="card" style="max-width: 900px; padding: 20px 24px; margin: 20px 0; border: 1px solid #c3c4c7; background: #fff; border-radius: 4px;">';
 		echo '<h3 style="margin-top: 0; display: flex; align-items: center; font-size: 16px; font-weight: 600;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style="display: inline-block; vertical-align: text-bottom; margin-right: 8px;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>' . esc_html__( 'Community Support', 'serfe-ai-discovery' ) . '</span></h3>';
-		echo '<p style="margin: 12px 0 16px; font-size: 14px; color: #3c434a; line-height: 1.5;">' . esc_html__( 'Serfe WordPress AI Discovery is free and open source. Explore documentation, report bugs, suggest improvements, or contribute on GitHub.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p style="margin: 12px 0 16px; font-size: 14px; color: #3c434a; line-height: 1.5;">' . esc_html__( 'Serfe AI Discovery is free and open source. Explore documentation, report bugs, suggest improvements, or contribute on GitHub.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p style="margin: 0 0 16px;">';
 		printf( '<a class="button button-primary" href="%s" target="_blank" rel="noopener noreferrer">%s <span aria-hidden="true">&nearr;</span></a>', esc_url( 'https://github.com/Serfe-com/serfe-wordpress-ai-discovery' ), esc_html__( 'View on GitHub', 'serfe-ai-discovery' ) );
 		printf( ' <a class="button button-secondary" href="%s" target="_blank" rel="noopener noreferrer" style="margin-left: 6px;">%s <span aria-hidden="true">&nearr;</span></a>', esc_url( 'https://github.com/Serfe-com/serfe-wordpress-ai-discovery/issues' ), esc_html__( 'Report an Issue', 'serfe-ai-discovery' ) );
@@ -757,7 +757,7 @@ final class Settings {
 
 		$logo = 'serfe-logo-white.webp';
 		printf(
-			'<div class="serfe-help-serfe-card" style="max-width: 1000px; margin-top: 24px; padding: 24px 28px; border-radius: 4px; background: #123b68; color: #fff;"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"><a href="%1$s" target="_blank" rel="noopener noreferrer" aria-label="%2$s"><img src="%3$s" alt="%4$s" style="display: block; width: 140px; height: auto; max-width: 100%%;"></a><span style="font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #c0d8f0;">%5$s</span></div><h3 style="color: #fff; font-size: 1.3em; margin: 0 0 12px; font-weight: 700;">%6$s</h3><p style="color: #e2eaf4; font-size: 14px; line-height: 1.6; margin: 0 0 20px; max-width: 820px;">%7$s</p><p style="margin-bottom: 0;"><a class="serfe-help-contact-button" href="%8$s" target="_blank" rel="noopener noreferrer">%9$s <span aria-hidden="true">&nearr;</span></a></p></div>',
+			'<div class="serfe-help-serfe-card" style="max-width: 900px; margin-top: 24px; padding: 24px 28px; border-radius: 4px; background: #123b68; color: #fff;"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"><a href="%1$s" target="_blank" rel="noopener noreferrer" aria-label="%2$s"><img src="%3$s" alt="%4$s" style="display: block; width: 140px; height: auto; max-width: 100%%;"></a><span style="font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #c0d8f0;">%5$s</span></div><h3 style="color: #fff; font-size: 1.3em; margin: 0 0 12px; font-weight: 700;">%6$s</h3><p style="color: #e2eaf4; font-size: 14px; line-height: 1.6; margin: 0 0 20px; max-width: 820px;">%7$s</p><p style="margin-bottom: 0;"><a class="serfe-help-contact-button" href="%8$s" target="_blank" rel="noopener noreferrer">%9$s <span aria-hidden="true">&nearr;</span></a></p></div>',
 			esc_url( 'https://www.serfe.com?utm_source=serfe-ai-discovery' ),
 			esc_attr__( 'Visit Serfe', 'serfe-ai-discovery' ),
 			esc_url( SERFE_AI_DISCOVERY_URL . 'assets/' . $logo ),

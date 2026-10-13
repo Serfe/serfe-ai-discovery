@@ -1,6 +1,6 @@
 # Support
 
-Serfe WordPress AI Discovery is a community-supported WordPress plugin. Support is best effort, with a target of responding within five business days; this is not a service-level agreement.
+Serfe AI Discovery is a community-supported WordPress plugin. Support is best effort, with a target of responding within five business days; this is not a service-level agreement.
 
 ## Choose a channel
 

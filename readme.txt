@@ -1,4 +1,4 @@
-=== Serfe WordPress AI Discovery ===
+=== Serfe AI Discovery ===
 Tags: markdown, llms-txt, robots-txt, api-discovery, ai
 Requires at least: 6.2
 Tested up to: 7.1
@@ -11,7 +11,7 @@ Publish public WordPress content as Markdown and manage selected discovery signa
 
 == Description ==
 
-Serfe WordPress AI Discovery is an opt-in starter kit for public content. When Markdown is enabled, it returns Markdown for supported public posts, pages, archives, taxonomies, WooCommerce products and catalog archives, and public Custom Post Types. Browsers continue to receive canonical HTML.
+Serfe AI Discovery is an opt-in starter kit for public content. When Markdown is enabled, it returns Markdown for supported public posts, pages, archives, taxonomies, WooCommerce products and catalog archives, and public Custom Post Types. Browsers continue to receive canonical HTML.
 
 An administrator can also review and publish root robots.txt and llms.txt files, enable a catalog of existing public APIs, and run bounded local checks for discovery resources. These features do not create an MCP server, agent tools, authentication, or new API permissions.
 
@@ -33,8 +33,8 @@ The optional API Catalog describes existing public APIs; it does not enable any 
 
 == Installation ==
 
-1. Install and activate Serfe WordPress AI Discovery through the WordPress Plugins screen.
-2. Open the top-level Serfe WordPress AI Discovery menu.
+1. Install and activate Serfe AI Discovery through the WordPress Plugins screen.
+2. Open the top-level AI Discovery menu.
 3. Review the Overview and Help & Support tabs before enabling publication.
 4. To publish Markdown, enable the master switch. Use Advanced Settings only when you need to exclude a content type or exact URL path.
 5. Request a public URL with .md or Accept: text/markdown and confirm that the normal URL still returns HTML.
@@ -57,6 +57,7 @@ No. It does not implement an MCP server and cannot guarantee crawling, indexing,
 
 = 1.0.11 =
 
+* Renamed the visible plugin name to Serfe AI Discovery and the top-level administration menu to AI Discovery. The slug, text domain, folder, and stored option names are unchanged.
 * Refreshed Help & Support with dedicated Community Support (GitHub) and Professional Services GEO Assessment guidance.
 * Added Content Signals blocks and blog AI training protection options in the robots.txt editor.
 * Hardened output escaping and i18n translation comments according to WordPress.org standards.

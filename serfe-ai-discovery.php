@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Serfe WordPress AI Discovery
+ * Plugin Name: Serfe AI Discovery
  * Description: Publishes approved public WordPress content as alternative Markdown and discovery signals.
  * Author: Serfe <info@serfe.com>
  * Version: 1.0.11
