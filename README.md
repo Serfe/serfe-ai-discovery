@@ -36,6 +36,11 @@ When public `llms.txt` and XML sitemap responses are valid, the plugin automatic
 
 The Discovery Checks tab reports the two resources and the Link-header state. Create `llms.txt` or an XML sitemap when either resource is unavailable.
 
+## Requirements
+
+- **WordPress:** 6.2 to 7.1 (all versions fully supported).
+- **PHP:** 7.4 or higher (tested across PHP 7.4, 8.1, and 8.4).
+
 ## Supported content
 
 - Published WordPress posts.

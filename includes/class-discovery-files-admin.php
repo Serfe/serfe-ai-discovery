@@ -223,11 +223,11 @@ final class Discovery_Files_Admin {
 		if ( ! $state['exists'] && '' === $editor ) {
 			$live_result = Discovery_Files::validate_current( $name );
 			if ( ! is_wp_error( $live_result ) && ! empty( $live_result['virtual'] ) ) {
-				$editor = $live_result['content'];
+				$editor                    = $live_result['content'];
 				$display_state['content']  = $live_result['content'];
 				$display_state['checksum'] = isset( $live_result['checksum'] ) ? $live_result['checksum'] : '';
 				// Setting virtual to true so conflict checks work identically.
-				$virtual = true;
+				$virtual  = true;
 				$conflict = true;
 			}
 		}
@@ -252,8 +252,7 @@ final class Discovery_Files_Admin {
 		printf( '<input type="hidden" name="action" value="%s"><input type="hidden" name="file" value="%s"><input type="hidden" name="checksum" value="%s">', esc_attr( self::ACTION ), esc_attr( $name ), esc_attr( $display_state['checksum'] ) );
 
 		printf( '<p><label for="serfe-file-%s"><strong>%s</strong></label></p><textarea id="serfe-file-%s" name="content" rows="15" class="large-text code">%s</textarea>', esc_attr( $name ), esc_html__( 'Editor content', 'serfe-ai-discovery' ), esc_attr( $name ), esc_textarea( $editor ) );
-		$is_checked = ! $conflict ? ' checked' : '';
-		echo '<p><label><input type="checkbox" name="takeover" value="1" required' . $is_checked . '> ' . esc_html__( 'I reviewed the current public file and confirm that this plugin may take control of it.', 'serfe-ai-discovery' ) . '</label></p>';
+		printf( '<p><label><input type="checkbox" name="takeover" value="1" required %s> %s</label></p>', checked( ! $conflict, true, false ), esc_html__( 'I reviewed the current public file and confirm that this plugin may take control of it.', 'serfe-ai-discovery' ) );
 		echo '<p><button type="submit" name="mode" value="publish" class="button button-primary">' . esc_html__( 'Publish file', 'serfe-ai-discovery' ) . '</button> ';
 		if ( 'robots.txt' === $name ) {
 			$has_signals = false !== strpos( $editor, 'Content-Signal:' ) || false !== strpos( $editor, '# START SERFE BLOCK' );
@@ -277,7 +276,7 @@ final class Discovery_Files_Admin {
 		echo '</p></form>';
 		if ( 'robots.txt' === $name ) {
 			echo '<p><a href="https://contentsignals.org/?utm_source=serfe-ai-discovery" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Learn more about Content Signals options', 'serfe-ai-discovery' ) . '</a></p>';
-			
+
 			$seo_links = array();
 			$seo_names = array();
 			if ( defined( 'WPSEO_VERSION' ) ) {
@@ -289,7 +288,8 @@ final class Discovery_Files_Admin {
 				$seo_names[] = 'Rank Math';
 			}
 			if ( ! empty( $seo_names ) ) {
-				echo '<p class="description">' . sprintf( esc_html__( 'We detected you have %1$s installed, keep in mind that other plugins may edit your robots.txt even without your explicit action.', 'serfe-ai-discovery' ), implode( ' and ', $seo_names ) ) . '<br>' . implode( ' &middot; ', $seo_links ) . '</p>';
+				/* translators: %1$s: Name of SEO plugin(s) (e.g. Yoast SEO, Rank Math). */
+				echo '<p class="description">' . sprintf( esc_html__( 'We detected you have %1$s installed, keep in mind that other plugins may edit your robots.txt even without your explicit action.', 'serfe-ai-discovery' ), esc_html( implode( ' and ', $seo_names ) ) ) . '<br>' . wp_kses_post( implode( ' &middot; ', $seo_links ) ) . '</p>';
 			}
 		}
 		if ( $conflict || ( is_array( $notice ) && isset( $notice['file'], $notice['code'] ) && $name === $notice['file'] ) ) {

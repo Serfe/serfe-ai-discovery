@@ -68,6 +68,21 @@ $assert_same( "Term\n: Explanation", $converter->convert( '<dl><dt>Term</dt><dd>
 $assert_same( '[Docs](https://example.com "Reference")', $converter->convert( '<a href="https://example.com" title="Reference">Docs</a>' ), 'Preserves link title' );
 $assert_same( 2, Response::estimate_tokens( 'One two' ), 'Estimates Markdown tokens when no tokenizer is installed' );
 
+// Verify WordPress 6.2 to 7.1 and PHP 7.4+ headers.
+$main_php = file_get_contents( dirname( __DIR__ ) . '/serfe-ai-discovery.php' );
+preg_match( '/\*\s*Requires at least:\s*(.+)$/m', $main_php, $m_wp );
+preg_match( '/\*\s*Requires PHP:\s*(.+)$/m', $main_php, $m_php );
+$assert_same( '6.2', isset( $m_wp[1] ) ? trim( $m_wp[1] ) : '', 'Plugin declares Requires at least: 6.2' );
+$assert_same( '7.4', isset( $m_php[1] ) ? trim( $m_php[1] ) : '', 'Plugin declares Requires PHP: 7.4' );
+
+$readme = file_get_contents( dirname( __DIR__ ) . '/readme.txt' );
+preg_match( '/^Requires at least:\s*(.+)$/m', $readme, $r_wp );
+preg_match( '/^Tested up to:\s*(.+)$/m', $readme, $r_tested );
+preg_match( '/^Requires PHP:\s*(.+)$/m', $readme, $r_php );
+$assert_same( '6.2', isset( $r_wp[1] ) ? trim( $r_wp[1] ) : '', 'Readme declares Requires at least: 6.2' );
+$assert_same( '7.1', isset( $r_tested[1] ) ? trim( $r_tested[1] ) : '', 'Readme declares Tested up to: 7.1' );
+$assert_same( '7.4', isset( $r_php[1] ) ? trim( $r_php[1] ) : '', 'Readme declares Requires PHP: 7.4' );
+
 if ( $failures ) {
 	fwrite( STDERR, implode( "\n\n", $failures ) . "\n" );
 	exit( 1 );

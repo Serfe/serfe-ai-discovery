@@ -1,6 +1,6 @@
 === Serfe WordPress AI Discovery ===
 Tags: markdown, llms-txt, robots-txt, api-discovery, ai
-Requires at least: 7.1
+Requires at least: 6.2
 Tested up to: 7.1
 Stable tag: 1.0.10
 Requires PHP: 7.4

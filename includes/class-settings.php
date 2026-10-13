@@ -750,7 +750,7 @@ final class Settings {
 		$logo  = 'serfe-logo-white.webp';
 		$style = 'background: #123b68; color: #fff;';
 		printf(
-			'<div class="serfe-help-serfe-card" style="max-width: 1000px; margin-top: 32px; padding: 20px 24px; border-radius: 4px; %1$s"><a href="%2$s" target="_blank" rel="noopener noreferrer" aria-label="%3$s"><img src="%4$s" alt="%5$s" style="display: block; width: 149px; height: auto; max-width: 100%%;"></a><h3 style="color: inherit;">%6$s</h3><p>%7$s</p><p style="margin-bottom: 0;"><a class="serfe-help-contact-button" href="%8$s" target="_blank" rel="noopener noreferrer">%9$s</a></p></div>',
+			'<div class="serfe-help-serfe-card" style="max-width: 90%%; margin-top: 2rem; padding: 1.8rem 1.4rem; border-radius: 4px; %1$s"><a href="%2$s" target="_blank" rel="noopener noreferrer" aria-label="%3$s"><img src="%4$s" alt="%5$s" style="display: block; width: 149px; height: auto; max-width: 100%%;"></a><h3 style="color: inherit;">%6$s</h3><p>%7$s</p><p style="margin-bottom: 0;"><a class="serfe-help-contact-button" href="%8$s" target="_blank" rel="noopener noreferrer">%9$s</a></p></div>',
 			esc_attr( $style ),
 			esc_url( 'https://www.serfe.com?utm_source=serfe-ai-discovery' ),
 			esc_attr__( 'Visit Serfe', 'serfe-ai-discovery' ),
