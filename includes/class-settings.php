@@ -773,14 +773,14 @@ final class Settings {
 		$logo = 'serfe-logo-white.webp';
 		printf(
 			'<div class="serfe-help-serfe-card" style="max-width: 900px; margin-top: 24px; padding: 20px 24px; border-radius: 4px; background: #123b68; color: #fff;"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"><a href="%1$s" target="_blank" rel="noopener noreferrer" aria-label="%2$s"><img src="%3$s" alt="%4$s" style="display: block; width: 140px; height: auto; max-width: 100%%;"></a><span style="font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #c0d8f0;">%5$s</span></div><h3 style="color: #fff; font-size: 1.3em; margin: 0 0 12px; font-weight: 700;">%6$s</h3><p style="color: #e2eaf4; font-size: 14px; line-height: 1.6; margin: 0 0 20px; max-width: 820px;">%7$s</p><p style="margin-bottom: 0;"><a class="serfe-help-contact-button" href="%8$s" target="_blank" rel="noopener noreferrer">%9$s <span aria-hidden="true">&nearr;</span></a></p></div>',
-			esc_url( 'https://www.serfe.com?utm_source=serfe-ai-discovery' ),
+			esc_url( 'https://www.serfe.com/?utm_source=serfe-ai-discovery' ),
 			esc_attr__( 'Visit Serfe', 'serfe-ai-discovery' ),
 			esc_url( SERFE_AI_DISCOVERY_URL . 'assets/' . $logo ),
 			esc_attr__( 'Serfe', 'serfe-ai-discovery' ),
 			esc_html__( 'Professional Services', 'serfe-ai-discovery' ),
 			esc_html__( 'Go beyond basic AI discovery.', 'serfe-ai-discovery' ),
 			esc_html__( "The plugin is a starting point. Serfe can assess your website's readiness for AI-driven search and agents, identify opportunities for improvement, and help define a practical implementation roadmap.", 'serfe-ai-discovery' ),
-			esc_url( 'https://www.serfe.com/en/contact-us?utm_source=serfe-ai-discovery&utm_medium=plugin&utm_campaign=geo-assessment' ),
+			esc_url( 'https://www.serfe.com/?utm_source=serfe-ai-discovery&utm_medium=plugin&utm_campaign=geo-assessment' ),
 			esc_html__( 'Request a GEO Assessment', 'serfe-ai-discovery' )
 		);
 	}
