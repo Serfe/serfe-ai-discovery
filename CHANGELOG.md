@@ -33,6 +33,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - Renamed the visible plugin name to "Serfe AI Discovery" in the plugin header, admin screens, and documentation. Shortened the top-level administration menu to "AI Discovery". The slug, text domain, folder, and stored option names are unchanged.
+- Added Agent Skills, OAuth protected resource, and Agentic Commerce states to the Overview after administrators run Discovery Checks.
 - Declared and tested compatibility across WordPress 6.2 through 7.1 and PHP 7.4+.
 - Bumped internal asset enqueue versions to 1.0.11.
 - Styled the Help & Support contact link as a Serfe-branded button with an animated hover background.

@@ -666,6 +666,21 @@ final class Settings {
 			? self::overview_row( __( 'MCP server', 'serfe-ai-discovery' ), $found[0], $found[1], $found[2], $found[3] )
 			: self::overview_row( __( 'MCP server', 'serfe-ai-discovery' ), 'na', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks for an explicitly registered service.', 'serfe-ai-discovery' ) );
 
+		$found  = self::check_state( isset( $checks['oauth'] ) ? $checks['oauth'] : null, $checked );
+		$rows[] = $found
+			? self::overview_row( __( 'OAuth protected resource', 'serfe-ai-discovery' ), $found[0], $found[1], $found[2], $found[3] )
+			: self::overview_row( __( 'OAuth protected resource', 'serfe-ai-discovery' ), 'na', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks to inspect this optional public resource.', 'serfe-ai-discovery' ) );
+
+		$found  = self::check_state( isset( $checks['skills'] ) ? $checks['skills'] : null, $checked );
+		$rows[] = $found
+			? self::overview_row( __( 'Agent Skills', 'serfe-ai-discovery' ), $found[0], $found[1], $found[2], $found[3] )
+			: self::overview_row( __( 'Agent Skills', 'serfe-ai-discovery' ), 'na', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks to inspect this optional public resource.', 'serfe-ai-discovery' ) );
+
+		$found  = self::check_state( isset( $checks['commerce'] ) ? $checks['commerce'] : null, $checked );
+		$rows[] = $found
+			? self::overview_row( __( 'Agentic Commerce', 'serfe-ai-discovery' ), $found[0], $found[1], $found[2], $found[3] )
+			: self::overview_row( __( 'Agentic Commerce', 'serfe-ai-discovery' ), 'na', __( 'Not validated', 'serfe-ai-discovery' ), __( 'Run the local discovery checks for an explicitly registered service.', 'serfe-ai-discovery' ) );
+
 		$rows[] = self::overview_row( __( 'MCP Server Card', 'serfe-ai-discovery' ), 'na', __( 'Not available', 'serfe-ai-discovery' ), __( 'Server Card configuration and publication are not available in this version.', 'serfe-ai-discovery' ) );
 
 		return $rows;

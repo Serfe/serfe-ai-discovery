@@ -4,7 +4,9 @@ define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 require_once dirname( __DIR__ ) . '/includes/class-discovery-files.php';
 require_once dirname( __DIR__ ) . '/includes/class-discovery-files-admin.php';
 require_once dirname( __DIR__ ) . '/includes/class-settings.php';
+require_once dirname( __DIR__ ) . '/includes/class-readiness.php';
 
+use Serfe\AI_Discovery\Readiness;
 use Serfe\AI_Discovery\Settings;
 
 class WP_Error {
@@ -317,6 +319,19 @@ $assert_same( null, $check_state->invoke( null, null, 'now' ), 'Missing check yi
 $indexed = $checks_by_id->invoke( null, array( 'checks' => array( array( 'id' => 'sitemap', 'status' => 'pass' ), array( 'status' => 'pass', 'label' => 'stale' ) ) ) );
 $assert_same( array( 'sitemap' ), array_keys( $indexed ), 'Checks are indexed by stable id and stale entries are ignored' );
 $assert_same( array(), $checks_by_id->invoke( null, false ), 'No cached report yields no checks' );
+
+$GLOBALS['test_options'][ Readiness::REPORT_OPTION ] = array(
+	'checked_at' => '',
+	'checks'     => array(
+		array( 'id' => 'skills', 'status' => 'pass', 'detail' => 'Skills are available.' ),
+		array( 'id' => 'oauth', 'status' => 'unknown', 'detail' => 'OAuth could not be verified.' ),
+		array( 'id' => 'commerce', 'status' => 'na', 'detail' => 'Commerce is not configured.' ),
+	),
+);
+$overview_rows = array_column( $settings->overview_rows(), null, 'label' );
+$assert_same( 'Available', $overview_rows['Agent Skills']['state'], 'Overview includes the Agent Skills check state' );
+$assert_same( 'Needs review', $overview_rows['OAuth protected resource']['state'], 'Overview includes the OAuth protected resource check state' );
+$assert_same( 'Not applicable', $overview_rows['Agentic Commerce']['state'], 'Overview includes the Agentic Commerce check state' );
 
 if ( $failures ) {
 	fwrite( STDERR, implode( "\n", $failures ) . "\n" );

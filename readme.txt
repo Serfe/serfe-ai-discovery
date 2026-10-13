@@ -58,6 +58,7 @@ No. It does not implement an MCP server and cannot guarantee crawling, indexing,
 = 1.0.11 =
 
 * Renamed the visible plugin name to Serfe AI Discovery and the top-level administration menu to AI Discovery. The slug, text domain, folder, and stored option names are unchanged.
+* Added Agent Skills, OAuth protected resource, and Agentic Commerce states to the Overview after administrators run Discovery Checks.
 * Refreshed Help & Support with dedicated Community Support (GitHub) and Professional Services GEO Assessment guidance.
 * Added Content Signals blocks and blog AI training protection options in the robots.txt editor.
 * Hardened output escaping and i18n translation comments according to WordPress.org standards.
