@@ -33,6 +33,86 @@ jobs:
       - name: Check HTTP smoke script syntax
         run: bash -n tests/http-smoke.sh
 
+  wordpress-integration:
+    name: WordPress ${{ matrix.wordpress }} integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        wordpress: ['6.2', '6.3', '6.4', '6.5', '6.6', '6.7', '7.0', '7.1']
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: wordpress
+          MYSQL_USER: wordpress
+          MYSQL_PASSWORD: wordpress
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mysqli
+          tools: none
+          coverage: none
+      - name: Install WP-CLI
+        run: |
+          curl --fail --silent --show-error --location \
+            https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+            --output "$RUNNER_TEMP/wp-cli.phar"
+      - name: Install WordPress ${{ matrix.wordpress }}
+        env:
+          WP_VERSION: ${{ matrix.wordpress }}
+        run: |
+          wp_path="$RUNNER_TEMP/wordpress"
+          php "$RUNNER_TEMP/wp-cli.phar" core download --version="$WP_VERSION" --path="$wp_path"
+          php "$RUNNER_TEMP/wp-cli.phar" config create --path="$wp_path" \
+            --dbname=wordpress --dbuser=wordpress --dbpass=wordpress \
+            --dbhost=127.0.0.1:3306 --skip-check
+          php "$RUNNER_TEMP/wp-cli.phar" core install --path="$wp_path" \
+            --url=http://127.0.0.1:8080 --title="Serfe AI Discovery integration" \
+            --admin_user=integration --admin_password=integration \
+            --admin_email=integration@example.test --skip-email
+          mkdir -p "$wp_path/wp-content/plugins/serfe-ai-discovery"
+          rsync -a --exclude=.git "$GITHUB_WORKSPACE/" \
+            "$wp_path/wp-content/plugins/serfe-ai-discovery/"
+          php "$RUNNER_TEMP/wp-cli.phar" plugin activate serfe-ai-discovery --path="$wp_path"
+          php "$RUNNER_TEMP/wp-cli.phar" option update permalink_structure '/%postname%/' --path="$wp_path"
+          php "$RUNNER_TEMP/wp-cli.phar" rewrite flush --path="$wp_path"
+          php "$RUNNER_TEMP/wp-cli.phar" post create --path="$wp_path" \
+            --post_title="AI Discovery integration test" \
+            --post_name=serfe-discovery-integration-test \
+            --post_status=publish \
+            --post_content="A public post used to verify Markdown output on WordPress $WP_VERSION." \
+            --porcelain
+          php "$RUNNER_TEMP/wp-cli.phar" eval --path="$wp_path" \
+            '$settings = \Serfe\AI_Discovery\Settings::choices(); $settings["markdown_enabled"] = 1; update_option( \Serfe\AI_Discovery\Settings::OPTION, $settings );'
+      - name: Check HTML and Markdown routes
+        run: |
+          PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:8080 \
+            -t "$RUNNER_TEMP/wordpress" "$GITHUB_WORKSPACE/tests/support/wp-router.php" \
+            > "$RUNNER_TEMP/wordpress-server.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8080/wp-login.php >/dev/null; then
+              bash tests/http-smoke.sh http://127.0.0.1:8080/serfe-discovery-integration-test/
+              exit 0
+            fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/wordpress-server.log"
+          exit 1
+
   wordpress-coding-standards:
     name: WordPress Coding Standards
     runs-on: ubuntu-latest

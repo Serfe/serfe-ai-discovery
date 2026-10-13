@@ -42,7 +42,7 @@ Content negotiation is also supported:
 curl -H "Accept: text/markdown" https://example.com/sample-post/
 ```
 
-Eligible pages include canonical HTML links in their headers:
+Eligible HTML pages include a link to their Markdown alternative:
 ```html
 <link rel="alternate" type="text/markdown" href="https://example.com/sample-post.md">
 ```
@@ -51,7 +51,7 @@ Eligible pages include canonical HTML links in their headers:
 
 ## Requirements
 
-- **WordPress:** 6.2 to 7.1 (all versions fully supported).
+- **WordPress:** 6.2 or later. The integration workflow is configured to check WordPress 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 7.0, and 7.1.
 - **PHP:** 7.4 or higher (tested across PHP 7.4, 8.1, and 8.4).
 
 ---
@@ -89,11 +89,12 @@ Access the plugin from the WordPress admin menu under **AI Discovery**:
 
 ## Agents Discovery
 
-Under **AI Discovery → Discovery**, administrators can run local, read-only capability checks without third-party network dependencies. Checks verify:
-- Presence and formatting of `robots.txt` and `llms.txt`.
+Under **AI Discovery → Discovery Checks**, administrators can run read-only checks that request the site's own public endpoints. Checks verify:
+- Availability and basic response checks for `robots.txt` and `llms.txt`.
 - XML Sitemap detection and Link headers.
 - Markdown content negotiation (`Accept: text/markdown`).
 - API Catalog and REST API availability.
+- Optional MCP, OAuth Protected Resource, Agent Skills, and Agentic Commerce discovery resources.
 
 ### Extending Readiness Signals
 Developers can register custom endpoints (such as Model Context Protocol or Agentic Commerce) via WordPress filters:
@@ -127,8 +128,8 @@ add_filter( 'serfe_agent_readiness_agentic_commerce', function () {
 
 ## Installation
 
-1. In WordPress, go to **Plugins → Add New → Upload Plugin**.
-2. Upload the `serfe-ai-discovery.zip` package.
+1. Download the source ZIP from the [Serfe AI Discovery repository](https://github.com/serfe/serfe-ai-discovery) using **Code → Download ZIP**.
+2. In WordPress, go to **Plugins → Add New → Upload Plugin** and upload the downloaded ZIP.
 3. Activate the plugin.
 4. Go to **AI Discovery → Markdown** and turn on the master toggle.
 5. Visit any public post with `.md` appended to verify.
@@ -137,11 +138,11 @@ add_filter( 'serfe_agent_readiness_agentic_commerce', function () {
 
 ## Safety & Routing
 
-The plugin strictly enforces security and routing boundaries:
+The plugin enforces security and routing boundaries for Markdown responses:
 - Internal WordPress routes (`/wp-admin`, `/wp-json`, `/wp-content`, `/wp-includes`, `/xmlrpc.php`) are **never** routed as Markdown.
-- Markdown responses include `X-Robots-Tag: noindex, follow` to prevent duplicate indexing in traditional search engines.
-- Responses include `Vary: Accept` and estimated token metrics (`X-Markdown-Tokens`).
-- Cache-Control defaults to `private, no-store` to prevent caching conflicts across shared CDNs.
+- Markdown responses include `X-Robots-Tag: noindex, follow` and estimated token metrics (`X-Markdown-Tokens`).
+- HTML pages that advertise Markdown and negotiated Markdown responses include `Vary: Accept`.
+- Markdown responses use `Cache-Control: private, no-store` so shared caches do not retain them.
 
 ---
 
@@ -149,7 +150,7 @@ The plugin strictly enforces security and routing boundaries:
 
 Contributions are welcome!
 - **Contributing**: Read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and local verification steps.
-- **Community Support**: Check [SUPPORT.md](SUPPORT.md) or open an issue on GitHub.
+- **Community Support**: Check [SUPPORT.md](SUPPORT.md) or [open an issue](https://github.com/serfe/serfe-ai-discovery/issues).
 - **Security**: Report vulnerabilities privately following instructions in [SECURITY.md](SECURITY.md).
 
 ---
@@ -161,6 +162,9 @@ Run the self-contained test suites locally:
 ```bash
 # Run unit & compatibility tests
 for t in tests/*.php; do php "$t"; done
+
+# Install development dependencies
+composer install
 
 # WordPress Coding Standards (PHPCS)
 vendor/bin/phpcs --standard=phpcs.xml.dist
@@ -178,7 +182,7 @@ tests/http-smoke.sh https://example.com/sample-post/
 
 ## Version
 
-Current internal version: `1.0.11`. See [CHANGELOG.md](CHANGELOG.md) for full release notes.
+Latest published plugin version: `1.0.11`. See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 ---
 

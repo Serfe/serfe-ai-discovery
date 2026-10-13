@@ -4,6 +4,16 @@ All notable changes to Serfe AI Discovery are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Added WordPress integration smoke checks for each supported minor version from 6.2 through 7.1.
+
+### Changed
+
+- Updated GitHub support links and public compatibility documentation for the planned Serfe repository destination.
+
 ## [1.0.11] - 2026-10-12
 
 ### Added

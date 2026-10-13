@@ -5,10 +5,10 @@ Serfe AI Discovery is a community-supported WordPress plugin. Support is best ef
 ## Choose a channel
 
 - For installation and basic configuration, use the plugin's WordPress.org support forum after the plugin is listed there.
-- For reproducible bugs and feature requests, open an issue in the public GitHub repository after it is available.
+- For reproducible bugs and feature requests, [open an issue in the Serfe AI Discovery repository](https://github.com/serfe/serfe-ai-discovery/issues).
 - For a security vulnerability, follow [SECURITY.md](SECURITY.md). Do not post vulnerability details in a public issue or forum.
 
-Until those public channels are available, use the [Serfe contact page](https://www.serfe.com/en/contact-us) for a general question. Do not include credentials, private content, customer data, or other sensitive material in a public report.
+For general questions, use the [Serfe contact page](https://www.serfe.com/en/contact-us). Do not include credentials, private content, customer data, or other sensitive material in a public report.
 
 For a useful bug report, include the plugin, WordPress, PHP, and WooCommerce versions, the relevant settings, steps to reproduce, and the expected and actual behavior. Remove personal and site-specific data from logs or screenshots.
 
