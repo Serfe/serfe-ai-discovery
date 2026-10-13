@@ -8,6 +8,8 @@
 
 ---
 
+![Serfe WordPress AI Discovery Banner](assets/Serfe-WordPress-AI-Discovery-Banner.png)
+
 ## Plugin Objective
 
 Traditional SEO plugins optimize your website for search engines like Google and Bing. **Serfe WordPress AI Discovery** complements your SEO strategy by making your public content structured and discoverable for the **Agentic Web** (AI Agents, LLMs, and conversational engines).
