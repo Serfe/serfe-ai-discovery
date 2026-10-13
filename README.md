@@ -8,7 +8,7 @@
 
 ---
 
-![Serfe AI Discovery Banner](assets/Serfe-WordPress-AI-Discovery-Banner.png)
+![Serfe AI Discovery Banner](assets/banner-1544x500.png)
 
 ## Plugin Objective
 
