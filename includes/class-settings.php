@@ -414,8 +414,8 @@ final class Settings {
 		if ( 'toplevel_page_' . self::PAGE !== $hook_suffix ) {
 			return;
 		}
-		wp_enqueue_style( 'serfe-ai-discovery-settings', SERFE_AI_DISCOVERY_URL . 'assets/admin-settings.css', array(), '1.0.10.1' );
-		wp_enqueue_script( 'serfe-ai-discovery-settings', SERFE_AI_DISCOVERY_URL . 'assets/admin-settings.js', array( 'jquery' ), '1.0.10', true );
+		wp_enqueue_style( 'serfe-ai-discovery-settings', SERFE_AI_DISCOVERY_URL . 'assets/admin-settings.css', array(), '1.0.11' );
+		wp_enqueue_script( 'serfe-ai-discovery-settings', SERFE_AI_DISCOVERY_URL . 'assets/admin-settings.js', array( 'jquery' ), '1.0.11', true );
 		wp_localize_script(
 			'serfe-ai-discovery-settings',
 			'serfeAiDiscoveryMarkdownToggle',

@@ -36,7 +36,7 @@ $plugin_php_min = isset( $php_min_match[1] ) ? trim( $php_min_match[1] ) : '';
 
 $assert_same( '6.2', $plugin_wp_min, 'serfe-ai-discovery.php declares "Requires at least: 6.2"' );
 $assert_same( '7.4', $plugin_php_min, 'serfe-ai-discovery.php declares "Requires PHP: 7.4"' );
-$assert_same( '1.0.10', $plugin_version, 'serfe-ai-discovery.php has expected version 1.0.10' );
+$assert_same( '1.0.11', $plugin_version, 'serfe-ai-discovery.php has expected version 1.0.11' );
 
 // 3. Check WordPress.org Readme Headers (readme.txt).
 $readme_file = file_get_contents( dirname( __DIR__ ) . '/readme.txt' );

@@ -2,7 +2,7 @@
 Tags: markdown, llms-txt, robots-txt, api-discovery, ai
 Requires at least: 6.2
 Tested up to: 7.1
-Stable tag: 1.0.10
+Stable tag: 1.0.11
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -54,6 +54,13 @@ No. An administrator writes, reviews, and explicitly publishes the file.
 No. It does not implement an MCP server and cannot guarantee crawling, indexing, rankings, or citations.
 
 == Changelog ==
+
+= 1.0.11 =
+
+* Refreshed Help & Support with dedicated Community Support (GitHub) and Professional Services GEO Assessment guidance.
+* Added Content Signals blocks and blog AI training protection options in the robots.txt editor.
+* Hardened output escaping and i18n translation comments according to WordPress.org standards.
+* Declared and tested compatibility across WordPress 6.2 to 7.1 and PHP 7.4+.
 
 = 1.0.10 =
 

@@ -159,7 +159,7 @@ For an HTTP smoke check, enable an eligible published item on a local WordPress 
 
 ## Version
 
-Current internal version: `1.0.10`. See [CHANGELOG.md](CHANGELOG.md) for changes.
+Current internal version: `1.0.11`. See [CHANGELOG.md](CHANGELOG.md) for changes.
 
 ## About Serfe
 

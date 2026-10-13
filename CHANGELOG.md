@@ -6,16 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Changed
-- Styled the Help & Support contact link as a Serfe-branded button with an animated hover background.
-- Grouped the Discovery Checks guidance, current status, validation controls, and results in one panel with a primary Run checks button.
-- Moved the optional Is It Agent-Ready button from the discovery-file editors to below the Discovery Checks table.
-- Simplified Markdown publication to one global switch; Advanced Settings now exclude only public content types and exact URL paths.
-- Moved API Catalog publication to its own settings tab with explicit enable and disable actions.
-- Renamed the visible plugin name to "Serfe WordPress AI Discovery" in the plugin header, admin screens, and documentation. The slug, text domain, folder, and stored option names are unchanged.
+## [1.0.11] - 2026-10-12
 
 ### Added
 
+- Added dedicated Community Support (GitHub repository, bug reports, and contributions) and Serfe Professional Services (GEO Assessment consultation) sections to the Help & Support tab.
+- Added comprehensive compatibility test suite (`tests/compatibility.php`) verifying WordPress 6.2 through 7.1 and PHP 7.4+ compatibility and metadata consistency.
 - Persisted Discovery Checks results and timestamps for Overview, formatted with the site's WordPress date and time settings.
 - Added an immediate AJAX toggle for Markdown support, with separate saving for Advanced Settings exclusions.
 - Added automatic RFC 8288 Link headers for verified public llms.txt and XML sitemap resources, with Link-header status in Overview and Discovery Checks.
@@ -38,11 +34,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Renamed the visible plugin name to "Serfe WordPress AI Discovery" in the plugin header, admin screens, and documentation. The slug, text domain, folder, and stored option names are unchanged.
+- Declared and tested compatibility across WordPress 6.2 through 7.1 and PHP 7.4+.
+- Bumped internal asset enqueue versions to 1.0.11.
+- Styled the Help & Support contact link as a Serfe-branded button with an animated hover background.
+- Grouped the Discovery Checks guidance, current status, validation controls, and results in one panel with a primary Run checks button.
+- Moved the optional Is It Agent-Ready button from the discovery-file editors to below the Discovery Checks table.
+- Simplified Markdown publication to one global switch; Advanced Settings now exclude only public content types and exact URL paths.
+- Moved API Catalog publication to its own settings tab with explicit enable and disable actions.
 - Separated Robots.txt and llms.txt into dedicated top-level tabs on the Serfe AI Discovery settings screen.
 - Clarified the server-side cache and private, no-store HTTP response policy in the WordPress.org readme.
 - Restored the Serfe roundel as a 20-pixel admin menu SVG, matching WordPress's menu icon size.
 - Rendered the bundled admin menu SVG as a centered WordPress background icon using a base64 data URI.
-- Completed the Help & Support contact card with the starter-kit scope and a direct Serfe contact link.
 - Moved the Serfe logo to Help & Support, selected its blue or white variant from the admin color scheme, and linked it to the Serfe website with the plugin's UTM source.
 - Moved the plugin settings to a top-level WordPress admin menu using the shipped gray Serfe SVG as its icon.
 - Moved Agent Readiness diagnostics into the Discovery tab on the plugin settings screen.
@@ -53,6 +56,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Escaped admin form control output (`checked()` and `wp_kses_post()`) and added translator comments in `includes/class-discovery-files-admin.php` conforming to WordPress.org coding standards.
+- Corrected test harness redirect mock and missing stub functions in `tests/discovery-files.php`.
 - Allowed administrators to open the explicit .md links in the Markdown tab while keeping negotiated Markdown limited to unauthenticated visitors.
 - Allowed saved WordPress core heading and list markup in Markdown responses when WordPress registers those blocks with render callbacks.
 - Kept the full-publication setting when WordPress saves the plugin options.

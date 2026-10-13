@@ -21,7 +21,7 @@ final class Discovery_Files_Admin {
 		if ( 'toplevel_page_' . Settings::PAGE !== $hook ) {
 			return;
 		}
-		wp_register_script( 'serfe-ai-discovery-files', false, array(), '1.0.10', true );
+		wp_register_script( 'serfe-ai-discovery-files', false, array(), '1.0.11', true );
 		wp_enqueue_script( 'serfe-ai-discovery-files' );
 		wp_add_inline_script( 'serfe-ai-discovery-files', 'document.addEventListener("click", function(event) { if (!event.target.matches("[data-serfe-copy-file]")) { return; } var area = document.getElementById(event.target.getAttribute("data-serfe-copy-file")); if (area && navigator.clipboard) { navigator.clipboard.writeText(area.value); } });' );
 	}
