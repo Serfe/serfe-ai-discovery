@@ -62,6 +62,11 @@ $assert_same( '7.1', $readme_tested, 'readme.txt declares "Tested up to: 7.1"' )
 $assert_same( '7.4', $readme_php_min, 'readme.txt declares "Requires PHP: 7.4"' );
 $assert_same( $plugin_name, $readme_name, 'readme.txt name matches the plugin header Plugin Name' );
 $assert_same( $plugin_version, $readme_stable, 'readme.txt Stable tag matches plugin header Version' );
+$assert_true( false !== strpos( $readme_file, '== Screenshots ==' ), 'readme.txt includes a Screenshots section' );
+foreach ( array( 1, 2, 3, 4 ) as $screenshot ) {
+	$filename = 'screenshot-' . $screenshot . '.png';
+	$assert_true( file_exists( dirname( __DIR__ ) . '/assets/' . $filename ), 'Bundled asset exists: ' . $filename );
+}
 
 // 4. Validate PHPStan Target Configuration (phpVersion: 70400).
 $phpstan_neon = file_get_contents( dirname( __DIR__ ) . '/phpstan.neon.dist' );
