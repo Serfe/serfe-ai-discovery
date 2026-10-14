@@ -10,6 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Response {
 	/** @param string $markdown Markdown document. @param bool $negotiated Selected via Accept. @param string $canonical_url HTML permalink. @param bool|null $cache_hit Server-side cache result. */
 	public function markdown( $markdown, $negotiated = false, $canonical_url = '', $cache_hit = null ) {
+		if ( class_exists( __NAMESPACE__ . '\Cache_Integrations' ) ) {
+			Cache_Integrations::disable_page_caching();
+		}
 		if ( ! headers_sent() ) {
 			header_remove( 'Set-Cookie' );
 			status_header( 200 );

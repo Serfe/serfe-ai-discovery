@@ -22,6 +22,9 @@ final class Request_Router {
 		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Preserve encoded permalink bytes; this value is parsed as a path and is never rendered.
 		if ( self::is_markdown_uri( $uri ) ) {
 			$this->markdown_request = true;
+			if ( class_exists( __NAMESPACE__ . '\Cache_Integrations' ) ) {
+				Cache_Integrations::disable_page_caching();
+			}
 			add_filter( 'woocommerce_set_cookie_enabled', '__return_false', 99 );
 			$_SERVER['REQUEST_URI'] = self::underlying_uri( $uri );
 			// Keep PATH_INFO in sync. WordPress prefers it over REQUEST_URI when
@@ -36,6 +39,20 @@ final class Request_Router {
 		if ( self::is_negotiable_uri( $uri ) && self::accepts_markdown( $accept ) ) {
 			$this->markdown_request  = true;
 			$this->accept_negotiated = true;
+			if ( class_exists( __NAMESPACE__ . '\Cache_Integrations' ) ) {
+				Cache_Integrations::disable_page_caching();
+			}
+			add_filter( 'woocommerce_set_cookie_enabled', '__return_false', 99 );
+			return;
+		}
+
+		$format   = isset( $_GET['format'] ) ? sanitize_text_field( wp_unslash( $_GET['format'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$query_md = ( isset( $_GET['markdown'] ) && '1' === (string) $_GET['markdown'] ) || 'markdown' === $format; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( self::is_negotiable_uri( $uri ) && $query_md ) {
+			$this->markdown_request = true;
+			if ( class_exists( __NAMESPACE__ . '\Cache_Integrations' ) ) {
+				Cache_Integrations::disable_page_caching();
+			}
 			add_filter( 'woocommerce_set_cookie_enabled', '__return_false', 99 );
 		}
 	}

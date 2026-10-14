@@ -71,6 +71,8 @@ final class Plugin {
 		$this->discovery_files_admin->register_hooks();
 		Discovery_Files::register_hooks();
 		$this->markdown_cache->register_hooks();
+		Cache_Integrations::register_hooks();
+		Cache_Integrations::sync_rocket_config();
 	}
 
 	/** Render the resolved object when this is a Markdown request. */

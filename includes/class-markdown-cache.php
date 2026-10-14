@@ -122,6 +122,9 @@ final class Markdown_Cache {
 			),
 			true
 		);
+		if ( class_exists( __NAMESPACE__ . '\Cache_Integrations' ) ) {
+			Cache_Integrations::purge_page_caches();
+		}
 		--$depth;
 	}
 

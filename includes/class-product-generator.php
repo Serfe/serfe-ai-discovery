@@ -21,7 +21,24 @@ final class Product_Generator {
 
 		$visible = in_array( $product->get_catalog_visibility(), array( 'visible', 'catalog' ), true );
 		$price   = $product->get_price();
-		$public  = $visible && '' !== $price && null !== $price;
+		if ( ( '' === $price || null === $price ) && $product instanceof \WC_Product_Variable ) {
+			if ( method_exists( $product, 'get_variation_price' ) ) {
+				$price = $product->get_variation_price( 'min' );
+			}
+			if ( '' === $price || null === $price ) {
+				foreach ( $product->get_children() as $child_id ) {
+					$child = wc_get_product( $child_id );
+					if ( $child instanceof \WC_Product_Variation && $child->variation_is_visible() ) {
+						$child_price = $child->get_price();
+						if ( '' !== $child_price && null !== $child_price ) {
+							$price = $child_price;
+							break;
+						}
+					}
+				}
+			}
+		}
+		$public = $visible && '' !== $price && null !== $price;
 
 		// Extensions may deny exposure, but may not override WooCommerce visibility.
 		return $public && (bool) apply_filters( 'serfe_ai_discovery_product_exposable', true, $product_id );
@@ -36,7 +53,8 @@ final class Product_Generator {
 		$currency = get_woocommerce_currency();
 
 		$price_from = null;
-		$prices     = $this->price_details( $product, $currency, $price_from );
+		$price_to   = null;
+		$prices     = $this->price_details( $product, $currency, $price_from, $price_to );
 		$front      = "---\n";
 		$front     .= 'title: ' . Markdown::yaml_scalar( $title ) . "\n";
 		$front     .= 'url: ' . Markdown::yaml_scalar( $url ) . "\n";
@@ -45,8 +63,28 @@ final class Product_Generator {
 			$front .= 'lang: ' . Markdown::yaml_scalar( $lang ) . "\n";
 		}
 		$front .= 'currency: ' . Markdown::yaml_scalar( $currency ) . "\n";
+		if ( $product && ! ( $product instanceof \WC_Product_Variable ) ) {
+			$raw_price = $product->get_price();
+			if ( '' !== $raw_price && null !== $raw_price ) {
+				$front .= 'price: ' . number_format( (float) $raw_price, 2, '.', '' ) . "\n";
+			}
+			$reg_price = $product->get_regular_price();
+			if ( '' !== $reg_price && null !== $reg_price ) {
+				$front .= 'regular_price: ' . number_format( (float) $reg_price, 2, '.', '' ) . "\n";
+			}
+			$sale_price = $product->get_sale_price();
+			if ( $product->is_on_sale() && '' !== $sale_price && null !== $sale_price ) {
+				$front .= 'sale_price: ' . number_format( (float) $sale_price, 2, '.', '' ) . "\n";
+				$front .= "on_sale: true\n";
+			}
+		} elseif ( $product && $product instanceof \WC_Product_Variable && $product->is_on_sale() ) {
+			$front .= "on_sale: true\n";
+		}
 		if ( null !== $price_from ) {
 			$front .= 'price_from: ' . number_format( $price_from, 2, '.', '' ) . "\n";
+		}
+		if ( null !== $price_to && $price_to !== $price_from ) {
+			$front .= 'price_to: ' . number_format( $price_to, 2, '.', '' ) . "\n";
 		}
 		$front .= 'availability: ' . Markdown::yaml_scalar( $product && $product->is_in_stock() ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' ) . "\n";
 		$front .= "---\n\n";
@@ -66,9 +104,16 @@ final class Product_Generator {
 		return $front . $body . $prices . "\n";
 	}
 
-	/** @param mixed $product Product. @param string $currency Currency. @param float|null $price_from Lowest printed price. @return string */
-	private function price_details( $product, $currency, &$price_from ) {
+	/**
+	 * @param mixed $product Product.
+	 * @param string $currency Currency.
+	 * @param float|null $price_from Lowest printed price.
+	 * @param float|null $price_to Highest printed price.
+	 * @return string
+	 */
+	private function price_details( $product, $currency, &$price_from, &$price_to = null ) {
 		$price_from = null;
+		$price_to   = null;
 		if ( ! $product ) {
 			return '';
 		}
@@ -78,11 +123,25 @@ final class Product_Generator {
 			if ( '' === $price || null === $price ) {
 				return '';
 			}
-			$price_from = (float) $price;
-			return '**' . __( 'Price', 'serfe-ai-discovery' ) . ':** ' . Markdown::price( $price, $currency ) . "\n";
+			$price_from    = (float) $price;
+			$price_to      = (float) $price;
+			$regular_price = $product->get_regular_price();
+			$sale_price    = $product->get_sale_price();
+			$is_on_sale    = $product->is_on_sale() && '' !== $sale_price && null !== $sale_price;
+
+			$lines   = array();
+			$lines[] = '**' . __( 'Price', 'serfe-ai-discovery' ) . ':** ' . Markdown::price( $price, $currency );
+			if ( $is_on_sale ) {
+				if ( '' !== $regular_price && null !== $regular_price ) {
+					$lines[] = '**' . __( 'Regular Price', 'serfe-ai-discovery' ) . ':** ' . Markdown::price( $regular_price, $currency );
+				}
+				$lines[] = '**' . __( 'Sale Price', 'serfe-ai-discovery' ) . ':** ' . Markdown::price( $sale_price, $currency );
+			}
+			return implode( "\n", $lines ) . "\n";
 		}
 
-		$rows = array();
+		$rows     = array();
+		$has_sale = false;
 		foreach ( $product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
 			if ( ! ( $variation instanceof \WC_Product_Variation ) || 'publish' !== $variation->get_status() || ! $variation->variation_is_visible() ) {
@@ -93,10 +152,19 @@ final class Product_Generator {
 			if ( '' === $price || null === $price || '' === $label ) {
 				continue;
 			}
+			$regular_price = $variation->get_regular_price();
+			$sale_price    = $variation->get_sale_price();
+			$is_on_sale    = $variation->is_on_sale() && '' !== $sale_price && null !== $sale_price;
+			if ( $is_on_sale ) {
+				$has_sale = true;
+			}
 			$rows[] = array(
-				'label'    => $label,
-				'price'    => (float) $price,
-				'in_stock' => $variation->is_in_stock(),
+				'label'         => $label,
+				'price'         => (float) $price,
+				'regular_price' => '' !== $regular_price && null !== $regular_price ? (float) $regular_price : null,
+				'sale_price'    => $is_on_sale ? (float) $sale_price : null,
+				'on_sale'       => $is_on_sale,
+				'in_stock'      => $variation->is_in_stock(),
 			);
 		}
 
@@ -111,13 +179,27 @@ final class Product_Generator {
 			}
 		);
 		$price_from = $rows[0]['price'];
-		$output     = '## ' . __( 'Variations', 'serfe-ai-discovery' ) . "\n\n";
-		$output    .= '| ' . __( 'Option', 'serfe-ai-discovery' ) . ' | ' . __( 'Price', 'serfe-ai-discovery' ) . ' | ' . __( 'Availability', 'serfe-ai-discovery' ) . " |\n";
-		$output    .= "| --- | --- | --- |\n";
-		foreach ( $rows as $row ) {
-			$label   = str_replace( '|', '\\|', preg_replace( '/\s+/', ' ', $row['label'] ) );
-			$stock   = $row['in_stock'] ? __( 'In stock', 'serfe-ai-discovery' ) : __( 'Out of stock', 'serfe-ai-discovery' );
-			$output .= '| ' . $label . ' | ' . Markdown::price( $row['price'], $currency ) . ' | ' . $stock . " |\n";
+		$price_to   = $rows[ count( $rows ) - 1 ]['price'];
+
+		$output = '## ' . __( 'Variations', 'serfe-ai-discovery' ) . "\n\n";
+		if ( $has_sale ) {
+			$output .= '| ' . __( 'Option', 'serfe-ai-discovery' ) . ' | ' . __( 'Price', 'serfe-ai-discovery' ) . ' | ' . __( 'Regular Price', 'serfe-ai-discovery' ) . ' | ' . __( 'Sale Price', 'serfe-ai-discovery' ) . ' | ' . __( 'Availability', 'serfe-ai-discovery' ) . " |\n";
+			$output .= "| --- | --- | --- | --- | --- |\n";
+			foreach ( $rows as $row ) {
+				$label   = str_replace( '|', '\\|', preg_replace( '/\s+/', ' ', $row['label'] ) );
+				$stock   = $row['in_stock'] ? __( 'In stock', 'serfe-ai-discovery' ) : __( 'Out of stock', 'serfe-ai-discovery' );
+				$regular = null !== $row['regular_price'] ? Markdown::price( $row['regular_price'], $currency ) : '-';
+				$sale    = null !== $row['sale_price'] ? Markdown::price( $row['sale_price'], $currency ) : '-';
+				$output .= '| ' . $label . ' | ' . Markdown::price( $row['price'], $currency ) . ' | ' . $regular . ' | ' . $sale . ' | ' . $stock . " |\n";
+			}
+		} else {
+			$output .= '| ' . __( 'Option', 'serfe-ai-discovery' ) . ' | ' . __( 'Price', 'serfe-ai-discovery' ) . ' | ' . __( 'Availability', 'serfe-ai-discovery' ) . " |\n";
+			$output .= "| --- | --- | --- |\n";
+			foreach ( $rows as $row ) {
+				$label   = str_replace( '|', '\\|', preg_replace( '/\s+/', ' ', $row['label'] ) );
+				$stock   = $row['in_stock'] ? __( 'In stock', 'serfe-ai-discovery' ) : __( 'Out of stock', 'serfe-ai-discovery' );
+				$output .= '| ' . $label . ' | ' . Markdown::price( $row['price'], $currency ) . ' | ' . $stock . " |\n";
+			}
 		}
 		return $output;
 	}
