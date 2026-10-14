@@ -95,7 +95,7 @@ Start with Discovery Checks to confirm public discovery files, Link headers, Mar
 
 = Where can I get support or professional assistance? =
 
-Serfe AI Discovery is free and open source. Visit the [GitHub repository](https://github.com/serfe/serfe-ai-discovery) to read documentation, report issues, suggest improvements, or contribute. Serfe also offers GEO Assessments for broader AI-readiness evaluations. Visit [Serfe](https://www.serfe.com/) to learn more.
+Serfe AI Discovery is free and open source. Visit the [GitHub repository](https://github.com/Serfe/serfe-ai-discovery) to read documentation, report issues, suggest improvements, or contribute. Serfe also offers GEO Assessments for broader AI-readiness evaluations. Visit [Serfe](https://www.serfe.com/) to learn more.
 
 == Screenshots ==
 

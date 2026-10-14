@@ -128,7 +128,7 @@ add_filter( 'serfe_agent_readiness_agentic_commerce', function () {
 
 ## Installation
 
-1. Download the source ZIP from the [Serfe AI Discovery repository](https://github.com/serfe/serfe-ai-discovery) using **Code → Download ZIP**.
+1. Download the source ZIP from the [Serfe AI Discovery repository](https://github.com/Serfe/serfe-ai-discovery) using **Code → Download ZIP**.
 2. In WordPress, go to **Plugins → Add New → Upload Plugin** and upload the downloaded ZIP.
 3. Activate the plugin.
 4. Go to **AI Discovery → Markdown** and turn on the master toggle.
@@ -150,7 +150,7 @@ The plugin enforces security and routing boundaries for Markdown responses:
 
 Contributions are welcome!
 - **Contributing**: Read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and local verification steps.
-- **Community Support**: Check [SUPPORT.md](SUPPORT.md) or [open an issue](https://github.com/serfe/serfe-ai-discovery/issues).
+- **Community Support**: Check [SUPPORT.md](SUPPORT.md) or [open an issue](https://github.com/Serfe/serfe-ai-discovery/issues).
 - **Security**: Report vulnerabilities privately following instructions in [SECURITY.md](SECURITY.md).
 
 ---

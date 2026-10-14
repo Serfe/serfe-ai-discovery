@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Do not post vulnerabilities or private site data. Read [SECURITY.md](https://github.com/serfe/serfe-ai-discovery/blob/trunk/SECURITY.md) for private security reporting.
+        Do not post vulnerabilities or private site data. Read [SECURITY.md](https://github.com/Serfe/serfe-ai-discovery/blob/trunk/SECURITY.md) for private security reporting.
   - type: textarea
     id: need
     attributes:

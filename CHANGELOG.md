@@ -12,7 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- Updated GitHub support links and public compatibility documentation for the planned Serfe repository destination.
+- Updated GitHub support links and public compatibility documentation for the canonical [Serfe repository](https://github.com/Serfe/serfe-ai-discovery).
 
 ## [1.0.11] - 2026-10-12
 

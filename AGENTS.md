@@ -48,11 +48,11 @@ These guidelines apply to developing, maintaining, and testing **Serfe AI Discov
 - **Keep a Changelog:** Update `CHANGELOG.md` under `[Unreleased]` whenever feature behavior, security boundaries, or user-facing interfaces change.
 - **Submodule Isolation:** Do not include parent repository commits or non-plugin documentation inside this repository.
 
-## Repository Transfer Checklist
+## Public Repository Checklist
 
-When transferring this public repository to `https://github.com/serfe/serfe-ai-discovery`:
+The canonical public repository is `https://github.com/Serfe/serfe-ai-discovery`.
 
-- Verify that the security links in both GitHub issue forms, the Help & Support tab, `SUPPORT.md`, and `README.md` resolve at the new canonical URL.
-- Confirm the WordPress integration matrix runs on the transferred default branch.
+- Verify that the security links in both GitHub issue forms, the Help & Support tab, `SUPPORT.md`, and `README.md` resolve at the canonical URL.
+- Confirm the WordPress integration matrix runs on the public default branch.
 - Publish or link the immutable `1.0.11` source archive if GitHub is used as an installation channel; update the README download instructions to match the chosen release asset.
 - Set the repository description, homepage, and topics on the organization-owned repository.
