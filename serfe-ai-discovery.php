@@ -18,6 +18,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'SERFE_AI_DISCOVERY_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SERFE_AI_DISCOVERY_URL', plugin_dir_url( __FILE__ ) );
 
+$serfe_ai_discovery_headers = get_file_data( __FILE__, array( 'Version' => 'Version' ), 'plugin' );
+define( 'SERFE_AI_DISCOVERY_VERSION', $serfe_ai_discovery_headers['Version'] );
+unset( $serfe_ai_discovery_headers );
+
 require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-request-router.php';
 require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-response.php';
 require_once SERFE_AI_DISCOVERY_PATH . 'includes/class-markdown.php';

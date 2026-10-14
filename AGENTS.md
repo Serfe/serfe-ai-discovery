@@ -54,5 +54,5 @@ The canonical public repository is `https://github.com/Serfe/serfe-ai-discovery`
 
 - Verify that the security links in both GitHub issue forms, the Help & Support tab, `SUPPORT.md`, and `README.md` resolve at the canonical URL.
 - Confirm the WordPress integration matrix runs on the public default branch.
-- Publish or link the immutable `1.0.11` source archive if GitHub is used as an installation channel; update the README download instructions to match the chosen release asset.
+- Publish or link an immutable source archive for every published version if GitHub is used as an installation channel; update the README download instructions to match the chosen release asset.
 - Set the repository description, homepage, and topics on the organization-owned repository.

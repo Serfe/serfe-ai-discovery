@@ -182,7 +182,7 @@ tests/http-smoke.sh https://example.com/sample-post/
 
 ## Version
 
-Latest published plugin version: `1.0.11`. See [CHANGELOG.md](CHANGELOG.md) for release notes.
+For the latest published version and release notes, see [GitHub Releases](https://github.com/Serfe/serfe-ai-discovery/releases) and [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
