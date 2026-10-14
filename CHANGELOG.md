@@ -20,6 +20,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - Kept `PATH_INFO` aligned with explicit `.md` requests so Markdown routes resolve on WordPress Multisite subdirectory sites.
+- Added documented WPCS exceptions for encoded request paths that are parsed internally and never rendered.
 
 ## [1.0.11] - 2026-10-12
 

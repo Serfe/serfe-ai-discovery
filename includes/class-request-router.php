@@ -30,6 +30,7 @@ final class Request_Router {
 			// Keep PATH_INFO in sync. WordPress prefers it over REQUEST_URI when
 			// parsing pretty permalinks, including in a Multisite subdirectory.
 			if ( isset( $_SERVER['PATH_INFO'] ) && is_string( $_SERVER['PATH_INFO'] ) ) {
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Preserve encoded permalink bytes; this value is parsed as a path and is never rendered.
 				$_SERVER['PATH_INFO'] = self::underlying_path( wp_unslash( $_SERVER['PATH_INFO'] ) );
 			}
 			return;

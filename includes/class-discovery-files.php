@@ -501,6 +501,7 @@ final class Discovery_Files {
 
 	/** @return string robots.txt or llms.txt when the current request targets this site's virtual file. */
 	private static function requested_virtual_file() {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Preserve encoded URI bytes for an exact path comparison; this value is never rendered.
 		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
 		foreach ( array( 'robots.txt', 'llms.txt' ) as $name ) {
