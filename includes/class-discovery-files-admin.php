@@ -148,7 +148,7 @@ final class Discovery_Files_Admin {
 		echo '<p>' . esc_html__( 'What it does: Provides an optional human-readable Markdown overview and curated links to relevant public content.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Why it helps: Makes approved information easier for AI systems and technical tools to identify and interpret.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Important: Include only current, public, canonical URLs. Never include private areas, customer pages, admin URLs, credentials, unsupported claims, or outdated offers.', 'serfe-ai-discovery' ) . '</p>';
-		echo '<p>' . esc_html__( 'This file complements the website, sitemap, structured content, and crawler policy; it does not replace them.', 'serfe-ai-discovery' ) . '</p></details>';
+		echo '<p>' . esc_html__( 'This file complements the website, sitemap, structured content, and crawler policy; it does not replace them.', 'serfe-ai-discovery' ) . ' ' . esc_html__( 'Read more about it in', 'serfe-ai-discovery' ) . ' <a href="https://llmstxt.org/" target="_blank" rel="noopener noreferrer">llmstxt.org</a>.</p></details>';
 		$this->render_file( 'llms.txt', $notice );
 	}
 
