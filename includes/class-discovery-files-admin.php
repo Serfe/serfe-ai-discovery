@@ -202,8 +202,10 @@ final class Discovery_Files_Admin {
 		$known    = isset( $state['meta']['checksum'] ) ? $state['meta']['checksum'] : '';
 		$virtual  = ! $state['exists'] && is_array( $notice ) && isset( $notice['file'] ) && $name === $notice['file'] && ! empty( $notice['virtual'] );
 		$conflict = $known !== $state['checksum'] || $virtual;
-		if ( ! $state['exists'] ) {
+		if ( ! $state['exists'] && empty( $state['virtual'] ) ) {
 			echo '<div class="notice notice-info inline"><p>' . esc_html__( 'No physical file exists at the public root. A virtual public response might still be served. Select Validate public file to inspect it before publishing a physical file.', 'serfe-ai-discovery' ) . '</p></div>';
+		} elseif ( ! $state['exists'] ) {
+			echo '<div class="notice notice-info inline"><p>' . esc_html__( 'This Multisite site stores and serves this discovery file virtually, without writing to the shared filesystem.', 'serfe-ai-discovery' ) . '</p></div>';
 		}
 		if ( $conflict ) {
 			echo '<div class="notice notice-warning inline"><p>' . esc_html__( 'This public response is unmanaged or changed outside the plugin. Review its current content before taking control.', 'serfe-ai-discovery' ) . '</p></div>';

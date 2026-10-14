@@ -12,6 +12,39 @@ final class Discovery_Files {
 	const MAX_LIMIT    = 1048576;
 	const MAX_SITEMAPS = 5;
 
+	/** Multisite sites use per-blog virtual files; a physical root is shared. */
+	public static function uses_virtual_storage() {
+		return function_exists( 'is_multisite' ) && is_multisite();
+	}
+
+	/** Register virtual public files before WordPress renders a 404 or core robots response. */
+	public static function register_hooks() {
+		add_action( 'template_redirect', array( __CLASS__, 'serve_virtual_file' ), -100 );
+	}
+
+	/** Serve a Multisite blog's saved discovery file at its own public URL. */
+	public static function serve_virtual_file() {
+		if ( ! self::uses_virtual_storage() || is_admin() ) {
+			return;
+		}
+		$name = self::requested_virtual_file();
+		if ( '' === $name ) {
+			return;
+		}
+		$content = get_option( self::content_key( $name ), false );
+		if ( ! is_string( $content ) ) {
+			return;
+		}
+		if ( ! headers_sent() ) {
+			status_header( 200 );
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			header( 'X-Content-Type-Options: nosniff' );
+			header( 'Cache-Control: public, max-age=300' );
+		}
+		echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Administrator-authored plain text validated before storage.
+		exit;
+	}
+
 	/** Resolve the public root only when the WordPress URL and directory layout agree. */
 	public static function resolve_public_root( $wp_root, $home_url, $site_url ) {
 		$home = wp_parse_url( $home_url );
@@ -69,6 +102,22 @@ final class Discovery_Files {
 
 	/** Return the current root file and publication metadata without changing it. */
 	public static function inspect( $name ) {
+		if ( self::uses_virtual_storage() ) {
+			if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) ) {
+				return new \WP_Error( 'invalid_name', __( 'Only robots.txt and llms.txt can be published.', 'serfe-ai-discovery' ) );
+			}
+			$content = get_option( self::content_key( $name ), false );
+			$content = is_string( $content ) ? $content : '';
+			$meta    = get_option( self::meta_key( $name ), array() );
+			return array(
+				'exists'   => false,
+				'content'  => $content,
+				'checksum' => '' !== $content ? hash( 'sha256', $content ) : '',
+				'meta'     => is_array( $meta ) ? $meta : array(),
+				'backup'   => get_option( self::backup_key( $name ), false ),
+				'virtual'  => true,
+			);
+		}
 		$path = self::path( $name );
 		if ( is_wp_error( $path ) ) {
 			return $path;
@@ -144,6 +193,9 @@ final class Discovery_Files {
 		$content = self::normalize_content( $candidate );
 		if ( is_wp_error( $content ) ) {
 			return $content;
+		}
+		if ( self::uses_virtual_storage() ) {
+			return self::publish_virtual( $name, $content, $takeover, $expected_checksum );
 		}
 		$current = self::inspect( $name );
 		if ( is_wp_error( $current ) ) {
@@ -248,6 +300,9 @@ final class Discovery_Files {
 		if ( is_wp_error( $state ) ) {
 			return $state;
 		}
+		if ( self::uses_virtual_storage() ) {
+			return self::validate_virtual( $name, $state );
+		}
 		if ( ! $state['exists'] ) {
 			$public = self::inspect_public_response( $name );
 			if ( is_wp_error( $public ) ) {
@@ -349,6 +404,114 @@ final class Discovery_Files {
 		return self::publish( $name, $backup, $takeover, $expected_checksum );
 	}
 
+	/** Store a Multisite blog's discovery file without touching the shared filesystem. */
+	private static function publish_virtual( $name, $content, $takeover, $expected_checksum ) {
+		$current = self::inspect( $name );
+		if ( is_wp_error( $current ) ) {
+			return $current;
+		}
+		$stored    = get_option( self::content_key( $name ), false );
+		$has_stored = is_string( $stored );
+		$known     = isset( $current['meta']['checksum'] ) ? $current['meta']['checksum'] : '';
+		$conflict  = $has_stored && $known !== $current['checksum'];
+		if ( $conflict && ! $takeover ) {
+			return new \WP_Error( 'takeover_required', __( 'The virtual public file changed outside this plugin. Review it and confirm takeover before publishing.', 'serfe-ai-discovery' ) );
+		}
+		$public = false;
+		if ( ! $has_stored ) {
+			$public = self::inspect_public_response( $name );
+			if ( is_wp_error( $public ) ) {
+				return $public;
+			}
+			if ( $public['exists'] && ! $takeover ) {
+				return new \WP_Error( 'takeover_required', __( 'A virtual public response already exists. Inspect it and explicitly confirm takeover before replacing it.', 'serfe-ai-discovery' ) );
+			}
+		}
+		$effective_checksum = $has_stored ? $current['checksum'] : ( is_array( $public ) && $public['exists'] ? $public['checksum'] : '' );
+		if ( ( $has_stored || '' !== $known || ( is_array( $public ) && $public['exists'] ) || '' !== (string) $expected_checksum ) && ! hash_equals( $effective_checksum, (string) $expected_checksum ) ) {
+			return new \WP_Error( 'stale_file', __( 'The public file changed since this editor was opened. Review the current content before publishing.', 'serfe-ai-discovery' ) );
+		}
+		if ( $has_stored || ( is_array( $public ) && $public['exists'] ) ) {
+			update_option( self::backup_key( $name ), $has_stored ? $stored : $public['content'], false );
+		}
+		update_option( self::content_key( $name ), $content, false );
+		$checksum = hash( 'sha256', $content );
+		update_option(
+			self::meta_key( $name ),
+			array(
+				'checksum'     => $checksum,
+				'published_at' => current_time( 'mysql' ),
+				'user_id'      => get_current_user_id(),
+			),
+			false
+		);
+		if ( 'llms.txt' === $name && class_exists( __NAMESPACE__ . '\\Readiness' ) ) {
+			delete_transient( Readiness::LINK_HEADERS_CACHE_KEY );
+		}
+		$check = self::validate_current( $name );
+		return array(
+			'checksum' => $checksum,
+			'verified' => ! is_wp_error( $check ) && $check['verified'],
+			'warnings' => is_wp_error( $check ) ? array( $check->get_error_message() ) : $check['warnings'],
+			'url'      => home_url( '/' . $name ),
+		);
+	}
+
+	/** Validate a Multisite blog's saved virtual response through its public URL. */
+	private static function validate_virtual( $name, $state ) {
+		$stored = get_option( self::content_key( $name ), false );
+		if ( ! is_string( $stored ) ) {
+			$public = self::inspect_public_response( $name );
+			if ( is_wp_error( $public ) ) {
+				return $public;
+			}
+			return array(
+				'verified' => false,
+				'warnings' => $public['exists'] ? array( __( 'A virtual public response exists but is not managed by this plugin.', 'serfe-ai-discovery' ) ) : array( __( 'No virtual public response was found.', 'serfe-ai-discovery' ) ),
+				'virtual'  => $public['exists'],
+				'content'  => $public['content'],
+				'checksum' => $public['checksum'],
+			);
+		}
+		$response = wp_safe_remote_get(
+			home_url( '/' . $name ),
+			array(
+				'redirection'         => 0,
+				'timeout'             => 5,
+				'limit_response_size' => self::MAX_LIMIT + 1,
+			)
+		);
+		$verified = ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) && wp_remote_retrieve_body( $response ) === $stored;
+		$warnings = $verified ? array() : array( __( 'The public response does not match the current virtual file, or it could not be reached.', 'serfe-ai-discovery' ) );
+		if ( 'robots.txt' === $name ) {
+			$warnings = array_merge( $warnings, self::robots_warnings( $stored ) );
+		}
+		$meta = $state['meta'];
+		if ( isset( $meta['checksum'] ) && $meta['checksum'] === $state['checksum'] ) {
+			$meta['validated_at'] = current_time( 'mysql' );
+			$meta['verified']     = $verified;
+			update_option( self::meta_key( $name ), $meta, false );
+		}
+		return array(
+			'verified' => $verified,
+			'warnings' => $warnings,
+			'virtual'  => true,
+		);
+	}
+
+	/** @return string robots.txt or llms.txt when the current request targets this site's virtual file. */
+	private static function requested_virtual_file() {
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+		foreach ( array( 'robots.txt', 'llms.txt' ) as $name ) {
+			$expected = (string) wp_parse_url( home_url( '/' . $name ), PHP_URL_PATH );
+			if ( rtrim( $path, '/' ) === rtrim( $expected, '/' ) ) {
+				return $name;
+			}
+		}
+		return '';
+	}
+
 	/** Build only one of the two fixed public-root paths. */
 	private static function path( $name ) {
 		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) ) {
@@ -365,5 +528,9 @@ final class Discovery_Files {
 
 	private static function backup_key( $name ) {
 		return 'serfe_ai_discovery_' . str_replace( '.', '_', $name ) . '_backup';
+	}
+
+	private static function content_key( $name ) {
+		return 'serfe_ai_discovery_' . str_replace( '.', '_', $name ) . '_virtual';
 	}
 }

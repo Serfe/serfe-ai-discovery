@@ -23,7 +23,7 @@ By serving clean `.md` representations of your public content alongside machine-
 - **Clean Markdown Content**: Serves structured Markdown with YAML front matter for eligible public URLs via `.md` suffix or HTTP content negotiation (`Accept: text/markdown`).
 - **RFC 8288 Link Headers**: Automatically advertises alternate Markdown versions, verified `llms.txt` (`rel="describedby"`), and XML sitemaps (`rel="related"`).
 - **Machine-Readable API Catalog**: Exposes an optional RFC 9727 Linkset at `/.well-known/api-catalog` pointing to the WordPress REST API.
-- **Root Discovery Management**: Provides safe, in-admin editing and validation for root `robots.txt` and `llms.txt`.
+- **Root Discovery Management**: Provides safe, in-admin editing and validation for `robots.txt` and `llms.txt`. On Multisite, each site serves and stores its own virtual file without writing to the shared filesystem.
 - **Agent Readiness Checks**: Offers bounded, read-only local diagnostics for AI and agent compatibility.
 
 ### Quick Example

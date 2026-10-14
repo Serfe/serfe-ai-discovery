@@ -42,6 +42,7 @@ $assert_same( true, Request_Router::accepts_markdown( 'text/html, text/markdown;
 $assert_same( false, Request_Router::accepts_markdown( 'text/html, text/markdown; q=0' ), 'Honours an unacceptable Markdown quality value' );
 $assert_same( false, Request_Router::accepts_markdown( 'text/html, application/json' ), 'Keeps HTML as default without Markdown Accept header' );
 $assert_same( '/es/product/?currency=USD', Request_Router::underlying_uri( '/es/product.md?currency=USD' ), 'Preserves query string' );
+$assert_same( '/discovery/product/', Request_Router::underlying_path( '/discovery/product.md' ), 'Normalizes PATH_INFO for a Multisite subdirectory Markdown request' );
 $assert_same( 'https://serfe.test/es/product.md', Discovery::markdown_url( 'https://serfe.test/es/product/' ), 'Builds Markdown discovery URL' );
 $assert_same( 'https://serfe.test/es/product.md', Discovery::markdown_url( 'https://serfe.test/es/product' ), 'Builds Markdown discovery URL without trailing slash' );
 $assert_same( '"Hello \\"world\\""', Markdown::yaml_scalar( " Hello\n\"world\" " ), 'Escapes YAML scalar' );

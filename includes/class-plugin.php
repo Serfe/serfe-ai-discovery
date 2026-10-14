@@ -69,6 +69,7 @@ final class Plugin {
 		$this->readiness->register_hooks();
 		$this->settings->register_hooks();
 		$this->discovery_files_admin->register_hooks();
+		Discovery_Files::register_hooks();
 		$this->markdown_cache->register_hooks();
 	}
 

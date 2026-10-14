@@ -15,6 +15,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Updated GitHub support links and public compatibility documentation for the canonical [Serfe repository](https://github.com/Serfe/serfe-ai-discovery).
 - Derived asset cache versions from the plugin header and replaced release-specific documentation with version-neutral references.
+- In WordPress Multisite, each site now stores and serves its own virtual robots.txt and llms.txt response without writing to the shared filesystem.
+
+### Fixed
+
+- Kept `PATH_INFO` aligned with explicit `.md` requests so Markdown routes resolve on WordPress Multisite subdirectory sites.
 
 ## [1.0.11] - 2026-10-12
 

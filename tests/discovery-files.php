@@ -72,6 +72,18 @@ function get_current_user_id() {
 	return 7;
 }
 
+function is_multisite() {
+	return ! empty( $GLOBALS['test_multisite'] );
+}
+
+function get_current_blog_id() {
+	return isset( $GLOBALS['test_blog_id'] ) ? $GLOBALS['test_blog_id'] : 1;
+}
+
+function get_main_site_id() {
+	return 1;
+}
+
 function wp_safe_remote_get( $url, $args ) {
 	if ( false !== strpos( $url, 'sitemap.xml' ) ) {
 		$GLOBALS['test_sitemap_gets'][] = $url;
@@ -80,6 +92,10 @@ function wp_safe_remote_get( $url, $args ) {
 	$path = $GLOBALS['test_root'] . '/' . basename( $url );
 	$GLOBALS['test_public_gets'][] = $url;
 	if ( ! file_exists( $path ) ) {
+		$virtual_key = 'serfe_ai_discovery_' . str_replace( '.', '_', basename( $url ) ) . '_virtual';
+		if ( ! empty( $GLOBALS['test_multisite'] ) && isset( $GLOBALS['test_options'][ $virtual_key ] ) ) {
+			return array( 'code' => 200, 'body' => $GLOBALS['test_options'][ $virtual_key ], 'content_type' => 'text/plain; charset=utf-8' );
+		}
 		return 'robots.txt' === basename( $url ) && isset( $GLOBALS['test_virtual_robots'] )
 			? array( 'code' => 200, 'body' => $GLOBALS['test_virtual_robots'], 'content_type' => 'text/plain; charset=utf-8' )
 			: array( 'code' => 404, 'body' => '', 'content_type' => 'text/html' );
@@ -138,6 +154,13 @@ $assert_error( 'file_too_large', Discovery_Files::normalize_content( 'Hello' ), 
 unset( $GLOBALS['test_size_limit'] );
 
 $assert_error( 'invalid_name', Discovery_Files::inspect( '../secret' ), 'Restricts names to fixed public files' );
+$GLOBALS['test_multisite'] = true;
+$GLOBALS['test_blog_id']   = 2;
+$result = Discovery_Files::publish( 'llms.txt', "# Subsite\n" );
+$assert_same( true, $result['verified'], 'Publishes a virtual discovery file from a Multisite subsite' );
+$assert_same( "# Subsite\n", get_option( 'serfe_ai_discovery_llms_txt_virtual' ), 'Stores the Multisite file in the current site options' );
+$assert_same( false, file_exists( $base . '/llms.txt' ), 'Does not write a Multisite discovery file to the shared public root' );
+unset( $GLOBALS['test_multisite'], $GLOBALS['test_blog_id'] );
 $GLOBALS['test_can_manage'] = false;
 $assert_error( 'forbidden', Discovery_Files::publish( 'robots.txt', 'User-agent: *' ), 'Requires administrator capability' );
 $GLOBALS['test_can_manage'] = true;

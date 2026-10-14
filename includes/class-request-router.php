@@ -24,6 +24,11 @@ final class Request_Router {
 			$this->markdown_request = true;
 			add_filter( 'woocommerce_set_cookie_enabled', '__return_false', 99 );
 			$_SERVER['REQUEST_URI'] = self::underlying_uri( $uri );
+			// Keep PATH_INFO in sync. WordPress prefers it over REQUEST_URI when
+			// parsing pretty permalinks, including in a Multisite subdirectory.
+			if ( isset( $_SERVER['PATH_INFO'] ) && is_string( $_SERVER['PATH_INFO'] ) ) {
+				$_SERVER['PATH_INFO'] = self::underlying_path( wp_unslash( $_SERVER['PATH_INFO'] ) );
+			}
 			return;
 		}
 
@@ -88,9 +93,14 @@ final class Request_Router {
 	/** @param string $uri Markdown request URI. @return string */
 	public static function underlying_uri( $uri ) {
 		$path  = (string) wp_parse_url( (string) $uri, PHP_URL_PATH );
-		$clean = preg_replace( '#\.md/?$#', '/', $path );
+		$clean = self::underlying_path( $path );
 		$query = (string) wp_parse_url( (string) $uri, PHP_URL_QUERY );
 
 		return $clean . ( '' !== $query ? '?' . $query : '' );
+	}
+
+	/** @param string $path Markdown request path without a query string. @return string */
+	public static function underlying_path( $path ) {
+		return (string) preg_replace( '#\.md/?$#', '/', (string) $path );
 	}
 }

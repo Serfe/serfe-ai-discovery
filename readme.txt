@@ -61,6 +61,8 @@ The plugin helps establish technical foundations. No plugin can guarantee appear
 
 The plugin helps you review, validate, and publish crawler instructions through `robots.txt`. They complement your SEO configuration, each crawler interprets them independently, and they are not a security or access-control mechanism.
 
+On WordPress Multisite, each site stores and serves its own virtual `robots.txt` and `llms.txt` response without writing to the shared filesystem. Markdown and API Catalog settings also remain configurable per site.
+
 = What are AI discovery signals? =
 
 They are machine-readable files, headers, and public endpoints that help automated systems find and understand your website. This plugin supports `robots.txt`, `llms.txt`, Markdown alternatives, Link headers, and an optional API Catalog. Provider support varies.
