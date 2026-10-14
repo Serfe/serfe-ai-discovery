@@ -9,6 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Added WordPress integration smoke checks for each supported minor version from 6.2 through 7.1.
+- Added PHP 8.5 to the automated source-test matrix.
 
 ### Changed
 

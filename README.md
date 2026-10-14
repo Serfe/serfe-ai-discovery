@@ -52,7 +52,7 @@ Eligible HTML pages include a link to their Markdown alternative:
 ## Requirements
 
 - **WordPress:** 6.2 or later. The integration workflow is configured to check WordPress 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 7.0, and 7.1.
-- **PHP:** 7.4 or higher (tested across PHP 7.4, 8.1, and 8.4).
+- **PHP:** 7.4 or higher (tested across PHP 7.4, 8.1, 8.4, and 8.5).
 
 ---
 

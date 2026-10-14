@@ -72,7 +72,12 @@ foreach ( array( 1, 2, 3, 4 ) as $screenshot ) {
 $phpstan_neon = file_get_contents( dirname( __DIR__ ) . '/phpstan.neon.dist' );
 $assert_true( false !== strpos( $phpstan_neon, 'phpVersion: 70400' ), 'phpstan.neon.dist targets PHP 7.4 (phpVersion: 70400)' );
 
-// 5. Test compatibility matrix across WordPress 6.2 to 7.1 versions.
+// 5. Confirm the source-test workflow covers each supported PHP test version.
+$workflow_file = file_get_contents( dirname( __DIR__ ) . '/.github/workflows/source-checks.yml' );
+$assert_true( false !== $workflow_file, 'source-checks workflow is readable' );
+$assert_true( false !== strpos( $workflow_file, "'8.5'" ), 'source-checks workflow includes PHP 8.5' );
+
+// 6. Test compatibility matrix across WordPress 6.2 to 7.1 versions.
 $supported_wp_versions = array( '6.2', '6.2.2', '6.3', '6.3.2', '6.4', '6.4.3', '6.5', '6.5.5', '6.6', '6.6.2', '6.7', '7.0', '7.1' );
 
 foreach ( $supported_wp_versions as $wp_version ) {
@@ -82,7 +87,7 @@ foreach ( $supported_wp_versions as $wp_version ) {
 	);
 }
 
-// 6. Test syntax and no usage of PHP 8.0+ specific functions in production includes.
+// 7. Test syntax and no usage of PHP 8.0+ specific functions in production includes.
 $php8_only_functions = array( 'str_contains', 'str_starts_with', 'str_ends_with', 'get_debug_type', 'fdiv' );
 $includes_dir        = dirname( __DIR__ ) . '/includes';
 $php_files           = glob( $includes_dir . '/*.php' );
