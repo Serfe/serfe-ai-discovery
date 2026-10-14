@@ -410,10 +410,10 @@ final class Discovery_Files {
 		if ( is_wp_error( $current ) ) {
 			return $current;
 		}
-		$stored    = get_option( self::content_key( $name ), false );
+		$stored     = get_option( self::content_key( $name ), false );
 		$has_stored = is_string( $stored );
-		$known     = isset( $current['meta']['checksum'] ) ? $current['meta']['checksum'] : '';
-		$conflict  = $has_stored && $known !== $current['checksum'];
+		$known      = isset( $current['meta']['checksum'] ) ? $current['meta']['checksum'] : '';
+		$conflict   = $has_stored && $known !== $current['checksum'];
 		if ( $conflict && ! $takeover ) {
 			return new \WP_Error( 'takeover_required', __( 'The virtual public file changed outside this plugin. Review it and confirm takeover before publishing.', 'serfe-ai-discovery' ) );
 		}
