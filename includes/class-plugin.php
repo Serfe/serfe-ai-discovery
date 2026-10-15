@@ -73,6 +73,36 @@ final class Plugin {
 		$this->markdown_cache->register_hooks();
 		Cache_Integrations::register_hooks();
 		Cache_Integrations::sync_rocket_config();
+		add_filter( 'plugin_action_links_' . plugin_basename( SERFE_AI_DISCOVERY_PATH . 'serfe-ai-discovery.php' ), array( $this, 'plugin_action_links' ) );
+		add_filter( 'plugin_row_meta', array( $this, 'plugin_row_meta' ), 10, 2 );
+	}
+
+	/** Add the settings shortcut to this plugin's row in Plugins. */
+	public function plugin_action_links( $links ) {
+		$settings_link = sprintf(
+			'<a href="%s">%s</a>',
+			esc_url( admin_url( 'admin.php?page=' . Settings::PAGE ) ),
+			esc_html__( 'Settings', 'serfe-ai-discovery' )
+		);
+
+		array_unshift( $links, $settings_link );
+
+		return $links;
+	}
+
+	/** Add the community support link to this plugin's metadata in Plugins. */
+	public function plugin_row_meta( $links, $file ) {
+		if ( plugin_basename( SERFE_AI_DISCOVERY_PATH . 'serfe-ai-discovery.php' ) !== $file ) {
+			return $links;
+		}
+
+		$links[] = sprintf(
+			'<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+			esc_url( 'https://github.com/Serfe/serfe-ai-discovery' ),
+			esc_html__( 'Community support', 'serfe-ai-discovery' )
+		);
+
+		return $links;
 	}
 
 	/** Render the resolved object when this is a Markdown request. */

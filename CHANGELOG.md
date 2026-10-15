@@ -6,13 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.0.12] - 2026-10-15
+
 ### Added
 
 - Added WordPress integration smoke checks for each supported minor version from 6.2 through 7.1.
 - Added PHP 8.5 to the automated source-test matrix.
+- Added Settings and Community support links to the plugin row in WordPress administration.
 
 ### Changed
 
+- Linked the plugin author name in WordPress administration to the Serfe website.
 - Updated GitHub support links and public compatibility documentation for the canonical [Serfe repository](https://github.com/Serfe/serfe-ai-discovery).
 - Derived asset cache versions from the plugin header and replaced release-specific documentation with version-neutral references.
 - In WordPress Multisite, each site now stores and serves its own virtual robots.txt and llms.txt response without writing to the shared filesystem.

@@ -2,8 +2,9 @@
 /**
  * Plugin Name: Serfe AI Discovery
  * Description: Publishes approved public WordPress content as alternative Markdown and discovery signals.
- * Author: Serfe <info@serfe.com>
- * Version: 1.0.11
+ * Author: Serfe
+ * Author URI: https://www.serfe.com/en/
+ * Version: 1.0.12
  * Requires at least: 6.2
  * Requires PHP: 7.4
  * License: GPLv2 or later
