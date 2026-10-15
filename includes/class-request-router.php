@@ -47,8 +47,10 @@ final class Request_Router {
 			return;
 		}
 
-		$format   = isset( $_GET['format'] ) ? sanitize_text_field( wp_unslash( $_GET['format'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$query_md = ( isset( $_GET['markdown'] ) && '1' === (string) $_GET['markdown'] ) || 'markdown' === $format; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$format = isset( $_GET['format'] ) ? sanitize_text_field( wp_unslash( $_GET['format'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public read-only query var used for content negotiation.
+		$query_markdown = isset( $_GET['markdown'] ) ? sanitize_text_field( wp_unslash( $_GET['markdown'] ) ) : '';
+		$query_md       = '1' === $query_markdown || 'markdown' === $format;
 		if ( self::is_negotiable_uri( $uri ) && $query_md ) {
 			$this->markdown_request = true;
 			if ( class_exists( __NAMESPACE__ . '\Cache_Integrations' ) ) {

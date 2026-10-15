@@ -23,6 +23,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Sanitized the public Markdown query parameter before evaluating content negotiation.
+- Documented the required standard cache-plugin constants to prevent false-positive WordPress coding-standard warnings.
 - Kept `PATH_INFO` aligned with explicit `.md` requests so Markdown routes resolve on WordPress Multisite subdirectory sites.
 - Added documented WPCS exceptions for encoded request paths that are parsed internally and never rendered.
 

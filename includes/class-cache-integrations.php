@@ -81,12 +81,15 @@ final class Cache_Integrations {
 	 */
 	public static function disable_page_caching() {
 		if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Standard page-cache interoperability constant.
 			define( 'DONOTCACHEPAGE', true );
 		}
 		if ( ! defined( 'DONOTROCKETOPTIMIZE' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Standard WP Rocket interoperability constant.
 			define( 'DONOTROCKETOPTIMIZE', true );
 		}
 		if ( ! defined( 'DONOTMINIFY' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Standard minification-plugin interoperability constant.
 			define( 'DONOTMINIFY', true );
 		}
 	}
