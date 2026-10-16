@@ -1,0 +1,78 @@
+.serfe-content-signals {
+	margin: 20px 0;
+	padding: 16px;
+	border: 1px solid #c3c4c7;
+	border-left: 4px solid #2271b1;
+	background: #f6f7f7;
+}
+
+.serfe-content-signals h3 {
+	margin-top: 0;
+}
+
+.serfe-content-signals textarea {
+	margin-top: 8px;
+	transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.serfe-content-signals textarea.is-updated {
+	border-color: #00a32a;
+	box-shadow: 0 0 0 1px #00a32a;
+	background-color: #edfaef;
+}
+
+.serfe-copy-icon {
+	display: inline-block;
+	min-width: 1em;
+	transition: transform 160ms ease;
+}
+
+[data-serfe-copy-file].is-copied .serfe-copy-icon {
+	transform: scale( 1.2 );
+}
+
+.serfe-protect-icon {
+	display: inline-block;
+	min-width: 1em;
+	transition: transform 160ms ease;
+}
+
+[data-serfe-protect-section].is-updated .serfe-protect-icon {
+	transform: scale( 1.2 );
+}
+
+.serfe-file-advanced {
+	margin-top: 20px;
+	padding-top: 12px;
+	border-top: 1px solid #dcdcde;
+}
+
+.serfe-file-editor-introduction {
+	margin-top: 24px;
+}
+
+.serfe-file-editor-introduction h3 {
+	margin-bottom: 4px;
+}
+
+.serfe-file-editor-introduction p {
+	margin-top: 0;
+}
+
+.serfe-insert-template.button {
+	border-color: #008a20;
+	background: #00a32a;
+	color: #fff;
+}
+
+.serfe-insert-template.button:hover,
+.serfe-insert-template.button:focus {
+	border-color: #006e1a;
+	background: #008a20;
+	color: #fff;
+}
+
+.serfe-file-advanced > summary {
+	cursor: pointer;
+	font-weight: 600;
+}

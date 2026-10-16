@@ -8,9 +8,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** Safely publishes the two public-root discovery files. */
 final class Discovery_Files {
-	const MAX_BYTES    = 131072;
-	const MAX_LIMIT    = 1048576;
-	const MAX_SITEMAPS = 5;
+	const MAX_BYTES           = 131072;
+	const MAX_LIMIT           = 1048576;
+	const MAX_SITEMAPS        = 5;
+	const CONTENT_SIGNALS_KEY = 'serfe_ai_discovery_virtual_robots_content_signals';
 
 	/** Multisite sites use per-blog virtual files; a physical root is shared. */
 	public static function uses_virtual_storage() {
@@ -20,6 +21,57 @@ final class Discovery_Files {
 	/** Register virtual public files before WordPress renders a 404 or core robots response. */
 	public static function register_hooks() {
 		add_action( 'template_redirect', array( __CLASS__, 'serve_virtual_file' ), -100 );
+		if ( self::content_signals_enabled() ) {
+			add_filter( 'robots_txt', array( __CLASS__, 'add_content_signals' ), 9999 );
+		}
+	}
+
+	/** Whether Content Signals are appended to WordPress's virtual robots.txt response. */
+	public static function content_signals_enabled() {
+		return (bool) get_option( self::CONTENT_SIGNALS_KEY, false );
+	}
+
+	/** Append this plugin's marked Content Signals block to a virtual robots.txt response. */
+	public static function add_content_signals( $robots ) {
+		if ( ! is_string( $robots ) || false !== strpos( $robots, '# START SERFE BLOCK' ) ) {
+			return $robots;
+		}
+		return rtrim( $robots ) . "\n\n" . self::content_signals_block() . "\n";
+	}
+
+	/** Return the reviewed, site-wide Content Signals block. */
+	public static function content_signals_block() {
+		return "# START SERFE BLOCK\n# ---------------------------\n# Allow unfettered access to your / page\nUser-Agent: *\nContent-Signal: / ai-train=yes, search=yes, ai-input=yes\nAllow: /\n\n# ---------------------------\n# END SERFE BLOCK";
+	}
+
+	/** Enable Content Signals only after confirming that WordPress serves a virtual robots.txt. */
+	public static function enable_virtual_content_signals() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new \WP_Error( 'forbidden', __( 'You are not allowed to manage Content Signals.', 'serfe-ai-discovery' ) );
+		}
+		$physical = self::physical_file_exists( 'robots.txt' );
+		if ( is_wp_error( $physical ) ) {
+			return $physical;
+		}
+		if ( $physical ) {
+			return new \WP_Error( 'physical_robots_exists', __( 'A physical robots.txt file exists. Edit it through Advanced file management or the plugin that manages it.', 'serfe-ai-discovery' ) );
+		}
+		if ( self::uses_virtual_storage() && is_string( get_option( self::content_key( 'robots.txt' ), false ) ) ) {
+			return new \WP_Error( 'serfe_virtual_robots', __( 'This site already serves a virtual robots.txt managed by Serfe. Edit its content through Advanced file management.', 'serfe-ai-discovery' ) );
+		}
+		$public = self::inspect_public_response( 'robots.txt' );
+		if ( is_wp_error( $public ) ) {
+			return $public;
+		}
+		if ( ! $public['exists'] ) {
+			return new \WP_Error( 'virtual_robots_missing', __( 'No virtual robots.txt response was found. Create or enable one before adding Content Signals automatically.', 'serfe-ai-discovery' ) );
+		}
+		update_option( self::CONTENT_SIGNALS_KEY, true, false );
+		return array(
+			'verified' => true,
+			'warnings' => array(),
+			'url'      => home_url( '/robots.txt' ),
+		);
 	}
 
 	/** Serve a Multisite blog's saved discovery file at its own public URL. */
@@ -145,6 +197,18 @@ final class Discovery_Files {
 		);
 	}
 
+	/** Check only the fixed, public-root path without reading or changing it. */
+	public static function physical_file_exists( $name ) {
+		$path = self::path( $name );
+		if ( is_wp_error( $path ) ) {
+			return $path;
+		}
+		if ( is_link( $path ) || ( file_exists( $path ) && ! is_file( $path ) ) ) {
+			return new \WP_Error( 'unsafe_file', __( 'The public path is not a regular file.', 'serfe-ai-discovery' ) );
+		}
+		return file_exists( $path );
+	}
+
 	/** Inspect a public response only after an administrator explicitly requests validation or publication. */
 	public static function inspect_public_response( $name ) {
 		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) || ! current_user_can( 'manage_options' ) ) {
@@ -190,6 +254,28 @@ final class Discovery_Files {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return new \WP_Error( 'forbidden', __( 'You are not allowed to publish discovery files.', 'serfe-ai-discovery' ) );
 		}
+		return self::publish_content( $name, $candidate, $takeover, $expected_checksum );
+	}
+
+	/** Regenerate only an unchanged llms.txt file that Serfe already manages. */
+	public static function regenerate_managed_llms( $candidate, $expected_checksum ) {
+		$content = self::normalize_content( $candidate );
+		if ( is_wp_error( $content ) ) {
+			return $content;
+		}
+		$state = self::inspect( 'llms.txt' );
+		if ( is_wp_error( $state ) ) {
+			return $state;
+		}
+		$known = isset( $state['meta']['checksum'] ) ? (string) $state['meta']['checksum'] : '';
+		if ( '' === $known || ! hash_equals( $known, $state['checksum'] ) || ! hash_equals( $state['checksum'], (string) $expected_checksum ) ) {
+			return new \WP_Error( 'stale_file', __( 'The llms.txt file changed since this regeneration was scheduled. Review it before scheduling another update.', 'serfe-ai-discovery' ) );
+		}
+		return self::publish_content( 'llms.txt', $content, true, $expected_checksum );
+	}
+
+	/** Publish content after the caller has performed its capability or ownership checks. */
+	private static function publish_content( $name, $candidate, $takeover = false, $expected_checksum = '' ) {
 		$content = self::normalize_content( $candidate );
 		if ( is_wp_error( $content ) ) {
 			return $content;
@@ -281,7 +367,7 @@ final class Discovery_Files {
 		if ( 'llms.txt' === $name && class_exists( __NAMESPACE__ . '\\Readiness' ) ) {
 			delete_transient( Readiness::LINK_HEADERS_CACHE_KEY );
 		}
-		$check = self::validate_current( $name );
+		$check = self::validate_current( $name, true );
 		$url   = home_url( '/' . $name );
 		return array(
 			'checksum' => $checksum,
@@ -292,8 +378,8 @@ final class Discovery_Files {
 	}
 
 	/** Check the current public response and declared sitemap URLs only on an admin action. */
-	public static function validate_current( $name ) {
-		if ( ! current_user_can( 'manage_options' ) ) {
+	public static function validate_current( $name, $trusted = false ) {
+		if ( ! $trusted && ! current_user_can( 'manage_options' ) ) {
 			return new \WP_Error( 'forbidden', __( 'You are not allowed to validate discovery files.', 'serfe-ai-discovery' ) );
 		}
 		$state = self::inspect( $name );
@@ -404,6 +490,35 @@ final class Discovery_Files {
 		return self::publish( $name, $backup, $takeover, $expected_checksum );
 	}
 
+	/** Stop managing a physical file without changing its current contents. */
+	public static function release_control( $name, $expected_checksum = '' ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new \WP_Error( 'forbidden', __( 'You are not allowed to release discovery files.', 'serfe-ai-discovery' ) );
+		}
+		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) ) {
+			return new \WP_Error( 'invalid_name', __( 'Only robots.txt and llms.txt can be released.', 'serfe-ai-discovery' ) );
+		}
+		if ( self::uses_virtual_storage() ) {
+			return new \WP_Error( 'virtual_release_unsupported', __( 'This virtual file remains served by Serfe until its content is removed. Releasing it without changing the public response is not available.', 'serfe-ai-discovery' ) );
+		}
+		$state = self::inspect( $name );
+		if ( is_wp_error( $state ) ) {
+			return $state;
+		}
+		$known = isset( $state['meta']['checksum'] ) ? (string) $state['meta']['checksum'] : '';
+		if ( '' === $known || ! hash_equals( $known, $state['checksum'] ) || ! hash_equals( $state['checksum'], (string) $expected_checksum ) ) {
+			return new \WP_Error( 'stale_file', __( 'The public file changed since Serfe last managed it. Review the current content before releasing control.', 'serfe-ai-discovery' ) );
+		}
+		delete_option( self::meta_key( $name ) );
+		delete_option( self::backup_key( $name ) );
+		return array(
+			'checksum' => $state['checksum'],
+			'verified' => true,
+			'warnings' => array(),
+			'url'      => home_url( '/' . $name ),
+		);
+	}
+
 	/** Store a Multisite blog's discovery file without touching the shared filesystem. */
 	private static function publish_virtual( $name, $content, $takeover, $expected_checksum ) {
 		$current = self::inspect( $name );
@@ -448,7 +563,7 @@ final class Discovery_Files {
 		if ( 'llms.txt' === $name && class_exists( __NAMESPACE__ . '\\Readiness' ) ) {
 			delete_transient( Readiness::LINK_HEADERS_CACHE_KEY );
 		}
-		$check = self::validate_current( $name );
+		$check = self::validate_current( $name, true );
 		return array(
 			'checksum' => $checksum,
 			'verified' => ! is_wp_error( $check ) && $check['verified'],

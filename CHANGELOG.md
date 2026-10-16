@@ -6,6 +6,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.0.13] - 2026-10-16
+
+### Added
+
+- Added an opt-in WordPress virtual `robots.txt` integration that appends the Serfe Content Signals block without creating a physical file, after validating the active public virtual response.
+- Added AIOSEO detection and its robots.txt editor guidance alongside Rank Math and Yoast SEO support.
+- Added interactive manual Content Signals controls, including section-level AI-training protection, copy feedback, and a visual confirmation when the generated block changes.
+- Added a visible Advanced file editor introduction and safe release of physical-file management state.
+- Added an llms.txt starter template built from the WordPress site title and tagline, up to 80 eligible public Pages, Posts, Custom Post Types, WooCommerce Products, and top-level product categories.
+- Added the WooCommerce Shop URL and detected Yoast SEO, Rank Math, or AIOSEO XML sitemap indexes to the generated llms.txt starter template.
+- Added a deferred WP-Cron action for regenerating a Serfe-managed llms.txt with the complete eligible public inventory, with status feedback and WP-Cron guidance.
+
+### Changed
+
+- Made robots.txt file management an explicitly labeled advanced editor while keeping virtual and manual Content Signals controls accessible first.
+- Added cache-busting asset versions based on bundled asset modification times so updated admin interactions load reliably during in-place updates.
+
 ## [1.0.12] - 2026-10-15
 
 ### Added
@@ -13,10 +30,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added WordPress integration smoke checks for each supported minor version from 6.2 through 7.1.
 - Added PHP 8.5 to the automated source-test matrix.
 - Added Settings and Community support links to the plugin row in WordPress administration.
+- Added a copyable Content Signals block for manual use in physical or virtual robots.txt editors, including Rank Math and Yoast SEO.
+- Added optional AI-training protection for a manually selected robots.txt section, with the configured posts page as a path suggestion.
 
 ### Changed
 
 - Linked the plugin author name in WordPress administration to the Serfe website.
+- Made physical robots.txt management an advanced option while keeping Content Signals independent from file ownership.
+- Added a non-destructive control-release action that removes Serfe file-management state without changing the physical file.
 - Updated GitHub support links and public compatibility documentation for the canonical [Serfe repository](https://github.com/Serfe/serfe-ai-discovery).
 - Derived asset cache versions from the plugin header and replaced release-specific documentation with version-neutral references.
 - In WordPress Multisite, each site now stores and serves its own virtual robots.txt and llms.txt response without writing to the shared filesystem.

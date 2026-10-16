@@ -27,8 +27,8 @@ function __( $text ) {
 	return $text;
 }
 
-function wp_parse_url( $url ) {
-	return parse_url( $url );
+function wp_parse_url( $url, $component = -1 ) {
+	return parse_url( $url, $component );
 }
 
 function trailingslashit( $value ) {
@@ -61,6 +61,11 @@ function get_option( $name, $default = false ) {
 
 function update_option( $name, $value, $autoload = null ) {
 	$GLOBALS['test_options'][ $name ] = $value;
+	return true;
+}
+
+function delete_option( $name ) {
+	unset( $GLOBALS['test_options'][ $name ] );
 	return true;
 }
 
@@ -124,6 +129,9 @@ require_once dirname( __DIR__ ) . '/includes/class-discovery-files.php';
 
 use Serfe\AI_Discovery\Discovery_Files;
 
+define( 'AIOSEO_VERSION', '4.0.0' );
+define( 'WC_VERSION', '10.0.0' );
+
 $GLOBALS['test_root']       = $base;
 $GLOBALS['test_options']    = array();
 $GLOBALS['test_can_manage'] = true;
@@ -172,6 +180,13 @@ $assert_same( array(), $GLOBALS['test_public_gets'], 'Does not make a loopback r
 $virtual = Discovery_Files::validate_current( 'robots.txt' );
 $assert_same( true, $virtual['virtual'], 'Validation detects virtual robots.txt' );
 $assert_same( $GLOBALS['test_virtual_robots'], $virtual['content'], 'Validation returns the effective public content' );
+$enabled = Discovery_Files::enable_virtual_content_signals();
+$assert_same( true, $enabled['verified'], 'Enables Content Signals for a validated virtual robots.txt response' );
+$assert_same( true, Discovery_Files::content_signals_enabled(), 'Stores the virtual Content Signals setting' );
+$signals = Discovery_Files::add_content_signals( "User-agent: *\n" );
+$assert_same( true, false !== strpos( $signals, '# START SERFE BLOCK' ), 'Appends the Content Signals block through the robots_txt filter' );
+$assert_same( $signals, Discovery_Files::add_content_signals( $signals ), 'Does not append a duplicate Content Signals block' );
+delete_option( Discovery_Files::CONTENT_SIGNALS_KEY );
 $assert_error( 'takeover_required', Discovery_Files::publish( 'robots.txt', "User-agent: *\n", false, $virtual['checksum'] ), 'Rejects silent replacement of virtual robots.txt' );
 $assert_error( 'stale_file', Discovery_Files::publish( 'robots.txt', "User-agent: *\n", true, 'wrong' ), 'Rejects stale virtual takeover confirmation' );
 unset( $GLOBALS['test_virtual_robots'] );
@@ -237,6 +252,11 @@ $changed = Discovery_Files::inspect( 'robots.txt' );
 $result  = Discovery_Files::restore( 'robots.txt', true, $changed['checksum'] );
 $assert_same( true, $result['verified'], 'Restores after explicit takeover' );
 $assert_same( $current['content'], file_get_contents( $base . '/robots.txt' ), 'Restores the previous content' );
+$released = Discovery_Files::release_control( 'robots.txt', hash( 'sha256', $current['content'] ) );
+$assert_same( true, $released['verified'], 'Releases Serfe control of an unchanged physical file' );
+$assert_same( $current['content'], file_get_contents( $base . '/robots.txt' ), 'Release does not change the physical file' );
+$assert_same( false, get_option( 'serfe_ai_discovery_robots_txt_meta', false ), 'Release removes Serfe file metadata' );
+$assert_same( false, get_option( 'serfe_ai_discovery_robots_txt_backup', false ), 'Release removes the Serfe backup' );
 $assert_error( 'invalid_name', Discovery_Files::restore( '../secret' ), 'Restricts restore to fixed public files' );
 
 unlink( $base . '/llms.txt' );
@@ -327,6 +347,68 @@ if ( ! function_exists( 'admin_url' ) ) {
 		return 'https://example.com/wp-admin/' . $path;
 	}
 }
+if ( ! function_exists( 'get_post' ) ) {
+	function get_post( $post_id ) {
+		return 42 === (int) $post_id ? (object) array( 'ID' => 42, 'post_name' => 'blog' ) : null;
+	}
+}
+if ( ! function_exists( 'get_permalink' ) ) {
+	function get_permalink( $post ) {
+		if ( is_numeric( $post ) ) {
+			return home_url( 42 === (int) $post ? '/blog/' : '/shop/' );
+		}
+		return home_url( '/' . $post->post_name . '/' );
+	}
+}
+if ( ! function_exists( 'get_bloginfo' ) ) {
+	function get_bloginfo( $show = '' ) {
+		return 'name' === $show ? 'Example Store' : ( 'description' === $show ? 'Useful public resources for customers.' : '' );
+	}
+}
+if ( ! function_exists( 'get_posts' ) ) {
+	function get_posts( $args ) {
+		$posts = array(
+			'page'      => array( (object) array( 'post_name' => 'about', 'post_title' => 'About us' ) ),
+			'post'      => array( (object) array( 'post_name' => 'news', 'post_title' => 'Latest news' ) ),
+			'portfolio' => array( (object) array( 'post_name' => 'case-study', 'post_title' => 'Case study' ) ),
+			'product'   => array( (object) array( 'post_name' => 'example-product', 'post_title' => 'Example product' ) ),
+		);
+		return isset( $posts[ $args['post_type'] ] ) ? $posts[ $args['post_type'] ] : array();
+	}
+}
+if ( ! function_exists( 'get_post_types' ) ) {
+	function get_post_types( $args, $output = 'names' ) {
+		return array(
+			'portfolio' => (object) array( 'name' => 'portfolio', 'labels' => (object) array( 'name' => 'Portfolios' ) ),
+			'product'   => (object) array( 'name' => 'product', 'labels' => (object) array( 'name' => 'Products' ) ),
+		);
+	}
+}
+if ( ! function_exists( 'get_the_title' ) ) {
+	function get_the_title( $post ) {
+		return is_object( $post ) ? $post->post_title : ( 42 === (int) $post ? 'Blog' : 'Shop' );
+	}
+}
+if ( ! function_exists( 'get_terms' ) ) {
+	function get_terms( $args ) {
+		return array( (object) array( 'name' => 'Featured products', 'slug' => 'featured-products' ) );
+	}
+}
+if ( ! function_exists( 'get_term_link' ) ) {
+	function get_term_link( $term ) {
+		return home_url( '/product-category/' . $term->slug . '/' );
+	}
+}
+if ( ! function_exists( 'wc_get_page_id' ) ) {
+	function wc_get_page_id( $page ) {
+		return 'shop' === $page ? 43 : -1;
+	}
+}
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	function wp_strip_all_tags( $text ) {
+		return strip_tags( $text );
+	}
+}
 if ( ! function_exists( 'add_query_arg' ) ) {
 	function add_query_arg( $args, $url = '' ) {
 		return $url . '?' . http_build_query( $args );
@@ -362,11 +444,20 @@ if ( ! function_exists( 'wp_safe_redirect' ) ) {
 
 $admin = new Discovery_Files_Admin();
 
+$GLOBALS['test_options']['show_on_front']      = 'page';
+$GLOBALS['test_options']['page_for_posts']     = 42;
+$GLOBALS['test_options']['permalink_structure'] = '/%postname%/';
 ob_start();
 $admin->render_robots_tab();
 $robots_output = ob_get_clean();
 $assert_same( true, strpos( $robots_output, 'Why robots.txt matters' ) !== false, 'Renders dedicated Robots.txt tab heading' );
 $assert_same( true, strpos( $robots_output, 'robots.txt' ) !== false, 'Includes robots.txt editor' );
+$assert_same( true, strpos( $robots_output, 'Update signals manually in your current robots.txt' ) !== false, 'Renders the manual Content Signals block' );
+$assert_same( true, strpos( $robots_output, 'data-serfe-copy-file="serfe-robots-content-signals"' ) !== false, 'Renders a copy control for Content Signals' );
+$assert_same( true, strpos( $robots_output, 'Protect section from AI-Train' ) !== false, 'Renders the section protection control' );
+$assert_same( true, strpos( $robots_output, 'value="/blog/"' ) !== false, 'Uses the configured posts page as the suggested section path' );
+$assert_same( true, strpos( $robots_output, 'All in One SEO' ) !== false, 'Recognizes AIOSEO as a virtual robots.txt editor' );
+$assert_same( true, strpos( $robots_output, 'Advanced file editor' ) !== false, 'Introduces the advanced file editor before its collapsed controls' );
 $assert_same( false, strpos( $robots_output, 'Why llms.txt matters' ), 'Robots tab does not render llms.txt' );
 
 ob_start();
@@ -375,6 +466,26 @@ $llms_output = ob_get_clean();
 $assert_same( true, strpos( $llms_output, 'Why llms.txt matters' ) !== false, 'Renders dedicated llms.txt tab heading' );
 $assert_same( true, strpos( $llms_output, 'llms.txt' ) !== false, 'Includes llms.txt editor' );
 $assert_same( false, strpos( $llms_output, 'Why robots.txt matters' ), 'llms tab does not render robots.txt' );
+
+$_POST = array(
+	'file' => 'llms.txt',
+	'mode' => 'template',
+);
+$GLOBALS['test_redirect_url'] = '';
+try {
+	$admin->handle_action();
+} catch ( \Exception $e ) {}
+$template_notice = $GLOBALS['test_transients']['serfe_ai_discovery_file_notice_7'];
+$template        = $template_notice['candidate'];
+$assert_same( true, strpos( $template, '# Example Store' ) !== false, 'Builds the llms.txt title from the WordPress site title' );
+$assert_same( true, strpos( $template, 'Useful public resources for customers.' ) !== false, 'Builds the llms.txt description from the WordPress tagline' );
+$assert_same( true, strpos( $template, '## Pages' ) !== false && strpos( $template, '/about/' ) !== false, 'Lists public pages in the llms.txt draft' );
+$assert_same( true, strpos( $template, '## Posts' ) !== false && strpos( $template, '/news/' ) !== false, 'Lists public posts in the llms.txt draft' );
+$assert_same( true, strpos( $template, '## Portfolios' ) !== false && strpos( $template, '/case-study/' ) !== false, 'Lists public custom post types in the llms.txt draft' );
+$assert_same( true, strpos( $template, '## Products' ) !== false && strpos( $template, '/example-product/' ) !== false, 'Lists WooCommerce products separately in the llms.txt draft' );
+$assert_same( true, strpos( $template, '## Shop' ) !== false && strpos( $template, '/shop/' ) !== false, 'Lists the WooCommerce shop in the llms.txt draft' );
+$assert_same( true, strpos( $template, '## Product categories' ) !== false && strpos( $template, '/product-category/featured-products/' ) !== false, 'Lists top-level WooCommerce categories in the llms.txt draft' );
+$assert_same( true, strpos( $template, 'All in One SEO XML Sitemap' ) !== false && strpos( $template, '/sitemap.xml' ) !== false, 'Lists the AIOSEO XML sitemap in the llms.txt draft' );
 
 $_POST = array(
 	'file' => 'robots.txt',
