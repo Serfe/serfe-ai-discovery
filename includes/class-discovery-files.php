@@ -18,6 +18,21 @@ final class Discovery_Files {
 		return function_exists( 'is_multisite' ) && is_multisite();
 	}
 
+	/** Build a discovery-file URL from WordPress's configured public home URL. */
+	public static function root_url( $path = '/' ) {
+		$home  = get_option( 'home' );
+		$parts = is_string( $home ) ? wp_parse_url( $home ) : false;
+		if ( ! is_array( $parts ) || empty( $parts['scheme'] ) || empty( $parts['host'] ) ) {
+			return home_url( $path );
+		}
+		$base = $parts['scheme'] . '://' . $parts['host'];
+		if ( isset( $parts['port'] ) ) {
+			$base .= ':' . (int) $parts['port'];
+		}
+		$base .= '/' . trim( isset( $parts['path'] ) ? $parts['path'] : '', '/' );
+		return rtrim( $base, '/' ) . '/' . ltrim( $path, '/' );
+	}
+
 	/** Register virtual public files before WordPress renders a 404 or core robots response. */
 	public static function register_hooks() {
 		add_action( 'template_redirect', array( __CLASS__, 'serve_virtual_file' ), -100 );
@@ -70,7 +85,7 @@ final class Discovery_Files {
 		return array(
 			'verified' => true,
 			'warnings' => array(),
-			'url'      => home_url( '/robots.txt' ),
+			'url'      => self::root_url( '/robots.txt' ),
 		);
 	}
 
@@ -215,7 +230,7 @@ final class Discovery_Files {
 			return new \WP_Error( 'forbidden', __( 'You are not allowed to inspect discovery files.', 'serfe-ai-discovery' ) );
 		}
 		$response = wp_safe_remote_get(
-			home_url( '/' . $name ),
+			self::root_url( '/' . $name ),
 			array(
 				'redirection'         => 0,
 				'timeout'             => 5,
@@ -397,7 +412,7 @@ final class Discovery_Files {
 			delete_transient( Readiness::LINK_HEADERS_CACHE_KEY );
 		}
 		$check = self::validate_current( $name, true );
-		$url   = home_url( '/' . $name );
+		$url   = self::root_url( '/' . $name );
 		return array(
 			'checksum' => $checksum,
 			'verified' => ! is_wp_error( $check ) && $check['verified'],
@@ -437,7 +452,7 @@ final class Discovery_Files {
 				'checksum' => $public['checksum'],
 			);
 		}
-		$url      = home_url( '/' . $name );
+		$url      = self::root_url( '/' . $name );
 		$response = wp_safe_remote_get(
 			$url,
 			array(
@@ -518,7 +533,7 @@ final class Discovery_Files {
 	/** Whether a complete URL has the same scheme, host, and port as the public site. */
 	private static function is_same_origin_url( $url ) {
 		$target = wp_parse_url( $url );
-		$site   = wp_parse_url( home_url( '/' ) );
+		$site   = wp_parse_url( self::root_url( '/' ) );
 		if ( ! is_array( $target ) || ! is_array( $site ) || empty( $target['scheme'] ) || empty( $target['host'] ) || empty( $site['scheme'] ) || empty( $site['host'] ) ) {
 			return false;
 		}
@@ -566,7 +581,7 @@ final class Discovery_Files {
 			'checksum' => $state['checksum'],
 			'verified' => true,
 			'warnings' => array(),
-			'url'      => home_url( '/' . $name ),
+			'url'      => self::root_url( '/' . $name ),
 		);
 	}
 
@@ -619,7 +634,7 @@ final class Discovery_Files {
 			'checksum' => $checksum,
 			'verified' => ! is_wp_error( $check ) && $check['verified'],
 			'warnings' => is_wp_error( $check ) ? array( $check->get_error_message() ) : $check['warnings'],
-			'url'      => home_url( '/' . $name ),
+			'url'      => self::root_url( '/' . $name ),
 		);
 	}
 
@@ -640,7 +655,7 @@ final class Discovery_Files {
 			);
 		}
 		$response = wp_safe_remote_get(
-			home_url( '/' . $name ),
+			self::root_url( '/' . $name ),
 			array(
 				'redirection'         => 0,
 				'timeout'             => 5,
@@ -671,7 +686,7 @@ final class Discovery_Files {
 		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
 		foreach ( array( 'robots.txt', 'llms.txt' ) as $name ) {
-			$expected = (string) wp_parse_url( home_url( '/' . $name ), PHP_URL_PATH );
+			$expected = (string) wp_parse_url( self::root_url( '/' . $name ), PHP_URL_PATH );
 			if ( rtrim( $path, '/' ) === rtrim( $expected, '/' ) ) {
 				return $name;
 			}
@@ -684,7 +699,7 @@ final class Discovery_Files {
 		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) ) {
 			return new \WP_Error( 'invalid_name', __( 'Only robots.txt and llms.txt can be published.', 'serfe-ai-discovery' ) );
 		}
-		$root = self::resolve_public_root( ABSPATH, home_url( '/' ), site_url( '/' ) );
+		$root = self::resolve_public_root( ABSPATH, self::root_url( '/' ), site_url( '/' ) );
 		return is_wp_error( $root ) ? $root : $root . DIRECTORY_SEPARATOR . $name;
 	}
 

@@ -166,6 +166,7 @@ final class Discovery_Files_Admin {
 		echo '<p>' . esc_html__( 'What it does: Defines crawler access rules and can declare the XML sitemap location.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Why it helps: Clarifies which public areas are intended for crawling and where public URLs can be discovered.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Important: Rules must reflect your organization’s policy. Allowing or blocking a crawler does not guarantee crawling, training, indexing, or citation.', 'serfe-ai-discovery' ) . '</p></details>';
+		$this->render_language_root_notice( 'robots.txt' );
 		$this->render_file( 'robots.txt', $notice );
 	}
 
@@ -183,6 +184,7 @@ final class Discovery_Files_Admin {
 		echo '<p>' . esc_html__( 'Why it helps: Makes approved information easier for AI systems and technical tools to identify and interpret.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Important: Include only current, public, canonical URLs. Never include private areas, customer pages, admin URLs, credentials, unsupported claims, or outdated offers.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'This file complements the website, sitemap, structured content, and crawler policy; it does not replace them.', 'serfe-ai-discovery' ) . ' ' . esc_html__( 'Read more about it in', 'serfe-ai-discovery' ) . ' <a href="https://llmstxt.org/" target="_blank" rel="noopener noreferrer">llmstxt.org</a>.</p></details>';
+		$this->render_language_root_notice( 'llms.txt' );
 		$this->render_file( 'llms.txt', $notice );
 	}
 
@@ -274,7 +276,8 @@ final class Discovery_Files_Admin {
 		if ( 'llms.txt' === $name ) {
 			echo '<p>' . esc_html__( 'Start with the site name and a concise description. Group current public canonical links under useful headings such as Products, Services, Resources, Support, Documentation, and Legal. Review this guide after important content or URL changes.', 'serfe-ai-discovery' ) . '</p>';
 		}
-		printf( '<p><strong>%s</strong> <a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_html__( 'If your file is present, you could see content here:', 'serfe-ai-discovery' ), esc_url( home_url( '/' . $name ) ), esc_html( home_url( '/' . $name ) ) );
+		$file_url = Discovery_Files::root_url( '/' . $name );
+		printf( '<p><strong>%s</strong> <a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>', esc_html__( 'If your file is present, you could see content here:', 'serfe-ai-discovery' ), esc_url( $file_url ), esc_html( $file_url ) );
 		if ( isset( $state['meta']['published_at'], $state['meta']['user_id'] ) ) {
 			printf( '<p class="description">%s</p>', esc_html( sprintf( /* translators: 1: date and time, 2: administrator ID. */ __( 'Last published: %1$s by administrator %2$d.', 'serfe-ai-discovery' ), $state['meta']['published_at'], $state['meta']['user_id'] ) ) );
 		}
@@ -414,6 +417,27 @@ final class Discovery_Files_Admin {
 		echo '</section>';
 	}
 
+	/** Explain the fixed discovery-file root when a multilingual integration is active. */
+	private function render_language_root_notice( $name ) {
+		$plugins = (array) get_option( 'active_plugins', array() );
+		$wpml    = defined( 'ICL_SITEPRESS_VERSION' ) || defined( 'WPML_VERSION' ) || in_array( 'sitepress-multilingual-cms/sitepress.php', $plugins, true );
+		$loco    = defined( 'LOCO_PLUGIN_VERSION' ) || defined( 'LOCO_VERSION' ) || in_array( 'loco-translate/loco.php', $plugins, true );
+		if ( ! $wpml && ! $loco ) {
+			return;
+		}
+		$url = Discovery_Files::root_url( '/' . $name );
+		echo '<div class="notice notice-info inline"><p>';
+		if ( $wpml ) {
+			/* translators: 1: robots.txt or llms.txt filename, 2: canonical public root URL. */
+			printf( esc_html__( 'WPML detected. This plugin always manages %1$s at the WordPress public root: %2$s. Language paths such as /es/%1$s are not separate files and are not edited or validated.', 'serfe-ai-discovery' ), esc_html( $name ), esc_html( $url ) );
+		}
+		if ( $loco ) {
+			echo $wpml ? ' ' : '';
+			echo esc_html__( 'Loco Translate detected. It localizes plugin and theme strings but does not create a separate public discovery-file URL.', 'serfe-ai-discovery' );
+		}
+		echo '</p></div>';
+	}
+
 	/** Offer automatic Content Signals only when no physical robots.txt is present. */
 	private function render_virtual_content_signals_activation() {
 		$physical = Discovery_Files::physical_file_exists( 'robots.txt' );
@@ -445,8 +469,8 @@ final class Discovery_Files_Admin {
 		echo '<section class="serfe-content-signals">';
 		echo '<h3>' . esc_html__( 'Update signals manually in your current robots.txt', 'serfe-ai-discovery' ) . '</h3>';
 		echo '<p>' . esc_html__( 'Copy this block into the robots.txt editor currently serving your site. This works with virtual files managed by Rank Math, Yoast SEO, and other SEO plugins without creating a physical file.', 'serfe-ai-discovery' ) . '</p>';
-		printf( '<p><label for="%1$s"><strong>%2$s</strong></label><br><input id="%1$s" type="text" class="regular-text code" value="%3$s" placeholder="/blog/" data-serfe-section-path></p>', esc_attr( $path_id ), esc_html__( 'Section path', 'serfe-ai-discovery' ), esc_attr( $path_hint ) );
-		echo '<p class="description">' . esc_html__( 'Enter one site path, such as /blog/. The rule applies to that section and URLs below it. To protect more sections, copy the generated section block and repeat it manually with each path.', 'serfe-ai-discovery' ) . '</p>';
+		printf( '<p><label for="%1$s"><strong>%2$s</strong></label><br><input id="%1$s" type="text" class="regular-text code" value="%3$s" placeholder="/section/" data-serfe-section-path></p>', esc_attr( $path_id ), esc_html__( 'Section path', 'serfe-ai-discovery' ), esc_attr( $path_hint ) );
+		echo '<p class="description">' . esc_html__( 'Enter one site path, such as /resources/. The rule applies to that section and URLs below it. To protect more sections, copy the generated section block and repeat it manually with each path.', 'serfe-ai-discovery' ) . '</p>';
 		printf( '<p><button type="button" class="button" data-serfe-protect-section data-serfe-content-signals="%s" data-serfe-section-input="%s"><span class="serfe-protect-icon" aria-hidden="true">+</span> <span data-serfe-protect-label>%s</span><span class="screen-reader-text" data-serfe-section-status aria-live="polite"></span></button></p>', esc_attr( $id ), esc_attr( $path_id ), esc_html__( 'Protect section from AI-Train', 'serfe-ai-discovery' ) );
 		printf( '<textarea id="%1$s" class="large-text code" rows="13" readonly data-serfe-base="%2$s">%3$s</textarea>', esc_attr( $id ), esc_attr( $base_block ), esc_textarea( $base_block ) );
 		echo '<p><button type="button" class="button button-primary" data-serfe-copy-file="' . esc_attr( $id ) . '"><span class="serfe-copy-icon" aria-hidden="true">⧉</span> <span data-serfe-copy-label>' . esc_html__( 'Copy to clipboard', 'serfe-ai-discovery' ) . '</span><span class="screen-reader-text" data-serfe-copy-status aria-live="polite"></span></button></p>';
@@ -628,13 +652,13 @@ final class Discovery_Files_Admin {
 	private static function append_sitemap_links( &$lines ) {
 		$sitemaps = array();
 		if ( defined( 'WPSEO_VERSION' ) ) {
-			$sitemaps[ home_url( '/sitemap_index.xml' ) ] = __( 'Yoast SEO XML Sitemap', 'serfe-ai-discovery' );
+			$sitemaps[ Discovery_Files::root_url( '/sitemap_index.xml' ) ] = __( 'Yoast SEO XML Sitemap', 'serfe-ai-discovery' );
 		}
 		if ( defined( 'RANK_MATH_VERSION' ) ) {
-			$sitemaps[ home_url( '/sitemap_index.xml' ) ] = __( 'Rank Math XML Sitemap', 'serfe-ai-discovery' );
+			$sitemaps[ Discovery_Files::root_url( '/sitemap_index.xml' ) ] = __( 'Rank Math XML Sitemap', 'serfe-ai-discovery' );
 		}
 		if ( defined( 'AIOSEO_VERSION' ) ) {
-			$sitemaps[ home_url( '/sitemap.xml' ) ] = __( 'All in One SEO XML Sitemap', 'serfe-ai-discovery' );
+			$sitemaps[ Discovery_Files::root_url( '/sitemap.xml' ) ] = __( 'All in One SEO XML Sitemap', 'serfe-ai-discovery' );
 		}
 		if ( empty( $sitemaps ) ) {
 			return;

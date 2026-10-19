@@ -31,6 +31,10 @@ function wp_parse_url( $url, $component = -1 ) {
 	return parse_url( $url, $component );
 }
 
+function wp_unslash( $value ) {
+	return is_string( $value ) ? stripslashes( $value ) : $value;
+}
+
 function trailingslashit( $value ) {
 	return rtrim( $value, '/' ) . '/';
 }
@@ -159,7 +163,20 @@ $assert_error = function ( $code, $actual, $name ) use ( $assert_same ) {
 	$assert_same( $code, $actual instanceof WP_Error ? $actual->get_error_code() : null, $name );
 };
 
+$GLOBALS['test_options']['home'] = 'https://example.com/any/public-directory';
+$assert_same( 'https://example.com/any/public-directory/robots.txt', Discovery_Files::root_url( '/robots.txt' ), 'Builds discovery URLs from any configured WordPress home path' );
+$requested_file = new ReflectionMethod( Discovery_Files::class, 'requested_virtual_file' );
+$requested_file->setAccessible( true );
+$_SERVER['REQUEST_URI'] = '/any/public-directory/robots.txt';
+$assert_same( 'robots.txt', $requested_file->invoke( null ), 'Recognizes the canonical discovery-file path below the WordPress home path' );
+$GLOBALS['test_options']['home'] = 'https://example.com:8443/any/public-directory/?ignored=query';
+$assert_same( 'https://example.com:8443/any/public-directory/llms.txt', Discovery_Files::root_url( 'llms.txt' ), 'Preserves a configured port and ignores a home URL query string' );
+$_SERVER['REQUEST_URI'] = '/any/public-directory/es/robots.txt';
+$assert_same( '', $requested_file->invoke( null ), 'Does not treat a WPML language path as a separate robots.txt file' );
+unset( $_SERVER['REQUEST_URI'] );
+unset( $GLOBALS['test_options']['home'] );
 $assert_same( $base, Discovery_Files::resolve_public_root( ABSPATH, home_url( '/' ), site_url( '/' ) ), 'Maps a WordPress subdirectory to the public root' );
+$assert_same( $base, Discovery_Files::resolve_public_root( ABSPATH, 'https://example.com/any/public-directory/', 'https://example.com/any/public-directory/wp/' ), 'Maps any configured public directory to its physical root' );
 $assert_same( realpath( ABSPATH ), Discovery_Files::resolve_public_root( ABSPATH, 'https://example.com/wp/', 'https://example.com/wp/' ), 'Maps matching site and home URLs to WordPress root' );
 $assert_error( 'root_unresolved', Discovery_Files::resolve_public_root( ABSPATH, 'https://other.example/', site_url( '/' ) ), 'Rejects a different public host' );
 $assert_error( 'root_unresolved', Discovery_Files::resolve_public_root( ABSPATH, home_url( '/' ), 'https://example.com/other/' ), 'Rejects mismatched directories' );
@@ -475,6 +492,7 @@ $admin = new Discovery_Files_Admin();
 $GLOBALS['test_options']['show_on_front']      = 'page';
 $GLOBALS['test_options']['page_for_posts']     = 42;
 $GLOBALS['test_options']['permalink_structure'] = '/%postname%/';
+$GLOBALS['test_options']['active_plugins']      = array( 'sitepress-multilingual-cms/sitepress.php', 'loco-translate/loco.php' );
 ob_start();
 $admin->render_robots_tab();
 $robots_output = ob_get_clean();
@@ -485,6 +503,8 @@ $assert_same( true, strpos( $robots_output, 'data-serfe-copy-file="serfe-robots-
 $assert_same( true, strpos( $robots_output, 'Protect section from AI-Train' ) !== false, 'Renders the section protection control' );
 $assert_same( true, strpos( $robots_output, 'value="/blog/"' ) !== false, 'Uses the configured posts page as the suggested section path' );
 $assert_same( true, strpos( $robots_output, 'All in One SEO' ) !== false, 'Recognizes AIOSEO as a virtual robots.txt editor' );
+$assert_same( true, strpos( $robots_output, 'WPML detected.' ) !== false, 'Explains that WPML language paths are not separate robots.txt files' );
+$assert_same( true, strpos( $robots_output, 'Loco Translate detected.' ) !== false, 'Explains that Loco Translate does not change robots.txt paths' );
 $assert_same( true, strpos( $robots_output, 'Advanced file editor' ) !== false, 'Introduces the advanced file editor before its collapsed controls' );
 $assert_same( false, strpos( $robots_output, 'Why llms.txt matters' ), 'Robots tab does not render llms.txt' );
 
@@ -493,6 +513,7 @@ $admin->render_llms_tab();
 $llms_output = ob_get_clean();
 $assert_same( true, strpos( $llms_output, 'Why llms.txt matters' ) !== false, 'Renders dedicated llms.txt tab heading' );
 $assert_same( true, strpos( $llms_output, 'llms.txt' ) !== false, 'Includes llms.txt editor' );
+$assert_same( true, strpos( $llms_output, 'WPML detected.' ) !== false, 'Explains that WPML language paths are not separate llms.txt files' );
 $assert_same( true, strpos( $llms_output, 'data-serfe-template-feedback aria-live="polite" hidden' ) !== false, 'Renders template feedback above the editor buttons' );
 $assert_same( false, strpos( $llms_output, 'Why robots.txt matters' ), 'llms tab does not render robots.txt' );
 

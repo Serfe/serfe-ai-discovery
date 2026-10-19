@@ -88,7 +88,10 @@ final class Readiness {
 				<?php endif; ?>
 				<p><?php esc_html_e( 'These checks make local requests to public URLs for robots.txt, llms.txt, XML sitemaps, Link headers, Markdown, and optional agent services. They do not publish or change site content.', 'serfe-ai-discovery' ); ?></p>
 				<p class="description"><?php esc_html_e( 'Each URL must be publicly reachable without authentication. A private, password-protected, or login-restricted site cannot be validated by these checks.', 'serfe-ai-discovery' ); ?></p>
-				<?php if ( self::is_wordpress_playground_url( home_url( '/' ) ) ) : ?>
+				<?php if ( self::has_translation_plugin() ) : ?>
+					<p class="description"><?php esc_html_e( 'Translation plugin detected. Discovery checks use the single canonical WordPress public-root URL. Language paths such as /es/robots.txt or /es/llms.txt are not separate files and are not checked.', 'serfe-ai-discovery' ); ?></p>
+				<?php endif; ?>
+				<?php if ( self::is_wordpress_playground_url( Discovery_Files::root_url( '/' ) ) ) : ?>
 					<p class="description"><?php esc_html_e( 'WordPress Playground does not provide a reliable public loopback URL for this browser session, so automatic checks are unavailable here. Run checks again on a deployed public site.', 'serfe-ai-discovery' ); ?></p>
 				<?php endif; ?>
 				<p><?php echo esc_html( Settings::api_catalog_enabled() ? __( 'API Catalog publication is enabled.', 'serfe-ai-discovery' ) : __( 'API Catalog publication is disabled. Configure it in the API Catalog tab.', 'serfe-ai-discovery' ) ); ?></p>
@@ -145,7 +148,7 @@ final class Readiness {
 					<?php esc_html_e( '✅ validated · ❌ not configured or not available · ⚠ could not be verified locally · — not applicable to the current site.', 'serfe-ai-discovery' ); ?>
 				</p>
 			<?php endif; ?>
-			<?php $scanner = Discovery_Files_Admin::agent_ready_target( home_url( '/' ), wp_get_environment_type() ); ?>
+			<?php $scanner = Discovery_Files_Admin::agent_ready_target( Discovery_Files::root_url( '/' ), wp_get_environment_type() ); ?>
 			<div class="card" style="max-width: 1000px; padding: 16px 24px; margin: 16px 0;">
 				<h3 style="margin-top: 0;"><?php esc_html_e( 'Optional external validation', 'serfe-ai-discovery' ); ?></h3>
 				<p><?php esc_html_e( 'Open Is It Agent-Ready in a new tab to check the publicly deployed site. No request is sent until you select this button.', 'serfe-ai-discovery' ); ?></p>
@@ -270,7 +273,7 @@ final class Readiness {
 
 	/** @return array<string, string> */
 	private function check_robots() {
-		$url      = home_url( '/robots.txt' );
+		$url      = Discovery_Files::root_url( '/robots.txt' );
 		$response = $this->get( $url );
 		if ( ! $response['ok'] ) {
 			return $this->check( 'unknown', __( 'robots.txt', 'serfe-ai-discovery' ), $response['detail'], $url );
@@ -285,7 +288,7 @@ final class Readiness {
 
 	/** @return array<string, string> */
 	private function check_sitemap() {
-		$urls          = array( home_url( '/wp-sitemap.xml' ), home_url( '/sitemap_index.xml' ), home_url( '/sitemap.xml' ) );
+		$urls          = array( Discovery_Files::root_url( '/wp-sitemap.xml' ), Discovery_Files::root_url( '/sitemap_index.xml' ), Discovery_Files::root_url( '/sitemap.xml' ) );
 		$loopback_down = true;
 
 		foreach ( array_unique( $urls ) as $url ) {
@@ -308,7 +311,7 @@ final class Readiness {
 
 	/** @return array<string, string> */
 	private function check_llms() {
-		$url      = home_url( '/llms.txt' );
+		$url      = Discovery_Files::root_url( '/llms.txt' );
 		$response = $this->get( $url );
 		if ( ! $response['ok'] ) {
 			return $this->check( 'unknown', __( 'llms.txt', 'serfe-ai-discovery' ), $response['detail'], $url );
@@ -323,7 +326,7 @@ final class Readiness {
 	private function check_agent_link_headers( $llms, $sitemap ) {
 		$links = self::agent_discovery_links_from_checks( $llms, $sitemap );
 		if ( ! empty( $links ) ) {
-			$home_url      = home_url( '/' );
+			$home_url      = Discovery_Files::root_url( '/' );
 			$home_response = $this->get( $home_url );
 			if ( $home_response['ok'] && 200 === $home_response['code'] ) {
 				foreach ( $links as $link ) {
@@ -353,7 +356,7 @@ final class Readiness {
 
 	/** @return array<string, string> */
 	private function check_api_catalog() {
-		$url      = home_url( Discovery::API_CATALOG_PATH );
+		$url      = Discovery_Files::root_url( Discovery::API_CATALOG_PATH );
 		$response = $this->get( $url );
 		if ( ! $response['ok'] ) {
 			return $this->check( 'unknown', __( 'API catalog', 'serfe-ai-discovery' ), $response['detail'], $url );
@@ -455,7 +458,7 @@ final class Readiness {
 	/** @return array<string, string> */
 	private function check_oauth() {
 		$provider = apply_filters( 'serfe_agent_readiness_oauth_protected_resource', null );
-		$url      = is_array( $provider ) && ! empty( $provider['metadata_url'] ) ? $provider['metadata_url'] : home_url( '/.well-known/oauth-protected-resource' );
+		$url      = is_array( $provider ) && ! empty( $provider['metadata_url'] ) ? $provider['metadata_url'] : Discovery_Files::root_url( '/.well-known/oauth-protected-resource' );
 		$response = $this->get( $url );
 
 		if ( ! $response['ok'] ) {
@@ -476,7 +479,7 @@ final class Readiness {
 
 	/** @return array<string, string> */
 	private function check_skills() {
-		$url      = home_url( '/.well-known/agent-skills/index.json' );
+		$url      = Discovery_Files::root_url( '/.well-known/agent-skills/index.json' );
 		$response = $this->get( $url );
 		if ( ! $response['ok'] ) {
 			return $this->check( 'unknown', __( 'Agent Skills', 'serfe-ai-discovery' ), $response['detail'], $url );
@@ -634,7 +637,7 @@ final class Readiness {
 
 	/** @param string $url Candidate URL. @return bool */
 	public static function is_same_origin_url( $url ) {
-		$home  = wp_parse_url( home_url( '/' ) );
+		$home  = wp_parse_url( Discovery_Files::root_url( '/' ) );
 		$parts = wp_parse_url( $url );
 		if ( ! is_array( $home ) || ! is_array( $parts )
 			|| ! isset( $home['scheme'], $home['host'], $parts['scheme'], $parts['host'] )
@@ -651,6 +654,17 @@ final class Readiness {
 		$default_port = 'https' === $scheme ? 443 : 80;
 		return (int) ( isset( $parts['port'] ) ? $parts['port'] : $default_port )
 			=== (int) ( isset( $home['port'] ) ? $home['port'] : $default_port );
+	}
+
+	/** Whether a supported translation plugin is active. */
+	private static function has_translation_plugin() {
+		$plugins = (array) get_option( 'active_plugins', array() );
+		return defined( 'ICL_SITEPRESS_VERSION' )
+			|| defined( 'WPML_VERSION' )
+			|| defined( 'LOCO_PLUGIN_VERSION' )
+			|| defined( 'LOCO_VERSION' )
+			|| in_array( 'sitepress-multilingual-cms/sitepress.php', $plugins, true )
+			|| in_array( 'loco-translate/loco.php', $plugins, true );
 	}
 
 	/** @param string $url Candidate URL. @return bool */
