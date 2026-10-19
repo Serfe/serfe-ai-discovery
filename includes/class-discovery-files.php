@@ -453,6 +453,10 @@ final class Discovery_Files {
 				$warnings[] = __( 'A Sitemap URL is malformed. Review its absolute public URL.', 'serfe-ai-discovery' );
 				continue;
 			}
+			if ( ! self::is_same_origin_url( $url ) ) {
+				$warnings[] = __( 'A Sitemap URL points outside this site and was not checked.', 'serfe-ai-discovery' );
+				continue;
+			}
 			$response = wp_safe_remote_head(
 				$url,
 				array(
@@ -470,12 +474,30 @@ final class Discovery_Files {
 					)
 				);
 			}
+			if ( ! is_wp_error( $response ) && in_array( wp_remote_retrieve_response_code( $response ), array( 401, 403 ), true ) ) {
+				$warnings[] = __( 'A Sitemap URL requires authentication or is not publicly accessible.', 'serfe-ai-discovery' );
+				continue;
+			}
 			if ( is_wp_error( $response ) || 200 > wp_remote_retrieve_response_code( $response ) || 299 < wp_remote_retrieve_response_code( $response ) ) {
 				/* translators: %s: Sitemap URL from robots.txt. */
 				$warnings[] = sprintf( __( 'The Sitemap URL could not be reached: %s', 'serfe-ai-discovery' ), $url );
 			}
 		}
 		return $warnings;
+	}
+
+	/** Whether a complete URL has the same scheme, host, and port as the public site. */
+	private static function is_same_origin_url( $url ) {
+		$target = wp_parse_url( $url );
+		$site   = wp_parse_url( home_url( '/' ) );
+		if ( ! is_array( $target ) || ! is_array( $site ) || empty( $target['scheme'] ) || empty( $target['host'] ) || empty( $site['scheme'] ) || empty( $site['host'] ) ) {
+			return false;
+		}
+		$target_port = isset( $target['port'] ) ? (int) $target['port'] : ( 'https' === strtolower( $target['scheme'] ) ? 443 : 80 );
+		$site_port   = isset( $site['port'] ) ? (int) $site['port'] : ( 'https' === strtolower( $site['scheme'] ) ? 443 : 80 );
+		return strtolower( $target['scheme'] ) === strtolower( $site['scheme'] )
+			&& strtolower( $target['host'] ) === strtolower( $site['host'] )
+			&& $target_port === $site_port;
 	}
 
 	/** Restore the one previous version using the same conflict checks as publication. */

@@ -87,6 +87,7 @@ final class Readiness {
 					<p><?php esc_html_e( 'No checks have run yet. Select Run checks to inspect the public discovery resources for this site.', 'serfe-ai-discovery' ); ?></p>
 				<?php endif; ?>
 				<p><?php esc_html_e( 'These checks make local requests to public URLs for robots.txt, llms.txt, XML sitemaps, Link headers, Markdown, and optional agent services. They do not publish or change site content.', 'serfe-ai-discovery' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Each URL must be publicly reachable without authentication. A private, password-protected, or login-restricted site cannot be validated by these checks.', 'serfe-ai-discovery' ); ?></p>
 				<p><?php echo esc_html( Settings::api_catalog_enabled() ? __( 'API Catalog publication is enabled.', 'serfe-ai-discovery' ) : __( 'API Catalog publication is disabled. Configure it in the API Catalog tab.', 'serfe-ai-discovery' ) ); ?></p>
 				<p><?php esc_html_e( 'When valid public llms.txt and XML sitemap responses are detected, the plugin automatically publishes RFC 8288 Link headers.', 'serfe-ai-discovery' ); ?></p>
 				<?php if ( ! empty( $cache_plugins ) ) : ?>
@@ -575,13 +576,24 @@ final class Readiness {
 				'detail'       => __( 'The site could not complete its local loopback request.', 'serfe-ai-discovery' ),
 			);
 		}
+		$response_code = (int) wp_remote_retrieve_response_code( $response );
+		if ( in_array( $response_code, array( 401, 403 ), true ) ) {
+			return array(
+				'ok'           => false,
+				'code'         => $response_code,
+				'body'         => '',
+				'content_type' => '',
+				'link_header'  => '',
+				'detail'       => __( 'The URL requires authentication or is not publicly accessible.', 'serfe-ai-discovery' ),
+			);
+		}
 
 		$raw_link    = wp_remote_retrieve_header( $response, 'link' );
 		$link_header = is_array( $raw_link ) ? implode( ', ', array_map( 'strval', $raw_link ) ) : (string) $raw_link;
 
 		return array(
 			'ok'           => true,
-			'code'         => (int) wp_remote_retrieve_response_code( $response ),
+			'code'         => $response_code,
 			'body'         => (string) wp_remote_retrieve_body( $response ),
 			'content_type' => (string) wp_remote_retrieve_header( $response, 'content-type' ),
 			'link_header'  => $link_header,
