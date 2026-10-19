@@ -197,7 +197,7 @@ final class Discovery_Files_Admin {
 		$parts = wp_parse_url( $home );
 		$host  = is_array( $parts ) && isset( $parts['host'] ) ? rtrim( strtolower( trim( $parts['host'], '[]' ) ), '.' ) : '';
 		$is_ip = false !== filter_var( $host, FILTER_VALIDATE_IP );
-		if ( 'local' === $environment || '' === $host || 'localhost' === $host
+		if ( 'local' === $environment || '' === $host || 'localhost' === $host || 'playground.wordpress.net' === $host || substr( $host, -25 ) === '.playground.wordpress.net'
 			|| preg_match( '/\.(?:localhost|local|test|invalid|internal|example|lan|home)$/', $host )
 			|| ( ! $is_ip && preg_match( '/^[0-9.]+$/', $host ) )
 			|| ( $is_ip && false === filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) )

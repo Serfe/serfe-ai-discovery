@@ -103,6 +103,9 @@ $assert_same( false, Readiness::is_same_origin_url( 'https://other.example/sitem
 $assert_same( false, Readiness::is_same_origin_url( 'https://example.com:8443/sitemap.xml' ), 'Rejects a different port' );
 $assert_same( false, Readiness::is_same_origin_url( 'http://example.com/sitemap.xml' ), 'Rejects a different scheme' );
 $assert_same( false, Readiness::is_same_origin_url( 'https://user@example.com/sitemap.xml' ), 'Rejects credentials in validation URL' );
+$assert_same( true, Readiness::is_wordpress_playground_url( 'https://playground.wordpress.net/scope:patient-trendy-state/' ), 'Detects a scoped WordPress Playground URL' );
+$assert_same( true, Readiness::is_wordpress_playground_url( 'https://preview.playground.wordpress.net/' ), 'Detects a WordPress Playground subdomain' );
+$assert_same( false, Readiness::is_wordpress_playground_url( 'https://example.com/' ), 'Does not misidentify a normal public site as WordPress Playground' );
 
 $valid_skill = array(
 	'skills'  => array(

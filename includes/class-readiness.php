@@ -88,6 +88,9 @@ final class Readiness {
 				<?php endif; ?>
 				<p><?php esc_html_e( 'These checks make local requests to public URLs for robots.txt, llms.txt, XML sitemaps, Link headers, Markdown, and optional agent services. They do not publish or change site content.', 'serfe-ai-discovery' ); ?></p>
 				<p class="description"><?php esc_html_e( 'Each URL must be publicly reachable without authentication. A private, password-protected, or login-restricted site cannot be validated by these checks.', 'serfe-ai-discovery' ); ?></p>
+				<?php if ( self::is_wordpress_playground_url( home_url( '/' ) ) ) : ?>
+					<p class="description"><?php esc_html_e( 'WordPress Playground does not provide a reliable public loopback URL for this browser session, so automatic checks are unavailable here. Run checks again on a deployed public site.', 'serfe-ai-discovery' ); ?></p>
+				<?php endif; ?>
 				<p><?php echo esc_html( Settings::api_catalog_enabled() ? __( 'API Catalog publication is enabled.', 'serfe-ai-discovery' ) : __( 'API Catalog publication is disabled. Configure it in the API Catalog tab.', 'serfe-ai-discovery' ) ); ?></p>
 				<p><?php esc_html_e( 'When valid public llms.txt and XML sitemap responses are detected, the plugin automatically publishes RFC 8288 Link headers.', 'serfe-ai-discovery' ); ?></p>
 				<?php if ( ! empty( $cache_plugins ) ) : ?>
@@ -146,9 +149,10 @@ final class Readiness {
 			<div class="card" style="max-width: 1000px; padding: 16px 24px; margin: 16px 0;">
 				<h3 style="margin-top: 0;"><?php esc_html_e( 'Optional external validation', 'serfe-ai-discovery' ); ?></h3>
 				<p><?php esc_html_e( 'Open Is It Agent-Ready in a new tab to check the publicly deployed site. No request is sent until you select this button.', 'serfe-ai-discovery' ); ?></p>
-				<p><a class="button button-secondary" href="<?php echo esc_url( $scanner['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Check this site with Is It Agent-Ready', 'serfe-ai-discovery' ); ?></a></p>
-				<?php if ( ! $scanner['public'] ) : ?>
-					<p class="description"><?php esc_html_e( 'External scanners cannot access local or private environments. Open the scanner and test a public URL after deployment.', 'serfe-ai-discovery' ); ?></p>
+				<?php if ( $scanner['public'] ) : ?>
+					<p><a class="button button-secondary" href="<?php echo esc_url( $scanner['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Check this site with Is It Agent-Ready', 'serfe-ai-discovery' ); ?></a></p>
+				<?php else : ?>
+					<p class="description"><?php esc_html_e( 'External scanners cannot access local, private, or WordPress Playground environments. Test a public URL after deployment.', 'serfe-ai-discovery' ); ?></p>
 				<?php endif; ?>
 			</div>
 		</div>
@@ -540,6 +544,16 @@ final class Readiness {
 				'detail'       => __( 'Only this site can be checked.', 'serfe-ai-discovery' ),
 			);
 		}
+		if ( self::is_wordpress_playground_url( $url ) ) {
+			return array(
+				'ok'           => false,
+				'code'         => 0,
+				'body'         => '',
+				'content_type' => '',
+				'link_header'  => '',
+				'detail'       => __( 'WordPress Playground does not provide a reliable public loopback URL for these checks. Run them on a deployed public site.', 'serfe-ai-discovery' ),
+			);
+		}
 		$request_url = esc_url_raw( $url );
 		$args        = array(
 			'timeout'             => 5,
@@ -637,6 +651,12 @@ final class Readiness {
 		$default_port = 'https' === $scheme ? 443 : 80;
 		return (int) ( isset( $parts['port'] ) ? $parts['port'] : $default_port )
 			=== (int) ( isset( $home['port'] ) ? $home['port'] : $default_port );
+	}
+
+	/** @param string $url Candidate URL. @return bool */
+	public static function is_wordpress_playground_url( $url ) {
+		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+		return 'playground.wordpress.net' === $host || substr( $host, -25 ) === '.playground.wordpress.net';
 	}
 
 	/** @return bool */

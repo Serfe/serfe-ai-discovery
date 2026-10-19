@@ -21,6 +21,7 @@ $cases = array(
 	array( 'http://127.1/', 'production', 'https://isitagentready.com/', false ),
 	array( 'https://staging.example.test/', 'production', 'https://isitagentready.com/', false ),
 	array( 'https://office.local./', 'production', 'https://isitagentready.com/', false ),
+	array( 'https://playground.wordpress.net/scope:patient-trendy-state/', 'production', 'https://isitagentready.com/', false ),
 	array( 'https://8.8.8.8/', 'production', 'https://isitagentready.com/8.8.8.8', true ),
 	array( 'https://[2001:4860:4860::8888]/', 'production', 'https://isitagentready.com/2001%3A4860%3A4860%3A%3A8888', true ),
 );
