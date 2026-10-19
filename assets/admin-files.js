@@ -40,7 +40,8 @@
 	function templateState( button, message, busy ) {
 		var label = button.querySelector( '[data-serfe-template-label]' );
 		var status = button.querySelector( '[data-serfe-template-status]' );
-		var feedback = button.parentNode.querySelector( '[data-serfe-template-feedback]' );
+		var form = button.closest( 'form' );
+		var feedback = form ? form.querySelector( '[data-serfe-template-feedback]' ) : null;
 
 		button.disabled = busy;
 		if ( label ) {
@@ -50,8 +51,16 @@
 			status.textContent = message;
 		}
 		if ( feedback ) {
+			window.clearTimeout( feedback._serfeTemplateTimer );
 			feedback.textContent = busy ? '' : message;
+			feedback.hidden = busy;
 			feedback.classList.toggle( 'is-error', ! busy && message === window.serfeAiDiscoveryFiles.failed );
+			if ( ! busy && message !== window.serfeAiDiscoveryFiles.failed ) {
+				feedback._serfeTemplateTimer = window.setTimeout( function() {
+					feedback.hidden = true;
+					feedback.textContent = '';
+				}, 5000 );
+			}
 		}
 	}
 

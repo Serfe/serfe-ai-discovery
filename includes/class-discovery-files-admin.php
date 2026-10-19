@@ -19,7 +19,7 @@ final class Discovery_Files_Admin {
 		add_action( 'admin_post_' . self::ACTION, array( $this, 'handle_action' ) );
 		add_action( 'wp_ajax_' . self::AJAX_TEMPLATE_ACTION, array( $this, 'handle_llms_template_ajax' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( self::LLMS_CRON_HOOK, array( $this, 'run_scheduled_llms_generation' ), 10, 2 );
+		add_action( self::LLMS_CRON_HOOK, array( $this, 'run_scheduled_llms_generation' ) );
 	}
 
 	/** Load the local controls for manually copying robots.txt content signals. */
@@ -65,7 +65,7 @@ final class Discovery_Files_Admin {
 		check_admin_referer( self::ACTION );
 		$name = isset( $_POST['file'] ) && is_string( $_POST['file'] ) ? sanitize_text_field( wp_unslash( $_POST['file'] ) ) : '';
 		$mode = isset( $_POST['mode'] ) && is_string( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : '';
-		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) || ! in_array( $mode, array( 'publish', 'restore', 'template', 'validate', 'release', 'enable-signals', 'schedule' ), true ) || ( 'template' === $mode && 'llms.txt' !== $name ) || ( 'schedule' === $mode && 'llms.txt' !== $name ) || ( 'enable-signals' === $mode && 'robots.txt' !== $name ) ) {
+		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) || ! in_array( $mode, array( 'publish', 'restore', 'template', 'validate', 'release', 'enable-signals', 'schedule', 'unschedule' ), true ) || ( 'template' === $mode && 'llms.txt' !== $name ) || ( in_array( $mode, array( 'schedule', 'unschedule' ), true ) && 'llms.txt' !== $name ) || ( 'enable-signals' === $mode && 'robots.txt' !== $name ) ) {
 			wp_die( esc_html__( 'Invalid discovery file action.', 'serfe-ai-discovery' ) );
 		}
 		// Preserve approved plain text exactly; Discovery_Files::normalize_content() validates it before publication.
@@ -88,7 +88,9 @@ final class Discovery_Files_Admin {
 			);
 		} else {
 			if ( 'schedule' === $mode ) {
-				$result = $this->schedule_llms_generation( $expected );
+				$result = $this->schedule_llms_generation();
+			} elseif ( 'unschedule' === $mode ) {
+				$result = $this->unschedule_llms_generation();
 			} elseif ( 'enable-signals' === $mode ) {
 				$result = Discovery_Files::enable_virtual_content_signals();
 			} elseif ( 'release' === $mode ) {
@@ -116,11 +118,13 @@ final class Discovery_Files_Admin {
 						? __( 'The current public file was checked.', 'serfe-ai-discovery' )
 					: ( 'schedule' === $mode
 						? __( 'The full llms.txt generation was scheduled.', 'serfe-ai-discovery' )
+						: ( 'unschedule' === $mode
+							? __( 'The scheduled llms.txt generation was cancelled.', 'serfe-ai-discovery' )
 						: ( 'enable-signals' === $mode
 						? __( 'Content Signals will be added to the virtual robots.txt response.', 'serfe-ai-discovery' )
 						: ( 'release' === $mode
 							? __( 'Serfe no longer manages this file. Its current contents were not changed.', 'serfe-ai-discovery' )
-							: __( 'The public file was written and checked.', 'serfe-ai-discovery' ) ) ) ),
+							: __( 'The public file was written and checked.', 'serfe-ai-discovery' ) ) ) ) ),
 					'warnings' => $result['warnings'],
 				);
 				if ( 'validate' === $mode ) {
@@ -281,10 +285,13 @@ final class Discovery_Files_Admin {
 
 		printf( '<p><label for="serfe-file-%s"><strong>%s</strong></label></p><textarea id="serfe-file-%s" name="content" rows="15" class="large-text code">%s</textarea>', esc_attr( $name ), esc_html__( 'Editor content', 'serfe-ai-discovery' ), esc_attr( $name ), esc_textarea( $editor ) );
 		printf( '<p><label><input type="checkbox" name="takeover" value="1" required %s> %s</label></p>', checked( ! $conflict, true, false ), esc_html__( 'I reviewed the current public file and confirm that this plugin may take control of it.', 'serfe-ai-discovery' ) );
+		if ( 'llms.txt' === $name ) {
+			echo '<div class="serfe-template-status" data-serfe-template-feedback aria-live="polite" hidden></div>';
+		}
 		echo '<p><button type="submit" name="mode" value="publish" class="button button-primary">' . esc_html__( 'Publish file', 'serfe-ai-discovery' ) . '</button> ';
 		echo '<button type="submit" name="mode" value="validate" class="button" formnovalidate>' . esc_html__( 'Reset and load current', 'serfe-ai-discovery' ) . '</button> ';
 		if ( 'llms.txt' === $name ) {
-			echo '<button type="submit" name="mode" value="template" class="button serfe-insert-template" formnovalidate data-serfe-insert-template data-serfe-template-target="serfe-file-llms.txt"><span data-serfe-template-label>' . esc_html__( 'Insert starter template', 'serfe-ai-discovery' ) . '</span><span class="screen-reader-text" data-serfe-template-status aria-live="polite"></span></button> <span class="serfe-template-status" data-serfe-template-feedback aria-live="polite"></span> ';
+			echo '<button type="submit" name="mode" value="template" class="button serfe-insert-template" formnovalidate data-serfe-insert-template data-serfe-template-target="serfe-file-llms.txt"><span data-serfe-template-label>' . esc_html__( 'Insert starter template', 'serfe-ai-discovery' ) . '</span><span class="screen-reader-text" data-serfe-template-status aria-live="polite"></span></button> ';
 		}
 		if ( is_string( $state['backup'] ) ) {
 			echo '<button type="submit" name="mode" value="restore" class="button" formnovalidate>' . esc_html__( 'Restore previous version', 'serfe-ai-discovery' ) . '</button>';
@@ -295,7 +302,7 @@ final class Discovery_Files_Admin {
 		}
 		echo '</p></form>';
 		if ( 'llms.txt' === $name ) {
-			$this->render_scheduled_llms_generation( $managed, $display_state['checksum'] );
+			$this->render_scheduled_llms_generation( $display_state );
 		}
 		if ( $conflict || ( is_array( $notice ) && isset( $notice['file'], $notice['code'] ) && $name === $notice['file'] ) ) {
 			$this->render_review( $name, $display_state, $editor );
@@ -304,17 +311,16 @@ final class Discovery_Files_Admin {
 	}
 
 	/** Schedule a full llms.txt regeneration without blocking this admin request. */
-	private function schedule_llms_generation( $expected_checksum ) {
+	private function schedule_llms_generation() {
 		$state = Discovery_Files::inspect( 'llms.txt' );
 		if ( is_wp_error( $state ) ) {
 			return $state;
 		}
-		$known = isset( $state['meta']['checksum'] ) ? (string) $state['meta']['checksum'] : '';
-		if ( '' === $known || ! hash_equals( $known, $state['checksum'] ) || ! hash_equals( $state['checksum'], (string) $expected_checksum ) ) {
-			return new \WP_Error( 'stale_file', __( 'Publish and verify llms.txt with Serfe before scheduling a full regeneration.', 'serfe-ai-discovery' ) );
+		if ( '' !== trim( $state['content'] ) ) {
+			return new \WP_Error( 'llms_not_empty', __( 'Scheduled generation only creates llms.txt when it is empty or missing. It will not overwrite existing content.', 'serfe-ai-discovery' ) );
 		}
 		$site_id = function_exists( 'get_current_blog_id' ) ? (int) get_current_blog_id() : 0;
-		$args    = array( $site_id, $expected_checksum );
+		$args    = array( $site_id );
 		if ( wp_next_scheduled( self::LLMS_CRON_HOOK, $args ) ) {
 			return array(
 				'verified' => true,
@@ -330,22 +336,45 @@ final class Discovery_Files_Admin {
 		);
 	}
 
-	/** Generate every eligible item and update only the file revision that was scheduled. */
-	public function run_scheduled_llms_generation( $site_id = 0, $expected_checksum = '' ) {
+	/** Cancel the one pending full llms.txt generation for this site. */
+	private function unschedule_llms_generation() {
+		$site_id      = function_exists( 'get_current_blog_id' ) ? (int) get_current_blog_id() : 0;
+		$args         = array( $site_id );
+		$scheduled_at = wp_next_scheduled( self::LLMS_CRON_HOOK, $args );
+		if ( ! $scheduled_at ) {
+			return new \WP_Error( 'not_scheduled', __( 'No full llms.txt generation is currently scheduled for this site.', 'serfe-ai-discovery' ) );
+		}
+		if ( ! wp_unschedule_event( $scheduled_at, self::LLMS_CRON_HOOK, $args ) ) {
+			return new \WP_Error( 'unschedule_failed', __( 'The scheduled llms.txt generation could not be cancelled.', 'serfe-ai-discovery' ) );
+		}
+		delete_option( self::LLMS_CRON_STATUS_KEY );
+		return array(
+			'verified' => true,
+			'warnings' => array(),
+		);
+	}
+
+	/** Generate every eligible item only if llms.txt remains empty when the action runs. */
+	public function run_scheduled_llms_generation( $site_id = 0 ) {
 		$switched = false;
 		if ( function_exists( 'is_multisite' ) && is_multisite() && $site_id > 0 && function_exists( 'switch_to_blog' ) && get_current_blog_id() !== (int) $site_id ) {
 			$switched = switch_to_blog( (int) $site_id );
 		}
-		$result = Discovery_Files::regenerate_managed_llms( self::starter_template( true ), $expected_checksum );
+		$result = Discovery_Files::generate_llms_if_empty( self::starter_template( true ) );
 		$status = is_wp_error( $result )
 			? array(
 				'type'    => 'error',
 				'message' => $result->get_error_message(),
 			)
+			: ( ! empty( $result['skipped'] )
+				? array(
+					'type'    => 'info',
+					'message' => __( 'Scheduled llms.txt generation was skipped because the file already contains content.', 'serfe-ai-discovery' ),
+				)
 			: array(
 				'type'    => 'success',
 				'message' => __( 'The scheduled llms.txt generation completed.', 'serfe-ai-discovery' ),
-			);
+			) );
 		update_option( self::LLMS_CRON_STATUS_KEY, $status, false );
 		if ( $switched && function_exists( 'restore_current_blog' ) ) {
 			restore_current_blog();
@@ -353,7 +382,7 @@ final class Discovery_Files_Admin {
 	}
 
 	/** Explain and offer the non-blocking full llms.txt generation after the editor. */
-	private function render_scheduled_llms_generation( $managed, $checksum ) {
+	private function render_scheduled_llms_generation( $state ) {
 		$status = get_option( self::LLMS_CRON_STATUS_KEY, false );
 		echo '<section class="serfe-scheduled-llms">';
 		echo '<h3>' . esc_html__( 'Generate full llms.txt asynchronously', 'serfe-ai-discovery' ) . '</h3>';
@@ -362,14 +391,25 @@ final class Discovery_Files_Admin {
 			$type = in_array( $status['type'], array( 'success', 'error' ), true ) ? $status['type'] : 'info';
 			echo '<div class="notice notice-' . esc_attr( $type ) . ' inline"><p>' . esc_html( $status['message'] ) . '</p></div>';
 		}
-		if ( $managed ) {
+		$empty        = is_array( $state ) && isset( $state['content'] ) && '' === trim( $state['content'] );
+		$site_id      = function_exists( 'get_current_blog_id' ) ? (int) get_current_blog_id() : 0;
+		$args         = array( $site_id );
+		$scheduled_at = wp_next_scheduled( self::LLMS_CRON_HOOK, $args );
+		if ( $scheduled_at ) {
+			echo '<p class="description">' . esc_html__( 'A full llms.txt generation is currently scheduled for this site.', 'serfe-ai-discovery' ) . '</p>';
 			printf( '<form action="%s" method="post">', esc_url( admin_url( 'admin-post.php' ) ) );
 			wp_nonce_field( self::ACTION );
-			printf( '<input type="hidden" name="action" value="%1$s"><input type="hidden" name="file" value="llms.txt"><input type="hidden" name="checksum" value="%2$s">', esc_attr( self::ACTION ), esc_attr( $checksum ) );
+			printf( '<input type="hidden" name="action" value="%1$s"><input type="hidden" name="file" value="llms.txt">', esc_attr( self::ACTION ) );
+			echo '<button type="submit" name="mode" value="unschedule" class="button">' . esc_html__( 'Cancel scheduled generation', 'serfe-ai-discovery' ) . '</button></form>';
+		} elseif ( $empty ) {
+			printf( '<form action="%s" method="post">', esc_url( admin_url( 'admin-post.php' ) ) );
+			wp_nonce_field( self::ACTION );
+			printf( '<input type="hidden" name="action" value="%1$s"><input type="hidden" name="file" value="llms.txt">', esc_attr( self::ACTION ) );
 			echo '<button type="submit" name="mode" value="schedule" class="button">' . esc_html__( 'Schedule full llms.txt generation', 'serfe-ai-discovery' ) . '</button></form>';
 		} else {
-			echo '<p class="description">' . esc_html__( 'Publish llms.txt with Serfe first. Scheduled generation only updates a file that Serfe already manages.', 'serfe-ai-discovery' ) . '</p>';
+			echo '<p class="description">' . esc_html__( 'Scheduled generation only creates llms.txt when it is empty or missing. It will not overwrite existing content. Clear the editor and publish an empty file first if you want to use this option.', 'serfe-ai-discovery' ) . '</p>';
 		}
+		echo '<p class="description">' . esc_html__( 'The action checks again when it runs. If llms.txt has content by then, it is skipped without changing the file.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p class="description">' . esc_html__( 'The action runs later when WP-Cron is correctly configured. WP-Cron depends on site visits unless your host triggers it on a schedule.', 'serfe-ai-discovery' ) . ' <a href="https://developer.wordpress.org/plugins/cron/#what-is-wp-cron" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Learn how WP-Cron works', 'serfe-ai-discovery' ) . '</a>.</p>';
 		echo '</section>';
 	}

@@ -125,6 +125,18 @@ function wp_remote_retrieve_header( $response, $header ) {
 	return 'content-type' === $header ? $response['content_type'] : '';
 }
 
+function wp_next_scheduled( $hook, $args = array() ) {
+	return isset( $GLOBALS['test_scheduled_llms_event'] ) ? $GLOBALS['test_scheduled_llms_event'] : false;
+}
+
+function wp_unschedule_event( $timestamp, $hook, $args = array() ) {
+	if ( isset( $GLOBALS['test_scheduled_llms_event'] ) && (int) $timestamp === (int) $GLOBALS['test_scheduled_llms_event'] ) {
+		unset( $GLOBALS['test_scheduled_llms_event'] );
+		return true;
+	}
+	return false;
+}
+
 require_once dirname( __DIR__ ) . '/includes/class-discovery-files.php';
 
 use Serfe\AI_Discovery\Discovery_Files;
@@ -255,6 +267,13 @@ $assert_error( 'takeover_required', Discovery_Files::publish( 'llms.txt', "# New
 $result = Discovery_Files::publish( 'llms.txt', "# New\n", true, $llms['checksum'] );
 $assert_same( true, $result['verified'], 'Publishes llms.txt at the public root' );
 $assert_same( $llms['content'], get_option( 'serfe_ai_discovery_llms_txt_backup' ), 'Keeps a separate llms.txt backup' );
+$scheduled = Discovery_Files::generate_llms_if_empty( "# Scheduled\n" );
+$assert_same( true, ! empty( $scheduled['skipped'] ), 'Skips scheduled generation when llms.txt has content' );
+$assert_same( "# New\n", file_get_contents( $base . '/llms.txt' ), 'Does not overwrite non-empty llms.txt during scheduled generation' );
+unlink( $base . '/llms.txt' );
+$scheduled = Discovery_Files::generate_llms_if_empty( "# Scheduled\n" );
+$assert_same( true, $scheduled['verified'], 'Generates llms.txt when the file is missing' );
+$assert_same( "# Scheduled\n", file_get_contents( $base . '/llms.txt' ), 'Writes the generated llms.txt content when missing' );
 file_put_contents( $base . '/robots.txt', "External change\n" );
 $assert_error( 'takeover_required', Discovery_Files::restore( 'robots.txt' ), 'Prevents restore over an external change' );
 $changed = Discovery_Files::inspect( 'robots.txt' );
@@ -474,6 +493,7 @@ $admin->render_llms_tab();
 $llms_output = ob_get_clean();
 $assert_same( true, strpos( $llms_output, 'Why llms.txt matters' ) !== false, 'Renders dedicated llms.txt tab heading' );
 $assert_same( true, strpos( $llms_output, 'llms.txt' ) !== false, 'Includes llms.txt editor' );
+$assert_same( true, strpos( $llms_output, 'data-serfe-template-feedback aria-live="polite" hidden' ) !== false, 'Renders template feedback above the editor buttons' );
 $assert_same( false, strpos( $llms_output, 'Why robots.txt matters' ), 'llms tab does not render robots.txt' );
 
 $_POST = array(
@@ -495,6 +515,17 @@ $assert_same( true, strpos( $template, '## Products' ) !== false && strpos( $tem
 $assert_same( true, strpos( $template, '## Shop' ) !== false && strpos( $template, '/shop/' ) !== false, 'Lists the WooCommerce shop in the llms.txt draft' );
 $assert_same( true, strpos( $template, '## Product categories' ) !== false && strpos( $template, '/product-category/featured-products/' ) !== false, 'Lists top-level WooCommerce categories in the llms.txt draft' );
 $assert_same( true, strpos( $template, 'All in One SEO XML Sitemap' ) !== false && strpos( $template, '/sitemap.xml' ) !== false, 'Lists the AIOSEO XML sitemap in the llms.txt draft' );
+
+$GLOBALS['test_scheduled_llms_event'] = time() + 60;
+$_POST = array(
+	'file' => 'llms.txt',
+	'mode' => 'unschedule',
+);
+$GLOBALS['test_redirect_url'] = '';
+try {
+	$admin->handle_action();
+} catch ( \Exception $e ) {}
+$assert_same( false, isset( $GLOBALS['test_scheduled_llms_event'] ), 'Cancels the pending llms.txt generation for the current site' );
 
 $_POST = array(
 	'file' => 'robots.txt',

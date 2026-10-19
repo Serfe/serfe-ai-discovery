@@ -210,8 +210,8 @@ final class Discovery_Files {
 	}
 
 	/** Inspect a public response only after an administrator explicitly requests validation or publication. */
-	public static function inspect_public_response( $name ) {
-		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) || ! current_user_can( 'manage_options' ) ) {
+	public static function inspect_public_response( $name, $trusted = false ) {
+		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) || ( ! $trusted && ! current_user_can( 'manage_options' ) ) ) {
 			return new \WP_Error( 'forbidden', __( 'You are not allowed to inspect discovery files.', 'serfe-ai-discovery' ) );
 		}
 		$response = wp_safe_remote_get(
@@ -274,8 +274,37 @@ final class Discovery_Files {
 		return self::publish_content( 'llms.txt', $content, true, $expected_checksum );
 	}
 
+	/** Generate llms.txt only when no public content is currently present. */
+	public static function generate_llms_if_empty( $candidate ) {
+		$content = self::normalize_content( $candidate );
+		if ( is_wp_error( $content ) ) {
+			return $content;
+		}
+		$current = self::inspect( 'llms.txt' );
+		if ( is_wp_error( $current ) ) {
+			return $current;
+		}
+		if ( '' !== trim( $current['content'] ) ) {
+			return array( 'skipped' => true );
+		}
+		$expected_checksum = $current['checksum'];
+		if ( ! $current['exists'] ) {
+			$public = self::inspect_public_response( 'llms.txt', true );
+			if ( is_wp_error( $public ) ) {
+				return $public;
+			}
+			if ( $public['exists'] && '' !== trim( $public['content'] ) ) {
+				return array( 'skipped' => true );
+			}
+			if ( $public['exists'] ) {
+				$expected_checksum = $public['checksum'];
+			}
+		}
+		return self::publish_content( 'llms.txt', $content, true, $expected_checksum, true );
+	}
+
 	/** Publish content after the caller has performed its capability or ownership checks. */
-	private static function publish_content( $name, $candidate, $takeover = false, $expected_checksum = '' ) {
+	private static function publish_content( $name, $candidate, $takeover = false, $expected_checksum = '', $trusted = false ) {
 		$content = self::normalize_content( $candidate );
 		if ( is_wp_error( $content ) ) {
 			return $content;
@@ -294,7 +323,7 @@ final class Discovery_Files {
 		}
 		$virtual = false;
 		if ( ! $current['exists'] ) {
-			$virtual = self::inspect_public_response( $name );
+			$virtual = self::inspect_public_response( $name, $trusted );
 			if ( is_wp_error( $virtual ) ) {
 				return $virtual;
 			}
@@ -338,7 +367,7 @@ final class Discovery_Files {
 			return new \WP_Error( 'stale_file', __( 'The public file changed during publication. Review it before trying again.', 'serfe-ai-discovery' ) );
 		}
 		if ( is_array( $virtual ) ) {
-			$latest_public = self::inspect_public_response( $name );
+			$latest_public = self::inspect_public_response( $name, $trusted );
 			if ( is_wp_error( $latest_public ) || $latest_public['checksum'] !== $virtual['checksum'] ) {
 				// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink -- Remove only the temporary file created above.
 				unlink( $temp );

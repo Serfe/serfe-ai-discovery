@@ -73,8 +73,12 @@
 }
 
 .serfe-template-status {
-	margin-left: 6px;
+	margin: 0 0 8px;
 	color: #008a20;
+}
+
+.serfe-template-status[hidden] {
+	display: none;
 }
 
 .serfe-template-status.is-error {
