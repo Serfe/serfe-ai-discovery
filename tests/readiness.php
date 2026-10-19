@@ -119,6 +119,11 @@ $valid_skill = array(
 $assert_same( true, Readiness::validate_skills_index( $valid_skill )['valid'], 'Accepts a valid Agent Skills v0.2.0 index' );
 $valid_skill['skills'][0]['digest'] = 'sha256:not-a-digest';
 $assert_same( false, Readiness::validate_skills_index( $valid_skill )['valid'], 'Rejects an invalid Agent Skills digest' );
+$assert_same(
+	'Cached HTML was returned. Clear your site or server page cache and run the checks again.',
+	Readiness::cache_clear_notice( 'Cached HTML was returned.' ),
+	'Formats cache clear notice when no cache plugin is active'
+);
 
 if ( $failures ) {
 	fwrite( STDERR, implode( "\n", $failures ) . "\n" );

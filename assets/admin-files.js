@@ -37,6 +37,24 @@
 		}
 	}
 
+	function templateState( button, message, busy ) {
+		var label = button.querySelector( '[data-serfe-template-label]' );
+		var status = button.querySelector( '[data-serfe-template-status]' );
+		var feedback = button.parentNode.querySelector( '[data-serfe-template-feedback]' );
+
+		button.disabled = busy;
+		if ( label ) {
+			label.textContent = busy ? message : 'Insert starter template';
+		}
+		if ( status ) {
+			status.textContent = message;
+		}
+		if ( feedback ) {
+			feedback.textContent = busy ? '' : message;
+			feedback.classList.toggle( 'is-error', ! busy && message === window.serfeAiDiscoveryFiles.failed );
+		}
+	}
+
 	document.addEventListener( 'click', function( event ) {
 		var protect = event.target.closest( '[data-serfe-protect-section]' );
 		if ( ! protect ) {
@@ -97,6 +115,47 @@
 			}
 			area.focus();
 			area.select();
+		} );
+	} );
+
+	document.addEventListener( 'click', function( event ) {
+		var button = event.target.closest( '[data-serfe-insert-template]' );
+		if ( ! button || ! window.serfeAiDiscoveryFiles || ! window.fetch ) {
+			return;
+		}
+		event.preventDefault();
+		var area = document.getElementById( button.getAttribute( 'data-serfe-template-target' ) );
+		if ( ! area ) {
+			return;
+		}
+		templateState( button, window.serfeAiDiscoveryFiles.generating, true );
+		window.fetch( window.serfeAiDiscoveryFiles.ajaxUrl, {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+			},
+			body: new URLSearchParams( {
+				action: 'serfe_ai_discovery_llms_template',
+				nonce: window.serfeAiDiscoveryFiles.templateNonce
+			} )
+		} ).then( function( response ) {
+			return response.json();
+		} ).then( function( response ) {
+			if ( ! response.success || ! response.data || 'string' !== typeof response.data.content ) {
+				throw new Error( 'Template generation failed.' );
+			}
+			area.value = response.data.content;
+			area.classList.remove( 'is-updated' );
+			window.requestAnimationFrame( function() {
+				area.classList.add( 'is-updated' );
+			} );
+			window.setTimeout( function() {
+				area.classList.remove( 'is-updated' );
+			}, 500 );
+			templateState( button, window.serfeAiDiscoveryFiles.inserted, false );
+		} ).catch( function() {
+			templateState( button, window.serfeAiDiscoveryFiles.failed, false );
 		} );
 	} );
 

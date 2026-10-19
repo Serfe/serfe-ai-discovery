@@ -10,6 +10,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Added WooCommerce product pricing details in Markdown output, including active discounted prices, regular and sale prices, and a structured product variations table for variable products.
+- Added page-cache integrations for WP Rocket, LiteSpeed Cache, W3 Total Cache, WP Super Cache, SiteGround Optimizer, WP Fastest Cache, Cache Enabler, and Autoptimize so Markdown negotiation (`Accept: text/markdown` and `.md` URLs) and RFC 8288 `Link` headers work reliably alongside cached HTML pages.
+- Added active page-cache detection, a one-click "Purge cache & run checks" action, and cache-clear diagnostics in Discovery Checks when cached HTML pages intercept Markdown negotiation or omit updated `Link` headers.
 - Added an opt-in WordPress virtual `robots.txt` integration that appends the Serfe Content Signals block without creating a physical file, after validating the active public virtual response.
 - Added AIOSEO detection and its robots.txt editor guidance alongside Rank Math and Yoast SEO support.
 - Added interactive manual Content Signals controls, including section-level AI-training protection, copy feedback, and a visual confirmation when the generated block changes.
@@ -22,6 +25,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Made robots.txt file management an explicitly labeled advanced editor while keeping virtual and manual Content Signals controls accessible first.
 - Added cache-busting asset versions based on bundled asset modification times so updated admin interactions load reliably during in-place updates.
+- Insert the llms.txt starter template asynchronously in the editor, with visible feedback and no page reload or file publication; non-JavaScript fallback now explicitly states that it only loads an unpublished draft.
 
 ## [1.0.12] - 2026-10-15
 

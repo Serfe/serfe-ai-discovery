@@ -72,6 +72,15 @@
 	color: #fff;
 }
 
+.serfe-template-status {
+	margin-left: 6px;
+	color: #008a20;
+}
+
+.serfe-template-status.is-error {
+	color: #b32d2e;
+}
+
 .serfe-file-advanced > summary {
 	cursor: pointer;
 	font-weight: 600;

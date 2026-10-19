@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /** Administrator editor for the two public-root discovery files. */
 final class Discovery_Files_Admin {
 	const ACTION                   = 'serfe_ai_discovery_file_action';
+	const AJAX_TEMPLATE_ACTION     = 'serfe_ai_discovery_llms_template';
 	const TEMPLATE_ITEMS_PER_GROUP = 80;
 	const LLMS_CRON_HOOK           = 'serfe_ai_discovery_generate_llms';
 	const LLMS_CRON_STATUS_KEY     = 'serfe_ai_discovery_llms_generation_status';
@@ -16,6 +17,7 @@ final class Discovery_Files_Admin {
 	/** Register one capability- and nonce-protected form handler. */
 	public function register_hooks() {
 		add_action( 'admin_post_' . self::ACTION, array( $this, 'handle_action' ) );
+		add_action( 'wp_ajax_' . self::AJAX_TEMPLATE_ACTION, array( $this, 'handle_llms_template_ajax' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( self::LLMS_CRON_HOOK, array( $this, 'run_scheduled_llms_generation' ), 10, 2 );
 	}
@@ -33,6 +35,26 @@ final class Discovery_Files_Admin {
 		$script_version = SERFE_AI_DISCOVERY_VERSION . '.' . filemtime( $script_path );
 		wp_enqueue_style( 'serfe-ai-discovery-files', SERFE_AI_DISCOVERY_URL . 'assets/admin-files.css', array(), $style_version );
 		wp_enqueue_script( 'serfe-ai-discovery-files', SERFE_AI_DISCOVERY_URL . 'assets/admin-files.js', array(), $script_version, true );
+		wp_localize_script(
+			'serfe-ai-discovery-files',
+			'serfeAiDiscoveryFiles',
+			array(
+				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+				'templateNonce' => wp_create_nonce( self::AJAX_TEMPLATE_ACTION ),
+				'generating'    => __( 'Generating template…', 'serfe-ai-discovery' ),
+				'inserted'      => __( 'Template inserted. Review it before publishing.', 'serfe-ai-discovery' ),
+				'failed'        => __( 'The template could not be generated. Try again or reload the page.', 'serfe-ai-discovery' ),
+			)
+		);
+	}
+
+	/** Return a generated llms.txt draft without submitting or publishing the editor form. */
+	public function handle_llms_template_ajax() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to generate this template.', 'serfe-ai-discovery' ) ), 403 );
+		}
+		check_ajax_referer( self::AJAX_TEMPLATE_ACTION, 'nonce' );
+		wp_send_json_success( array( 'content' => self::starter_template() ) );
 	}
 
 	/** Process a file action and return to the plugin's files tab. */
@@ -61,7 +83,7 @@ final class Discovery_Files_Admin {
 			$notice = array(
 				'file'      => $name,
 				'type'      => 'info',
-				'message'   => __( 'Starter template inserted. Review and edit it before publishing.', 'serfe-ai-discovery' ),
+				'message'   => __( 'Starter template inserted into the editor only. Review it and select Publish file when you are ready to save it.', 'serfe-ai-discovery' ),
 				'candidate' => self::starter_template(),
 			);
 		} else {
@@ -262,7 +284,7 @@ final class Discovery_Files_Admin {
 		echo '<p><button type="submit" name="mode" value="publish" class="button button-primary">' . esc_html__( 'Publish file', 'serfe-ai-discovery' ) . '</button> ';
 		echo '<button type="submit" name="mode" value="validate" class="button" formnovalidate>' . esc_html__( 'Reset and load current', 'serfe-ai-discovery' ) . '</button> ';
 		if ( 'llms.txt' === $name ) {
-			echo '<button type="submit" name="mode" value="template" class="button serfe-insert-template" formnovalidate>' . esc_html__( 'Insert starter template', 'serfe-ai-discovery' ) . '</button> ';
+			echo '<button type="submit" name="mode" value="template" class="button serfe-insert-template" formnovalidate data-serfe-insert-template data-serfe-template-target="serfe-file-llms.txt"><span data-serfe-template-label>' . esc_html__( 'Insert starter template', 'serfe-ai-discovery' ) . '</span><span class="screen-reader-text" data-serfe-template-status aria-live="polite"></span></button> <span class="serfe-template-status" data-serfe-template-feedback aria-live="polite"></span> ';
 		}
 		if ( is_string( $state['backup'] ) ) {
 			echo '<button type="submit" name="mode" value="restore" class="button" formnovalidate>' . esc_html__( 'Restore previous version', 'serfe-ai-discovery' ) . '</button>';

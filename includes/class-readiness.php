@@ -34,19 +34,28 @@ final class Readiness {
 
 		check_admin_referer( 'serfe_ai_discovery_readiness_refresh' );
 		delete_transient( self::CACHE_KEY );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by check_admin_referer() above.
+		$purge_cache = isset( $_POST['purge_cache'] ) && '1' === sanitize_text_field( wp_unslash( $_POST['purge_cache'] ) );
+		if ( $purge_cache && class_exists( __NAMESPACE__ . '\Markdown_Cache' ) ) {
+			Markdown_Cache::invalidate( 'manual_refresh' );
+		}
+		if ( class_exists( __NAMESPACE__ . '\Cache_Integrations' ) ) {
+			Cache_Integrations::sync_rocket_config();
+		}
 		$this->inspect( true );
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by check_admin_referer() above.
-		$return_tab   = isset( $_POST['return_tab'] ) && is_string( $_POST['return_tab'] ) ? sanitize_key( wp_unslash( $_POST['return_tab'] ) ) : 'discovery';
-		$return_tab   = in_array( $return_tab, array( 'overview', 'discovery' ), true ) ? $return_tab : 'discovery';
-		$redirect_url = add_query_arg(
-			array(
-				'page'      => Settings::PAGE,
-				'tab'       => $return_tab,
-				'refreshed' => '1',
-				'_wpnonce'  => wp_create_nonce( 'serfe_ai_discovery_readiness_refreshed' ),
-			),
-			admin_url( 'admin.php' )
+		$return_tab = isset( $_POST['return_tab'] ) && is_string( $_POST['return_tab'] ) ? sanitize_key( wp_unslash( $_POST['return_tab'] ) ) : 'discovery';
+		$return_tab = in_array( $return_tab, array( 'overview', 'discovery' ), true ) ? $return_tab : 'discovery';
+		$query_args = array(
+			'page'      => Settings::PAGE,
+			'tab'       => $return_tab,
+			'refreshed' => '1',
+			'_wpnonce'  => wp_create_nonce( 'serfe_ai_discovery_readiness_refreshed' ),
 		);
+		if ( $purge_cache ) {
+			$query_args['cache_purged'] = '1';
+		}
+		$redirect_url = add_query_arg( $query_args, admin_url( 'admin.php' ) );
 		wp_safe_redirect( $redirect_url );
 		exit;
 	}
@@ -64,7 +73,8 @@ final class Readiness {
 				'checked_at' => '',
 			);
 		}
-		$has_checks = ! empty( $report['checks'] );
+		$has_checks    = ! empty( $report['checks'] );
+		$cache_plugins = class_exists( __NAMESPACE__ . '\Cache_Integrations' ) ? Cache_Integrations::active_cache_plugins() : array();
 		?>
 		<div class="serfe-readiness-panel">
 			<h2><?php esc_html_e( 'Discovery Checks', 'serfe-ai-discovery' ); ?></h2>
@@ -80,6 +90,10 @@ final class Readiness {
 				<p><?php esc_html_e( 'These checks make local requests to public URLs for robots.txt, llms.txt, XML sitemaps, Link headers, Markdown, and optional agent services. They do not publish or change site content.', 'serfe-ai-discovery' ); ?></p>
 				<p><?php echo esc_html( Settings::api_catalog_enabled() ? __( 'API Catalog publication is enabled.', 'serfe-ai-discovery' ) : __( 'API Catalog publication is disabled. Configure it in the API Catalog tab.', 'serfe-ai-discovery' ) ); ?></p>
 				<p><?php esc_html_e( 'When valid public llms.txt and XML sitemap responses are detected, the plugin automatically publishes RFC 8288 Link headers.', 'serfe-ai-discovery' ); ?></p>
+				<?php if ( ! empty( $cache_plugins ) ) : ?>
+					<?php /* translators: %s: comma-separated list of active page-cache plugins. */ ?>
+					<p class="description"><?php echo esc_html( sprintf( __( 'Active page cache detected: %s. If cached HTML pages were generated before updating discovery settings, purge the site cache before re-running checks.', 'serfe-ai-discovery' ), implode( ', ', $cache_plugins ) ) ); ?></p>
+				<?php endif; ?>
 				<details style="margin: 16px 0;"><summary><?php esc_html_e( 'About XML Sitemaps', 'serfe-ai-discovery' ); ?></summary>
 					<p><?php esc_html_e( 'An XML sitemap lists canonical public URLs in a machine-readable format, helping crawlers and technical tools find the right pages.', 'serfe-ai-discovery' ); ?></p>
 					<p><?php esc_html_e( 'Include live public URLs only. Exclude redirects, noindex content, duplicates, private pages, search pages, cart, checkout, and account pages.', 'serfe-ai-discovery' ); ?></p>
@@ -88,11 +102,15 @@ final class Readiness {
 					<input type="hidden" name="action" value="serfe_ai_discovery_readiness_refresh">
 					<?php wp_nonce_field( 'serfe_ai_discovery_readiness_refresh' ); ?>
 					<?php submit_button( __( 'Run checks', 'serfe-ai-discovery' ), 'primary', 'submit', false ); ?>
+					<?php if ( ! empty( $cache_plugins ) ) : ?>
+						<button type="submit" name="purge_cache" value="1" class="button button-secondary" style="margin-left: 8px;"><?php esc_html_e( 'Purge cache & run checks', 'serfe-ai-discovery' ); ?></button>
+					<?php endif; ?>
 				</form>
 			</div>
 
 			<?php if ( isset( $_GET['refreshed'], $_GET['_wpnonce'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['refreshed'] ) ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'serfe_ai_discovery_readiness_refreshed' ) ) : ?>
-				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Checks refreshed.', 'serfe-ai-discovery' ); ?></p></div>
+				<?php $purged_notice = isset( $_GET['cache_purged'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['cache_purged'] ) ); ?>
+				<div class="notice notice-success is-dismissible"><p><?php echo esc_html( $purged_notice ? __( 'Site cache purged and checks refreshed.', 'serfe-ai-discovery' ) : __( 'Checks refreshed.', 'serfe-ai-discovery' ) ); ?></p></div>
 			<?php endif; ?>
 
 			<?php if ( $has_checks ) : ?>
@@ -149,8 +167,17 @@ final class Readiness {
 			return $cached;
 		}
 
+		if ( class_exists( __NAMESPACE__ . '\Cache_Integrations' ) ) {
+			Cache_Integrations::sync_rocket_config();
+		}
+
 		$llms    = $this->check_llms();
 		$sitemap = $this->check_sitemap();
+		set_transient( self::LINK_HEADERS_CACHE_KEY, self::agent_discovery_links_from_checks( $llms, $sitemap ), self::LINK_HEADERS_CACHE_TTL );
+		if ( class_exists( __NAMESPACE__ . '\Cache_Integrations' ) ) {
+			Cache_Integrations::sync_rocket_config();
+		}
+
 		$results = array(
 			'robots'       => $this->check_robots(),
 			'llms'         => $llms,
@@ -174,7 +201,6 @@ final class Readiness {
 
 		set_transient( self::CACHE_KEY, $report, self::CACHE_TTL );
 		update_option( self::REPORT_OPTION, $report, false );
-		set_transient( self::LINK_HEADERS_CACHE_KEY, self::agent_discovery_links_from_checks( $llms, $sitemap ), self::LINK_HEADERS_CACHE_TTL );
 		return $report;
 	}
 
@@ -206,6 +232,9 @@ final class Readiness {
 
 		$links = self::agent_discovery_links_from_checks( $this->check_llms(), $this->check_sitemap() );
 		set_transient( self::LINK_HEADERS_CACHE_KEY, $links, self::LINK_HEADERS_CACHE_TTL );
+		if ( class_exists( __NAMESPACE__ . '\Cache_Integrations' ) ) {
+			Cache_Integrations::sync_rocket_config();
+		}
 		return $links;
 	}
 
@@ -289,6 +318,23 @@ final class Readiness {
 	/** @param array<string, string> $llms @param array<string, string> $sitemap @return array<string, string> */
 	private function check_agent_link_headers( $llms, $sitemap ) {
 		$links = self::agent_discovery_links_from_checks( $llms, $sitemap );
+		if ( ! empty( $links ) ) {
+			$home_url      = home_url( '/' );
+			$home_response = $this->get( $home_url );
+			if ( $home_response['ok'] && 200 === $home_response['code'] ) {
+				foreach ( $links as $link ) {
+					if ( false === stripos( $home_response['link_header'], 'rel="' . $link['rel'] . '"' ) ) {
+						return $this->check(
+							'unknown',
+							__( 'Agent discovery Link headers', 'serfe-ai-discovery' ),
+							self::cache_clear_notice( __( 'The discovery files are valid, but the homepage response did not include the expected HTTP Link headers.', 'serfe-ai-discovery' ) ),
+							$home_url
+						);
+					}
+				}
+			}
+		}
+
 		if ( 2 === count( $links ) ) {
 			return $this->check( 'pass', __( 'Agent discovery Link headers', 'serfe-ai-discovery' ), __( 'Link headers advertise llms.txt and the XML sitemap.', 'serfe-ai-discovery' ) );
 		}
@@ -369,6 +415,28 @@ final class Readiness {
 
 		if ( $loopback_down ) {
 			return $this->check( 'unknown', __( 'Markdown negotiation', 'serfe-ai-discovery' ), __( 'The site could not complete its local Markdown probe.', 'serfe-ai-discovery' ), $first_url );
+		}
+
+		if ( '' !== $first_url && class_exists( __NAMESPACE__ . '\Discovery' ) ) {
+			$md_response = $this->get( Discovery::markdown_url( $first_url ) );
+			if ( $md_response['ok'] && 200 === $md_response['code'] && 0 === stripos( $md_response['content_type'], 'text/markdown' ) ) {
+				return $this->check(
+					'fail',
+					__( 'Markdown negotiation', 'serfe-ai-discovery' ),
+					self::cache_clear_notice( __( 'Direct .md URLs work, but Accept: text/markdown returned cached HTML instead of text/markdown.', 'serfe-ai-discovery' ) ),
+					$first_url
+				);
+			}
+		}
+
+		$cache_plugins = class_exists( __NAMESPACE__ . '\Cache_Integrations' ) ? Cache_Integrations::active_cache_plugins() : array();
+		if ( ! empty( $cache_plugins ) ) {
+			return $this->check(
+				'fail',
+				__( 'Markdown negotiation', 'serfe-ai-discovery' ),
+				self::cache_clear_notice( __( 'The public probe did not return Content-Type: text/markdown.', 'serfe-ai-discovery' ) ),
+				$first_url
+			);
 		}
 
 		return $this->check( 'fail', __( 'Markdown negotiation', 'serfe-ai-discovery' ), __( 'The public probe did not return Content-Type: text/markdown.', 'serfe-ai-discovery' ), $first_url );
@@ -460,7 +528,7 @@ final class Readiness {
 		return $this->check( 'fail', $label, __( 'The registered service did not pass its health check.', 'serfe-ai-discovery' ), $endpoint );
 	}
 
-	/** @return array{ok: bool, code: int, body: string, content_type: string, detail: string} */
+	/** @return array{ok: bool, code: int, body: string, content_type: string, link_header: string, detail: string} */
 	private function get( $url, $headers = array() ) {
 		if ( ! self::is_same_origin_url( $url ) ) {
 			return array(
@@ -468,6 +536,7 @@ final class Readiness {
 				'code'         => 0,
 				'body'         => '',
 				'content_type' => '',
+				'link_header'  => '',
 				'detail'       => __( 'Only this site can be checked.', 'serfe-ai-discovery' ),
 			);
 		}
@@ -503,17 +572,39 @@ final class Readiness {
 				'code'         => 0,
 				'body'         => '',
 				'content_type' => '',
+				'link_header'  => '',
 				'detail'       => __( 'The site could not complete its local loopback request.', 'serfe-ai-discovery' ),
 			);
 		}
+
+		$raw_link    = wp_remote_retrieve_header( $response, 'link' );
+		$link_header = is_array( $raw_link ) ? implode( ', ', array_map( 'strval', $raw_link ) ) : (string) $raw_link;
 
 		return array(
 			'ok'           => true,
 			'code'         => (int) wp_remote_retrieve_response_code( $response ),
 			'body'         => (string) wp_remote_retrieve_body( $response ),
 			'content_type' => (string) wp_remote_retrieve_header( $response, 'content-type' ),
+			'link_header'  => $link_header,
 			'detail'       => '',
 		);
+	}
+
+	/**
+	 * Append an actionable cache-clearing instruction naming active cache plugins when detected.
+	 *
+	 * @param string $prefix Primary diagnostic explanation.
+	 * @return string
+	 */
+	public static function cache_clear_notice( $prefix ) {
+		$plugins = class_exists( __NAMESPACE__ . '\Cache_Integrations' ) ? Cache_Integrations::active_cache_plugins() : array();
+		if ( ! empty( $plugins ) ) {
+			/* translators: 1: diagnostic reason, 2: comma-separated list of active cache plugins. */
+			return sprintf( __( '%1$s Clear your site cache (%2$s) and run the checks again.', 'serfe-ai-discovery' ), $prefix, implode( ', ', $plugins ) );
+		}
+
+		/* translators: %s: diagnostic reason. */
+		return sprintf( __( '%s Clear your site or server page cache and run the checks again.', 'serfe-ai-discovery' ), $prefix );
 	}
 
 	/** @param string $url Candidate URL. @return bool */
