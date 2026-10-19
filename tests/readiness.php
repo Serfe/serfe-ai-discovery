@@ -105,7 +105,6 @@ $assert_same( false, Readiness::is_same_origin_url( 'http://example.com/sitemap.
 $assert_same( false, Readiness::is_same_origin_url( 'https://user@example.com/sitemap.xml' ), 'Rejects credentials in validation URL' );
 
 $valid_skill = array(
-	'$schema' => Readiness::SKILLS_SCHEMA,
 	'skills'  => array(
 		array(
 			'name'        => 'public-catalog',
@@ -116,7 +115,7 @@ $valid_skill = array(
 		),
 	),
 );
-$assert_same( true, Readiness::validate_skills_index( $valid_skill )['valid'], 'Accepts a valid Agent Skills v0.2.0 index' );
+$assert_same( true, Readiness::validate_skills_index( $valid_skill )['valid'], 'Accepts a valid Agent Skills index without fetching its schema' );
 $valid_skill['skills'][0]['digest'] = 'sha256:not-a-digest';
 $assert_same( false, Readiness::validate_skills_index( $valid_skill )['valid'], 'Rejects an invalid Agent Skills digest' );
 $assert_same(

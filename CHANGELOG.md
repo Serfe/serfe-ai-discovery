@@ -26,6 +26,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Made robots.txt file management an explicitly labeled advanced editor while keeping virtual and manual Content Signals controls accessible first.
 - Added cache-busting asset versions based on bundled asset modification times so updated admin interactions load reliably during in-place updates.
 - Insert the llms.txt starter template asynchronously in the editor, with visible feedback and no page reload or file publication; non-JavaScript fallback now explicitly states that it only loads an unpublished draft.
+- Removed the external Agent Skills schema URL from local validation; Discovery Checks now validate the published index shape without fetching third-party schemas or artifacts.
+- Clarified in the WordPress.org readme that Discovery Checks make bounded same-origin requests only, and that optional external validation opens solely on an administrator's explicit browser action.
 
 ## [1.0.12] - 2026-10-15
 

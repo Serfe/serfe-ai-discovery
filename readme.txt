@@ -34,6 +34,12 @@ The plugin does not create an MCP server, OAuth authorization system, Agent Skil
 
 Markdown is disabled by default and only eligible public content is published. You control file publication and can review existing virtual or physical responses before replacing them. The plugin does not send content or telemetry to Serfe.
 
+== External services ==
+
+This plugin does not require, contact, or send site content to any third-party service. Discovery Checks make bounded loopback requests only to public URLs on your own website, such as `robots.txt`, `llms.txt`, sitemaps, Markdown responses, and any same-origin agent endpoint that you explicitly configure.
+
+The optional Is It Agent-Ready button opens that external website in a new browser tab only after you select it. The plugin does not make that request or transmit data to the service; review that website's own terms and privacy policy before using it.
+
 == Installation ==
 
 1. Install and activate Serfe AI Discovery through the WordPress Plugins screen.

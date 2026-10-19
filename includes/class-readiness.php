@@ -19,7 +19,6 @@ final class Readiness {
 	const CACHE_TTL              = 300;
 	const LINK_HEADERS_CACHE_KEY = 'serfe_ai_discovery_agent_links_v1';
 	const LINK_HEADERS_CACHE_TTL = 300;
-	const SKILLS_SCHEMA          = 'https://schemas.agentskills.io/discovery/0.2.0/schema.json';
 
 	/** Register the diagnostic refresh action on the plugin settings screen. */
 	public function register_hooks() {
@@ -709,17 +708,17 @@ final class Readiness {
 	}
 
 	/**
-	 * Validate the v0.2.0 Agent Skills index shape without fetching artifacts.
+	 * Validate the Agent Skills index shape without fetching schemas or artifacts.
 	 *
 	 * @param mixed $index Decoded JSON index.
 	 * @return array{valid: bool, count: int, detail: string}
 	 */
 	public static function validate_skills_index( $index ) {
-		if ( ! is_array( $index ) || ( $index['$schema'] ?? '' ) !== self::SKILLS_SCHEMA || ! isset( $index['skills'] ) || ! is_array( $index['skills'] ) ) {
+		if ( ! is_array( $index ) || ! isset( $index['skills'] ) || ! is_array( $index['skills'] ) ) {
 			return array(
 				'valid'  => false,
 				'count'  => 0,
-				'detail' => __( 'No valid Agent Skills v0.2.0 index was found.', 'serfe-ai-discovery' ),
+				'detail' => __( 'No valid Agent Skills index was found.', 'serfe-ai-discovery' ),
 			);
 		}
 
