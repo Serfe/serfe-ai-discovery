@@ -46,6 +46,9 @@ These guidelines apply to developing, maintaining, and testing **Serfe AI Discov
 
 - **Conventional Commits:** Use type prefixes (`feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`) for commit messages.
 - **Keep a Changelog:** Update `CHANGELOG.md` under `[Unreleased]` whenever feature behavior, security boundaries, or user-facing interfaces change.
+  - Document only relevant, concrete, user-facing outcomes. Group related work into concise entries under `Added`, `Changed`, `Fixed`, `Security`, or `Removed` as appropriate.
+  - Do not list individual commits, implementation details, test-only changes, routine dependency updates, or internal refactors unless they materially change the user experience, compatibility, or a security boundary.
+  - Before a release, move the concise `[Unreleased]` entries into the versioned section with its release date. Keep prior release notes as a useful public history rather than a complete development log.
 - **Submodule Isolation:** Do not include parent repository commits or non-plugin documentation inside this repository.
 
 ## Public Repository Checklist
