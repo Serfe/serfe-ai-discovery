@@ -67,6 +67,8 @@ $assert_same( '``tick`value``', $converter->convert( '<code>tick`value</code>' )
 $assert_same( "| Name | Cost |\n| :--- | ---: |\n| Basic | 10 |", $converter->convert( '<table><tr><th class="has-text-align-left">Name</th><th style="text-align:right">Cost</th></tr><tr><td>Basic</td><td>10</td></tr></table>' ), 'Preserves table alignment' );
 $assert_same( "Term\n: Explanation", $converter->convert( '<dl><dt>Term</dt><dd>Explanation</dd></dl>' ), 'Converts definition lists' );
 $assert_same( '[Docs](https://example.com "Reference")', $converter->convert( '<a href="https://example.com" title="Reference">Docs</a>' ), 'Preserves link title' );
+$assert_same( '[Video](https://example.com/video.mp4)', $converter->convert( '<video><source src="https://example.com/video.mp4"></video>' ), 'Converts video sources to a Markdown link' );
+$assert_same( "![First](https://example.com/first.jpg)\n\n![Second](https://example.com/second.jpg)", $converter->convert( '<figure><img src="https://example.com/first.jpg" alt="First"></figure><figure><img src="https://example.com/second.jpg" alt="Second"></figure>' ), 'Separates saved Gutenberg gallery images into Markdown blocks' );
 $assert_same( 2, Response::estimate_tokens( 'One two' ), 'Estimates Markdown tokens when no tokenizer is installed' );
 
 // Verify WordPress 6.2 to 7.1 and PHP 7.4+ headers.

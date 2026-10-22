@@ -94,10 +94,17 @@ final class Html_To_Markdown {
 				$text  = trim( $inner );
 				$title = $this->markdown_title( $node->getAttribute( 'title' ) );
 				return '' === $href ? $text : '[' . ( '' !== $text ? $text : $href ) . '](' . $href . $title . ')';
+			case 'figure':
+				return '' === trim( $inner ) ? '' : "\n\n" . trim( $inner ) . "\n\n";
 			case 'img':
 				$src   = $node->getAttribute( 'src' );
 				$title = $this->markdown_title( $node->getAttribute( 'title' ) );
 				return '' === $src ? '' : '![' . $node->getAttribute( 'alt' ) . '](' . $src . $title . ')';
+			case 'video':
+				$src   = $this->media_source( $node );
+				$label = trim( $node->getAttribute( 'aria-label' ) );
+				$label = '' === $label ? 'Video' : $label;
+				return '' === $src ? $inner : '[' . $label . '](' . $src . ')';
 			case 'ul':
 				return "\n" . $this->list_items( $node, false ) . "\n";
 			case 'ol':
@@ -131,6 +138,21 @@ final class Html_To_Markdown {
 			default:
 				return $inner;
 		}
+	}
+
+	/** Return a video source from its src attribute or first nested source element. */
+	private function media_source( $node ) {
+		$src = $node->getAttribute( 'src' );
+		if ( '' !== $src ) {
+			return $src;
+		}
+		foreach ( $node->getElementsByTagName( 'source' ) as $source ) {
+			$src = $source->getAttribute( 'src' );
+			if ( '' !== $src ) {
+				return $src;
+			}
+		}
+		return '';
 	}
 
 	/** @param \DOMElement $node List node. @param bool $ordered Ordered list. @return string */

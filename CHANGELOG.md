@@ -4,6 +4,11 @@ Notable user-facing changes in public releases of Serfe AI Discovery.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-21
+
+### Added
+- Added Markdown support for editor-saved Gutenberg image, gallery, and video blocks, plus compatible third-party blocks that contain saved public HTML or text.
+
 ## [1.0.13] - 2026-10-20
 
 ### Added
