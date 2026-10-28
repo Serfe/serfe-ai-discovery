@@ -16,7 +16,7 @@ These guidelines apply to developing, maintaining, and testing **Serfe AI Discov
 
 ## 2. Coding and Security Standards
 
-- **Compatibility:** Target PHP 7.4+ and WordPress 6.2+. The compatibility workflow is configured to run integration checks on WordPress 6.2 through 7.1.
+- **Compatibility:** Target PHP 7.4+ and WordPress 6.2+. The compatibility workflow runs blocking integration checks on WordPress 6.2 through 7.1 and a non-blocking check on the current WordPress 7.2 beta. Do not update `Tested up to` until the stable WordPress release has passed validation.
 - **WordPress Coding Standards:** Adhere to `WordPress-Extra` rules defined in `phpcs.xml.dist`.
 - **Capabilities & Nonces:** Guard all administrative actions with `manage_options`, nonces (`check_admin_referer`), and capability checks.
 - **Sanitization & Escaping:** Sanitize all inputs using appropriate WordPress functions (`sanitize_text_field`, `sanitize_key`) and escape all outputs at rendering boundaries (`esc_html`, `esc_url`, `esc_attr`).

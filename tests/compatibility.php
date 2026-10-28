@@ -76,6 +76,8 @@ $assert_true( false !== strpos( $phpstan_neon, 'phpVersion: 70400' ), 'phpstan.n
 $workflow_file = file_get_contents( dirname( __DIR__ ) . '/.github/workflows/source-checks.yml' );
 $assert_true( false !== $workflow_file, 'source-checks workflow is readable' );
 $assert_true( false !== strpos( $workflow_file, "'8.5'" ), 'source-checks workflow includes PHP 8.5' );
+$assert_true( false !== strpos( $workflow_file, "'7.2-beta2'" ), 'source-checks workflow includes the WordPress 7.2 beta integration check' );
+$assert_true( false !== strpos( $workflow_file, "continue-on-error: \${{ matrix.wordpress == '7.2-beta2' }}" ), 'WordPress 7.2 beta integration check is non-blocking' );
 
 // 6. Test compatibility matrix across WordPress 6.2 to 7.1 versions.
 $supported_wp_versions = array( '6.2', '6.2.2', '6.3', '6.3.2', '6.4', '6.4.3', '6.5', '6.5.5', '6.6', '6.6.2', '6.7', '7.0', '7.1' );
@@ -109,4 +111,4 @@ if ( $failures ) {
 	exit( 1 );
 }
 
-echo "All {$tests} compatibility checks (WP 6.2 - 7.1 and PHP 7.4+) passed.\n";
+echo "All {$tests} compatibility checks (WP 6.2 - 7.1 stable, WP 7.2 beta, and PHP 7.4+) passed.\n";
