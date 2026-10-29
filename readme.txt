@@ -49,6 +49,14 @@ This plugin does not require, contact, or send site content to any third-party s
 
 The optional Is It Agent-Ready button opens that external website in a new browser tab only after you select it. The plugin does not make that request or transmit data to the service; review that website's own terms and privacy policy before using it.
 
+== Translations ==
+
+Serfe AI Discovery uses WordPress.org language packs. You can help translate the plugin or suggest improvements through the official translation projects:
+
+* [Spanish](https://translate.wordpress.org/locale/es/default/wp-plugins/serfe-ai-discovery/)
+* [Spanish (Argentina)](https://translate.wordpress.org/locale/es-ar/default/wp-plugins/serfe-ai-discovery/)
+* [Portuguese (Brazil)](https://translate.wordpress.org/locale/pt-br/default/wp-plugins/serfe-ai-discovery/)
+
 == Frequently Asked Questions ==
 
 = What is AI Discovery, and why does my website need it? =

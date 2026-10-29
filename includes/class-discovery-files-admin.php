@@ -39,11 +39,22 @@ final class Discovery_Files_Admin {
 			'serfe-ai-discovery-files',
 			'serfeAiDiscoveryFiles',
 			array(
-				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
-				'templateNonce' => wp_create_nonce( self::AJAX_TEMPLATE_ACTION ),
-				'generating'    => __( 'Generating template…', 'serfe-ai-discovery' ),
-				'inserted'      => __( 'Template inserted. Review it before publishing.', 'serfe-ai-discovery' ),
-				'failed'        => __( 'The template could not be generated. Try again or reload the page.', 'serfe-ai-discovery' ),
+				'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
+				'templateNonce'   => wp_create_nonce( self::AJAX_TEMPLATE_ACTION ),
+				'generating'      => __( 'Generating template…', 'serfe-ai-discovery' ),
+				'inserted'        => __( 'Template inserted. Review it before publishing.', 'serfe-ai-discovery' ),
+				'failed'          => __( 'The template could not be generated. Try again or reload the page.', 'serfe-ai-discovery' ),
+				'copyLabel'       => __( 'Copy to clipboard', 'serfe-ai-discovery' ),
+				'copiedLabel'     => __( 'Copied', 'serfe-ai-discovery' ),
+				'copiedStatus'    => __( 'Content copied to clipboard.', 'serfe-ai-discovery' ),
+				'protectLabel'    => __( 'Protect section from AI-Train', 'serfe-ai-discovery' ),
+				'protectedLabel'  => __( 'Protection added', 'serfe-ai-discovery' ),
+				'invalidPath'     => __( 'Enter a section path such as /blog/.', 'serfe-ai-discovery' ),
+				'protectedStatus' => __( 'Section protection added to the copyable block.', 'serfe-ai-discovery' ),
+				'copyFailed'      => __( 'Copy failed. Select the content and copy it manually.', 'serfe-ai-discovery' ),
+				'templateLabel'   => __( 'Insert starter template', 'serfe-ai-discovery' ),
+				'templateError'   => __( 'Template generation failed.', 'serfe-ai-discovery' ),
+				'releaseConfirm'  => __( 'Release Serfe control? The current file will not change, but Serfe metadata and backups will be removed.', 'serfe-ai-discovery' ),
 			)
 		);
 	}

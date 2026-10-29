@@ -1,5 +1,6 @@
 ( function() {
 	'use strict';
+	var config = window.serfeAiDiscoveryFiles || {};
 
 	function fallbackCopy( area ) {
 		area.focus();
@@ -17,10 +18,10 @@
 			icon.textContent = copied ? '✓' : '⧉';
 		}
 		if ( label ) {
-			label.textContent = copied ? 'Copied' : 'Copy to clipboard';
+			label.textContent = copied ? config.copiedLabel : config.copyLabel;
 		}
 		if ( status ) {
-			status.textContent = copied ? 'Content copied to clipboard.' : '';
+			status.textContent = copied ? config.copiedStatus : '';
 		}
 	}
 
@@ -33,7 +34,7 @@
 			icon.textContent = updated ? '✓' : '+';
 		}
 		if ( label ) {
-			label.textContent = updated ? 'Protection added' : 'Protect section from AI-Train';
+			label.textContent = updated ? config.protectedLabel : config.protectLabel;
 		}
 	}
 
@@ -45,7 +46,7 @@
 
 		button.disabled = busy;
 		if ( label ) {
-			label.textContent = busy ? message : 'Insert starter template';
+			label.textContent = busy ? message : config.templateLabel;
 		}
 		if ( status ) {
 			status.textContent = message;
@@ -75,7 +76,7 @@
 		var path = input ? input.value.trim().replace( /\*$/, '' ) : '';
 		if ( ! area || ! input || ! /^\/(?!\/)/.test( path ) || /[?#]/.test( path ) || '/' === path ) {
 			if ( status ) {
-				status.textContent = 'Enter a section path such as /blog/.';
+				status.textContent = config.invalidPath;
 			}
 			return;
 		}
@@ -95,7 +96,7 @@
 			protectedState( protect, false );
 		}, 500 );
 		if ( status ) {
-			status.textContent = 'Section protection added to the copyable block.';
+			status.textContent = config.protectedStatus;
 		}
 	} );
 
@@ -120,7 +121,7 @@
 		} ).catch( function() {
 			var status = button.querySelector( '[data-serfe-copy-status]' );
 			if ( status ) {
-				status.textContent = 'Copy failed. Select the content and copy it manually.';
+				status.textContent = config.copyFailed;
 			}
 			area.focus();
 			area.select();
@@ -152,7 +153,7 @@
 			return response.json();
 		} ).then( function( response ) {
 			if ( ! response.success || ! response.data || 'string' !== typeof response.data.content ) {
-				throw new Error( 'Template generation failed.' );
+				throw new Error( config.templateError );
 			}
 			area.value = response.data.content;
 			area.classList.remove( 'is-updated' );
@@ -170,7 +171,7 @@
 
 	document.addEventListener( 'submit', function( event ) {
 		var submitter = event.submitter;
-		if ( submitter && submitter.matches( '[data-serfe-release-control]' ) && ! window.confirm( 'Release Serfe control? The current file will not change, but Serfe metadata and backups will be removed.' ) ) {
+		if ( submitter && submitter.matches( '[data-serfe-release-control]' ) && ! window.confirm( config.releaseConfirm ) ) {
 			event.preventDefault();
 		}
 	} );

@@ -4,6 +4,9 @@ Notable user-facing changes in public releases of Serfe AI Discovery.
 
 ## [Unreleased]
 
+### Changed
+- Prepared all dynamic administration messages for WordPress.org language packs, including the `robots.txt` and `llms.txt` controls.
+
 ## [1.1.0] - 2026-10-21
 
 ### Added
