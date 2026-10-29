@@ -1,0 +1,30 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "landingPage": "/wp-admin/admin.php?page=serfe-ai-discovery&tab=overview",
+  "preferredVersions": {
+    "php": "8.3",
+    "wp": "latest"
+  },
+  "phpExtensionBundles": [
+    "kitchen-sink"
+  ],
+  "steps": [
+    {
+      "step": "login",
+      "username": "admin",
+      "password": "password"
+    },
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "blogname": "Serfe AI Discovery Demo",
+        "blogdescription": "A public-content demo for AI discovery and Markdown publishing.",
+        "permalink_structure": "/%postname%/"
+      }
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php require_once 'wordpress/wp-load.php'; update_option( 'serfe_ai_discovery_settings', array( 'schema_version' => 3, 'markdown_enabled' => 1, 'blocked_post_types' => array(), 'blocked_paths' => array(), 'api_catalog_enabled' => 0 ) ); if ( ! get_page_by_path( 'ai-discovery-demo' ) ) { wp_insert_post( array( 'post_title' => 'AI Discovery Demo', 'post_name' => 'ai-discovery-demo', 'post_status' => 'publish', 'post_type' => 'page', 'post_content' => '<!-- wp:heading --><h2>Make public content easier for AI systems to discover</h2><!-- /wp:heading --><!-- wp:paragraph --><p>This sample page is published as HTML and as an optional Markdown representation.</p><!-- /wp:paragraph --><!-- wp:list --><ul><li>Review discovery signals</li><li>Enable Markdown for public content</li><li>Publish robots.txt and llms.txt when appropriate</li></ul><!-- /wp:list -->' ) ); } if ( ! get_page_by_path( 'getting-started', OBJECT, 'post' ) ) { wp_insert_post( array( 'post_title' => 'Getting Started with AI Discovery', 'post_name' => 'getting-started', 'post_status' => 'publish', 'post_type' => 'post', 'post_content' => '<!-- wp:paragraph --><p>Use the plugin settings to review and configure your site’s public AI discovery signals.</p><!-- /wp:paragraph -->' ) ); } flush_rewrite_rules(); ?>"
+    }
+  ]
+}
