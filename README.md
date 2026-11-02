@@ -1,6 +1,6 @@
 # Serfe AI Discovery
 
-> Expose published WordPress content as clean Markdown and machine-readable discovery signals for AI agents, LLMs, and semantic search engines.
+> AI discovery for WordPress: publish `llms.txt`, `robots.txt` signals, Markdown, and Link headers.
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.2%20to%207.1-blue.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-blue.svg)](https://php.net/)
@@ -12,9 +12,11 @@
 
 ## Plugin Objective
 
-Traditional SEO plugins optimize your website for search engines like Google and Bing. **Serfe AI Discovery** complements your SEO strategy by making your public content structured and discoverable for the **Agentic Web** (AI Agents, LLMs, and conversational engines).
+Traditional SEO plugins optimize your website for search engines like Google and Bing. **Serfe AI Discovery** complements your broader SEO strategy by making public content structured and discoverable for the **Agentic Web**: AI agents, LLMs, and conversational engines.
 
 By serving clean `.md` representations of your public content alongside machine-readable discovery endpoints (`robots.txt`, `llms.txt`, and RFC 9727 API Catalogs), the plugin bridges the gap between WordPress and AI consumers.
+
+AI Discovery is a practical technical foundation for Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO). Those disciplines also rely on useful, authoritative content, technical accessibility, and each platform's own systems. This plugin focuses on a key foundation: making the public content and discovery signals that AI agents can access clearer and easier to validate.
 
 ---
 
@@ -133,6 +135,8 @@ add_filter( 'serfe_agent_readiness_agentic_commerce', function () {
 3. Activate the plugin.
 4. Go to **AI Discovery → Markdown** and turn on the master toggle.
 5. Visit any public post with `.md` appended to verify.
+
+> **Note:** Using this plugin does not guarantee that an AI model will crawl, cite, recommend, or mention your website. Providers such as OpenAI, Anthropic, Google, and Perplexity use their own evolving criteria to decide what they discover and include in their responses.
 
 ---
 

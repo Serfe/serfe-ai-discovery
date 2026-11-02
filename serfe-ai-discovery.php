@@ -20,6 +20,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'SERFE_AI_DISCOVERY_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SERFE_AI_DISCOVERY_URL', plugin_dir_url( __FILE__ ) );
 
+/** Load bundled translation files after WordPress has initialized localization. */
+function serfe_ai_discovery_load_translations() {
+	load_plugin_textdomain(
+		'serfe-ai-discovery',
+		false,
+		dirname( plugin_basename( __FILE__ ) ) . '/languages'
+	);
+}
+add_action( 'init', 'serfe_ai_discovery_load_translations' );
+
 $serfe_ai_discovery_headers = get_file_data( __FILE__, array( 'Version' => 'Version' ), 'plugin' );
 define( 'SERFE_AI_DISCOVERY_VERSION', $serfe_ai_discovery_headers['Version'] );
 unset( $serfe_ai_discovery_headers );

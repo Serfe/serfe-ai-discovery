@@ -1,5 +1,5 @@
 === Serfe AI Discovery ===
-Tags: markdown, llms-txt, robots-txt, api-discovery, ai
+Tags: ai, llms-txt, robots-txt, markdown, ai-agents
 Requires at least: 6.2
 Tested up to: 7.1
 Stable tag: 1.1.0
@@ -7,7 +7,7 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Help your website publish clear discovery signals and AI-friendly public content formats.
+AI discovery for WordPress: publish llms.txt, robots.txt signals, Markdown, and Link headers.
 
 == Description ==
 
@@ -15,7 +15,9 @@ AI Discovery helps your website communicate with AI-powered search engines and a
 
 As AI becomes another way people find information online, you can make your public content easier for compatible systems to discover and interpret. Serfe AI Discovery gives you practical, opt-in controls for `robots.txt`, `llms.txt`, Markdown versions of eligible content, and HTTP Link headers for verified discovery resources.
 
-This can help compatible services and agents, including systems associated with ChatGPT, Claude, Gemini, and Perplexity, find the public information you choose to expose. Each provider decides what it crawls, supports, and uses; the plugin cannot guarantee indexing, citations, traffic, rankings, or inclusion in AI-generated answers.
+This can help compatible services and agents find the public information you choose to expose. It remains one part of your broader site SEO strategy, alongside useful content, technical accessibility, and your established SEO practices.
+
+AI Discovery is a practical technical foundation for Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO). These broader disciplines also depend on useful, authoritative content and each platform's own systems. This plugin helps with a key part: making the public content and discovery signals that AI agents can access clearer and easier to validate.
 
 = What you can configure =
 
@@ -42,6 +44,8 @@ Markdown is disabled by default and only eligible public content is published. Y
 4. Draft and review `llms.txt` using current, public, canonical URLs before publishing it.
 5. Enable Markdown only for eligible public content; use Advanced Settings to exclude content types or paths.
 6. Run Discovery Checks and confirm the public responses, including a `.md` URL or `Accept: text/markdown` request.
+
+> **Note:** Using this plugin does not guarantee that an AI model will crawl, cite, recommend, or mention your website. Providers such as OpenAI, Anthropic, Google, and Perplexity use their own evolving criteria to decide what they discover and include in their responses.
 
 == External services ==
 

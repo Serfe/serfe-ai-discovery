@@ -17,6 +17,8 @@ $assert_contains = function ( $needle, $haystack, $name ) use ( &$failures, &$te
 
 $assert_contains( 'Text Domain: serfe-ai-discovery', $main, 'Declares the WordPress.org plugin text domain' );
 $assert_contains( 'Domain Path: /languages', $main, 'Declares the plugin translation directory' );
+$assert_contains( "add_action( 'init', 'serfe_ai_discovery_load_translations' )", $main, 'Loads bundled translation files at init' );
+$assert_contains( "'serfe-ai-discovery'", $main, 'Uses the expected bundled translation text domain' );
 $assert_contains( 'locale/es/default/wp-plugins/serfe-ai-discovery/', $readme, 'Links to the Spanish translation project' );
 $assert_contains( 'locale/es-ar/default/wp-plugins/serfe-ai-discovery/', $readme, 'Links to the Spanish (Argentina) translation project' );
 $assert_contains( 'locale/pt-br/default/wp-plugins/serfe-ai-discovery/', $readme, 'Links to the Portuguese (Brazil) translation project' );
