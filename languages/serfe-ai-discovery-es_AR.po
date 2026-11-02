@@ -1,0 +1,1270 @@
+# Copyright (C) 2026 Serfe
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Serfe AI Discovery 1.1.1\n"
+"Report-Msgid-Bugs-To: https://github.com/Serfe/serfe-ai-discovery/issues\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2026-11-02 00:00+0000\n"
+"Last-Translator: Serfe <support@serfe.com>\n"
+"Language-Team: Spanish (Argentina)\n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: serfe-ai-discovery\n"
+"X-Generator: WP-CLI 2.12.0\n"
+
+#. Plugin Name of the plugin
+msgid "Serfe AI Discovery"
+msgstr ""
+
+#. Description of the plugin
+msgid ""
+"Publishes approved public WordPress content as alternative Markdown and "
+"discovery signals."
+msgstr ""
+
+#. Author of the plugin
+msgid "Serfe"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://www.serfe.com/en/"
+msgstr ""
+
+msgid "Previous page"
+msgstr ""
+
+msgid "Next page"
+msgstr ""
+
+msgid "Shop"
+msgstr ""
+
+msgid "In stock"
+msgstr ""
+
+msgid "Out of stock"
+msgstr ""
+
+msgid "Generating template…"
+msgstr ""
+
+msgid "Template inserted. Review it before publishing."
+msgstr ""
+
+msgid "The template could not be generated. Try again or reload the page."
+msgstr ""
+
+msgid "Copy to clipboard"
+msgstr "Copiar al portapapeles"
+
+msgid "Copied"
+msgstr "Copiado"
+
+msgid "Content copied to clipboard."
+msgstr "Contenido copiado al portapapeles."
+
+msgid "Protect section from AI-Train"
+msgstr ""
+
+msgid "Protection added"
+msgstr ""
+
+msgid "Enter a section path such as /blog/."
+msgstr ""
+
+msgid "Section protection added to the copyable block."
+msgstr ""
+
+msgid "Copy failed. Select the content and copy it manually."
+msgstr ""
+
+msgid "Insert starter template"
+msgstr ""
+
+msgid "Template generation failed."
+msgstr ""
+
+msgid ""
+"Release Serfe control? The current file will not change, but Serfe metadata "
+"and backups will be removed."
+msgstr ""
+
+msgid "You are not allowed to generate this template."
+msgstr ""
+
+msgid "You are not allowed to manage discovery files."
+msgstr ""
+
+msgid "Invalid discovery file action."
+msgstr ""
+
+msgid ""
+"Starter template inserted into the editor only. Review it and select Publish"
+" file when you are ready to save it."
+msgstr ""
+
+msgid "The current public file was checked."
+msgstr ""
+
+msgid "The full llms.txt generation was scheduled."
+msgstr ""
+
+msgid "The scheduled llms.txt generation was cancelled."
+msgstr ""
+
+msgid "Content Signals will be added to the virtual robots.txt response."
+msgstr ""
+
+msgid ""
+"Serfe no longer manages this file. Its current contents were not changed."
+msgstr ""
+
+msgid "The public file was written and checked."
+msgstr ""
+
+msgid "Why robots.txt matters"
+msgstr ""
+
+msgid ""
+"robots.txt communicates crawler access rules and can point crawlers to the "
+"XML sitemap. Access rules must reflect your organization’s policy. Allowing "
+"or blocking a crawler does not guarantee crawling, training, indexing, or "
+"citation."
+msgstr ""
+
+msgid "About robots.txt"
+msgstr ""
+
+msgid ""
+"What it does: Defines crawler access rules and can declare the XML sitemap "
+"location."
+msgstr ""
+
+msgid ""
+"Why it helps: Clarifies which public areas are intended for crawling and "
+"where public URLs can be discovered."
+msgstr ""
+
+msgid ""
+"Important: Rules must reflect your organization’s policy. Allowing or "
+"blocking a crawler does not guarantee crawling, training, indexing, or "
+"citation."
+msgstr ""
+
+msgid "Why llms.txt matters"
+msgstr ""
+
+msgid ""
+"llms.txt is an optional public guide containing curated context and links to"
+" relevant public content. Include only current, public, canonical URLs. It "
+"complements the website, sitemap, structured content, and crawler policy; it"
+" does not replace them."
+msgstr ""
+
+msgid "About llms.txt"
+msgstr ""
+
+msgid ""
+"What it does: Provides an optional human-readable Markdown overview and "
+"curated links to relevant public content."
+msgstr ""
+
+msgid ""
+"Why it helps: Makes approved information easier for AI systems and technical"
+" tools to identify and interpret."
+msgstr ""
+
+msgid ""
+"Important: Include only current, public, canonical URLs. Never include "
+"private areas, customer pages, admin URLs, credentials, unsupported claims, "
+"or outdated offers."
+msgstr ""
+
+msgid ""
+"This file complements the website, sitemap, structured content, and crawler "
+"policy; it does not replace them."
+msgstr ""
+
+msgid "Read more about it in"
+msgstr ""
+
+msgid ""
+"No physical file exists at the public root. A virtual public response might "
+"still be served. Select Validate public file to inspect it before publishing"
+" a physical file."
+msgstr ""
+
+msgid ""
+"This Multisite site stores and serves this discovery file virtually, without"
+" writing to the shared filesystem."
+msgstr ""
+
+msgid ""
+"This public response is unmanaged or changed outside the plugin. Review its "
+"current content before taking control."
+msgstr ""
+
+msgid "Advanced file editor"
+msgstr ""
+
+msgid ""
+"Open this editor when you want Serfe to manage and edit the file manually. "
+"Review the current public response before activating it."
+msgstr ""
+
+msgid "Open advanced file editor"
+msgstr ""
+
+msgid ""
+"Start with the site name and a concise description. Group current public "
+"canonical links under useful headings such as Products, Services, Resources,"
+" Support, Documentation, and Legal. Review this guide after important "
+"content or URL changes."
+msgstr ""
+
+msgid "If your file is present, you could see content here:"
+msgstr ""
+
+#. translators: 1: date and time, 2: administrator ID.
+#, php-format
+msgid "Last published: %1$s by administrator %2$d."
+msgstr ""
+
+msgid "Editor content"
+msgstr ""
+
+msgid ""
+"I reviewed the current public file and confirm that this plugin may take "
+"control of it."
+msgstr ""
+
+msgid "Publish file"
+msgstr "Publicar archivo"
+
+msgid "Reset and load current"
+msgstr ""
+
+msgid "Restore previous version"
+msgstr ""
+
+msgid "Release control"
+msgstr ""
+
+msgid ""
+"This keeps the current physical file unchanged but removes Serfe management "
+"data and backups. A plugin that requires a virtual robots.txt response may "
+"still require you to remove the physical file through your host."
+msgstr ""
+
+msgid ""
+"Scheduled generation only creates llms.txt when it is empty or missing. It "
+"will not overwrite existing content."
+msgstr ""
+
+msgid "A full llms.txt generation is already scheduled."
+msgstr ""
+
+msgid "The llms.txt generation could not be scheduled."
+msgstr ""
+
+msgid "No full llms.txt generation is currently scheduled for this site."
+msgstr ""
+
+msgid "The scheduled llms.txt generation could not be cancelled."
+msgstr ""
+
+msgid ""
+"Scheduled llms.txt generation was skipped because the file already contains "
+"content."
+msgstr ""
+
+msgid "The scheduled llms.txt generation completed."
+msgstr ""
+
+msgid "Generate full llms.txt asynchronously"
+msgstr ""
+
+msgid ""
+"Recommended for blogs or sites with more than 100 public pages. This creates"
+" a full inventory of eligible public content in a deferred WordPress action."
+msgstr ""
+
+msgid "A full llms.txt generation is currently scheduled for this site."
+msgstr ""
+
+msgid "Cancel scheduled generation"
+msgstr ""
+
+msgid "Schedule full llms.txt generation"
+msgstr ""
+
+msgid ""
+"Scheduled generation only creates llms.txt when it is empty or missing. It "
+"will not overwrite existing content. Clear the editor and publish an empty "
+"file first if you want to use this option."
+msgstr ""
+
+msgid ""
+"The action checks again when it runs. If llms.txt has content by then, it is"
+" skipped without changing the file."
+msgstr ""
+
+msgid ""
+"The action runs later when WP-Cron is correctly configured. WP-Cron depends "
+"on site visits unless your host triggers it on a schedule."
+msgstr ""
+
+msgid "Learn how WP-Cron works"
+msgstr ""
+
+#. translators: 1: robots.txt or llms.txt filename, 2: canonical public root
+#. URL.
+#, php-format
+msgid ""
+"WPML detected. This plugin always manages %1$s at the WordPress public root:"
+" %2$s. Language paths such as /es/%1$s are not separate files and are not "
+"edited or validated."
+msgstr ""
+
+msgid ""
+"Loco Translate detected. It localizes plugin and theme strings but does not "
+"create a separate public discovery-file URL."
+msgstr ""
+
+msgid "Add AI Content Signals to your robots.txt"
+msgstr ""
+
+msgid ""
+"A physical robots.txt file exists. Use Advanced file management to edit it, "
+"or edit it in the plugin that generates it. Content Signals cannot be added "
+"dynamically while that file is served."
+msgstr ""
+
+msgid "Content Signals are enabled for the virtual robots.txt response."
+msgstr ""
+
+msgid ""
+"Validate the current virtual robots.txt response, then append the standard "
+"Serfe Content Signals block through WordPress without creating a physical "
+"file."
+msgstr ""
+
+msgid "Update signals manually in your current robots.txt"
+msgstr ""
+
+msgid ""
+"Copy this block into the robots.txt editor currently serving your site. This"
+" works with virtual files managed by Rank Math, Yoast SEO, and other SEO "
+"plugins without creating a physical file."
+msgstr ""
+
+msgid "Section path"
+msgstr ""
+
+msgid ""
+"Enter one site path, such as /resources/. The rule applies to that section "
+"and URLs below it. To protect more sections, copy the generated section "
+"block and repeat it manually with each path."
+msgstr ""
+
+msgid "Learn more about Content Signals options"
+msgstr ""
+
+msgid "Yoast SEO robots.txt guide"
+msgstr ""
+
+msgid "Rank Math robots.txt guide"
+msgstr ""
+
+msgid "AIOSEO robots.txt guide"
+msgstr ""
+
+#. translators: %1$s: Name of SEO plugin(s) (e.g. Yoast SEO, Rank Math).
+#, php-format
+msgid ""
+"We detected %1$s. Paste the generated block in its robots.txt editor to keep"
+" that plugin in control of the virtual response."
+msgstr ""
+
+msgid "Review current file, editor text, and previous backup"
+msgstr ""
+
+msgid "Current public response"
+msgstr ""
+
+msgid "Previous backup"
+msgstr ""
+
+msgid "No backup is available."
+msgstr ""
+
+msgid "Validated content for manual deployment"
+msgstr ""
+
+msgid "Copy validated content"
+msgstr ""
+
+msgid "No sitemap is declared in the current robots.txt file."
+msgstr ""
+
+msgid ""
+"A rule appears to block the entire public site. Review whether this matches "
+"your crawler policy."
+msgstr ""
+
+msgid "Website"
+msgstr ""
+
+msgid "Public information and resources from this website."
+msgstr ""
+
+msgid "Pages"
+msgstr ""
+
+msgid "Posts"
+msgstr ""
+
+msgid "Products"
+msgstr ""
+
+msgid "Product categories"
+msgstr ""
+
+msgid "Yoast SEO XML Sitemap"
+msgstr ""
+
+msgid "Rank Math XML Sitemap"
+msgstr ""
+
+msgid "All in One SEO XML Sitemap"
+msgstr ""
+
+msgid "XML Sitemaps"
+msgstr ""
+
+msgid "Untitled"
+msgstr ""
+
+msgid "You are not allowed to manage Content Signals."
+msgstr ""
+
+msgid ""
+"A physical robots.txt file exists. Edit it through Advanced file management "
+"or the plugin that manages it."
+msgstr ""
+
+msgid ""
+"This site already serves a virtual robots.txt managed by Serfe. Edit its "
+"content through Advanced file management."
+msgstr ""
+
+msgid ""
+"No virtual robots.txt response was found. Create or enable one before adding"
+" Content Signals automatically."
+msgstr ""
+
+msgid "The public root cannot be mapped safely from the site URLs."
+msgstr ""
+
+msgid "The WordPress URL is outside the public site URL."
+msgstr ""
+
+msgid "The WordPress directory cannot be verified."
+msgstr ""
+
+msgid "The WordPress directory does not match its public URL path."
+msgstr ""
+
+msgid "The public root is not an accessible directory."
+msgstr ""
+
+msgid "The file must contain valid UTF-8 text."
+msgstr ""
+
+msgid "The file contains a non-permitted control character."
+msgstr ""
+
+msgid "The file exceeds the configured size limit."
+msgstr ""
+
+msgid "Only robots.txt and llms.txt can be published."
+msgstr ""
+
+msgid "The public path is not a regular file."
+msgstr ""
+
+msgid "The public file could not be read."
+msgstr ""
+
+msgid "The existing public file is too large to manage safely."
+msgstr ""
+
+msgid "You are not allowed to inspect discovery files."
+msgstr ""
+
+msgid "The public response could not be checked. No root file was written."
+msgstr ""
+
+msgid ""
+"The public response is not a bounded plain-text file. No root file was "
+"written."
+msgstr ""
+
+msgid ""
+"The public response is not valid editable text. No root file was written."
+msgstr ""
+
+msgid "You are not allowed to publish discovery files."
+msgstr ""
+
+msgid ""
+"The llms.txt file changed since this regeneration was scheduled. Review it "
+"before scheduling another update."
+msgstr ""
+
+msgid ""
+"The public file is unmanaged or has changed outside this plugin. Review it "
+"and confirm takeover before publishing."
+msgstr ""
+
+msgid ""
+"A virtual public response already exists. Inspect it and explicitly confirm "
+"takeover before creating a physical file."
+msgstr ""
+
+msgid ""
+"The public file changed since this editor was opened. Review the current "
+"content before publishing."
+msgstr ""
+
+msgid "The public root is not writable by WordPress."
+msgstr ""
+
+msgid "A temporary file could not be created in the public root."
+msgstr ""
+
+msgid "The temporary file could not be written completely."
+msgstr ""
+
+msgid ""
+"The public file changed during publication. Review it before trying again."
+msgstr ""
+
+msgid ""
+"The public response changed during publication. Review it before trying "
+"again."
+msgstr ""
+
+msgid "The public file could not be replaced atomically."
+msgstr ""
+
+msgid "You are not allowed to validate discovery files."
+msgstr ""
+
+msgid ""
+"A virtual public response exists without a physical root file. Publishing "
+"here would replace the response served by WordPress or another plugin."
+msgstr ""
+
+msgid "No physical root file or public response was found."
+msgstr ""
+
+msgid ""
+"The public response does not match the current root file, or it could not be"
+" reached."
+msgstr ""
+
+msgid "No sitemap is declared in robots.txt."
+msgstr ""
+
+msgid "A Sitemap URL is malformed. Review its absolute public URL."
+msgstr ""
+
+msgid "A Sitemap URL points outside this site and was not checked."
+msgstr ""
+
+msgid "A Sitemap URL requires authentication or is not publicly accessible."
+msgstr ""
+
+#. translators: %s: Sitemap URL from robots.txt.
+#, php-format
+msgid "The Sitemap URL could not be reached: %s"
+msgstr ""
+
+msgid "No previous version is available."
+msgstr ""
+
+msgid "You are not allowed to release discovery files."
+msgstr ""
+
+msgid "Only robots.txt and llms.txt can be released."
+msgstr ""
+
+msgid ""
+"This virtual file remains served by Serfe until its content is removed. "
+"Releasing it without changing the public response is not available."
+msgstr ""
+
+msgid ""
+"The public file changed since Serfe last managed it. Review the current "
+"content before releasing control."
+msgstr ""
+
+msgid ""
+"The virtual public file changed outside this plugin. Review it and confirm "
+"takeover before publishing."
+msgstr ""
+
+msgid ""
+"A virtual public response already exists. Inspect it and explicitly confirm "
+"takeover before replacing it."
+msgstr ""
+
+msgid "A virtual public response exists but is not managed by this plugin."
+msgstr ""
+
+msgid "No virtual public response was found."
+msgstr ""
+
+msgid ""
+"The public response does not match the current virtual file, or it could not"
+" be reached."
+msgstr ""
+
+msgid "Settings"
+msgstr "Ajustes"
+
+msgid "Community support"
+msgstr ""
+
+msgid "Price"
+msgstr ""
+
+msgid "Regular Price"
+msgstr ""
+
+msgid "Sale Price"
+msgstr ""
+
+msgid "Variations"
+msgstr ""
+
+msgid "Option"
+msgstr ""
+
+msgid "Availability"
+msgstr ""
+
+msgid "You are not allowed to run this check."
+msgstr ""
+
+msgid "Discovery Checks"
+msgstr "Comprobaciones de descubrimiento"
+
+msgid "Your site discovery status"
+msgstr "Estado de descubrimiento de tu sitio"
+
+msgid ""
+"The latest local results are shown below. Review any item marked unavailable"
+" or needing verification."
+msgstr ""
+"Los resultados locales más recientes se muestran a continuación. Revisá los "
+"elementos marcados como no disponibles o que requieren verificación."
+
+#. translators: %s: date and time of the last capability check.
+#, php-format
+msgid "Last checked: %s"
+msgstr "Última comprobación: %s"
+
+msgid ""
+"No checks have run yet. Select Run checks to inspect the public discovery "
+"resources for this site."
+msgstr ""
+"Aún no se ejecutaron comprobaciones. Seleccioná Ejecutar comprobaciones para"
+" inspeccionar los recursos públicos de descubrimiento de este sitio."
+
+msgid ""
+"These checks make local requests to public URLs for robots.txt, llms.txt, "
+"XML sitemaps, Link headers, Markdown, and optional agent services. They do "
+"not publish or change site content."
+msgstr ""
+
+msgid ""
+"Each URL must be publicly reachable without authentication. A private, "
+"password-protected, or login-restricted site cannot be validated by these "
+"checks."
+msgstr ""
+
+msgid ""
+"Translation plugin detected. Discovery checks use the single canonical "
+"WordPress public-root URL. Language paths such as /es/robots.txt or "
+"/es/llms.txt are not separate files and are not checked."
+msgstr ""
+
+msgid ""
+"WordPress Playground does not provide a reliable public loopback URL for "
+"this browser session, so automatic checks are unavailable here. Run checks "
+"again on a deployed public site."
+msgstr ""
+
+msgid "API Catalog publication is enabled."
+msgstr ""
+
+msgid ""
+"API Catalog publication is disabled. Configure it in the API Catalog tab."
+msgstr ""
+
+msgid ""
+"When valid public llms.txt and XML sitemap responses are detected, the "
+"plugin automatically publishes RFC 8288 Link headers."
+msgstr ""
+
+#. translators: %s: comma-separated list of active page-cache plugins.
+#, php-format
+msgid ""
+"Active page cache detected: %s. If cached HTML pages were generated before "
+"updating discovery settings, purge the site cache before re-running checks."
+msgstr ""
+
+msgid "About XML Sitemaps"
+msgstr ""
+
+msgid ""
+"An XML sitemap lists canonical public URLs in a machine-readable format, "
+"helping crawlers and technical tools find the right pages."
+msgstr ""
+
+msgid ""
+"Include live public URLs only. Exclude redirects, noindex content, "
+"duplicates, private pages, search pages, cart, checkout, and account pages."
+msgstr ""
+
+msgid "Run checks"
+msgstr "Ejecutar comprobaciones"
+
+msgid "Purge cache & run checks"
+msgstr ""
+
+msgid "Site cache purged and checks refreshed."
+msgstr ""
+
+msgid "Checks refreshed."
+msgstr "Comprobaciones actualizadas."
+
+msgid "Status"
+msgstr ""
+
+msgid "Capability"
+msgstr "Capacidad"
+
+msgid "Current installation"
+msgstr ""
+
+msgid ""
+"✅ validated · ❌ not configured or not available · ⚠ could not be verified "
+"locally · — not applicable to the current site."
+msgstr ""
+
+msgid "Optional external validation"
+msgstr ""
+
+msgid ""
+"Open Is It Agent-Ready in a new tab to check the publicly deployed site. No "
+"request is sent until you select this button."
+msgstr ""
+
+msgid "Check this site with Is It Agent-Ready"
+msgstr ""
+
+msgid ""
+"External scanners cannot access local, private, or WordPress Playground "
+"environments. Test a public URL after deployment."
+msgstr ""
+
+msgid "robots.txt"
+msgstr ""
+
+msgid "A robots.txt response is available."
+msgstr "Hay una respuesta robots.txt disponible."
+
+msgid "No valid robots.txt response was found."
+msgstr ""
+
+msgid "XML sitemap"
+msgstr ""
+
+msgid "A valid XML sitemap was found."
+msgstr "Se encontró un mapa del sitio XML válido."
+
+msgid "The local sitemap URLs could not be requested."
+msgstr ""
+
+msgid "No XML sitemap was found at the WordPress or common SEO-plugin URLs."
+msgstr ""
+
+msgid "llms.txt"
+msgstr ""
+
+msgid "A non-empty plain-text llms.txt response is available."
+msgstr ""
+"Hay una respuesta llms.txt de texto sin formato y no vacía disponible."
+
+msgid "No valid llms.txt response was found."
+msgstr ""
+
+msgid "Agent discovery Link headers"
+msgstr "Cabeceras Link de descubrimiento de agentes"
+
+msgid ""
+"The discovery files are valid, but the homepage response did not include the"
+" expected HTTP Link headers."
+msgstr ""
+
+msgid "Link headers advertise llms.txt and the XML sitemap."
+msgstr "Las cabeceras Link anuncian llms.txt y el mapa del sitio XML."
+
+msgid ""
+"Link headers advertise the detected resource. Create the missing llms.txt or"
+" XML sitemap to advertise both."
+msgstr ""
+
+msgid ""
+"The local resources could not be verified. Create llms.txt and an XML "
+"sitemap, then run the checks again."
+msgstr ""
+
+msgid ""
+"Create a public llms.txt file and XML sitemap to publish these Link headers."
+msgstr ""
+
+msgid "API catalog"
+msgstr ""
+
+msgid "A valid RFC 9727 API catalog is available."
+msgstr "Hay disponible un catálogo de API RFC 9727 válido."
+
+msgid "No valid RFC 9727 API catalog was found."
+msgstr ""
+
+msgid "Markdown negotiation"
+msgstr ""
+
+msgid "Serfe AI Discovery is not active."
+msgstr ""
+
+msgid "The plugin is active, but there is no published page or post to probe."
+msgstr ""
+
+msgid "A public page returned text/markdown for Accept: text/markdown."
+msgstr "Una página pública devolvió text/markdown para Accept: text/markdown."
+
+msgid "The site could not complete its local Markdown probe."
+msgstr ""
+
+msgid ""
+"Direct .md URLs work, but Accept: text/markdown returned cached HTML instead"
+" of text/markdown."
+msgstr ""
+
+msgid "The public probe did not return Content-Type: text/markdown."
+msgstr ""
+
+msgid "MCP server"
+msgstr "Servidor MCP"
+
+msgid "No MCP server is registered with this site."
+msgstr "No hay un servidor MCP registrado en este sitio."
+
+msgid "OAuth protected resource"
+msgstr "Recurso protegido con OAuth"
+
+msgid ""
+"No protected agent resource is declared. Public content does not need OAuth."
+msgstr ""
+
+msgid "Protected Resource Metadata has a resource and authorization server."
+msgstr ""
+
+msgid "Protected Resource Metadata is missing or invalid."
+msgstr "Los metadatos del recurso protegido faltan o no son válidos."
+
+#. translators: %d: number of skills listed in the validated index.
+msgid "Agent Skills"
+msgstr "Habilidades de agente"
+
+#. translators: %d: number of skills listed in the validated index.
+#, php-format
+msgid "A valid Agent Skills index lists %d skill(s)."
+msgstr ""
+
+msgid "Agentic Commerce"
+msgstr "Comercio agéntico"
+
+msgid "WooCommerce is not active and no commerce integration is registered."
+msgstr ""
+
+msgid "No agentic-commerce protocol integration is registered."
+msgstr "No hay una integración de protocolo de comercio agéntico registrada."
+
+msgid ""
+"A service is registered, but it has no read-only health URL to validate."
+msgstr ""
+
+msgid "A registered service responded successfully to its health check."
+msgstr ""
+
+msgid "The registered service did not pass its health check."
+msgstr ""
+
+msgid "Only this site can be checked."
+msgstr ""
+
+msgid ""
+"WordPress Playground does not provide a reliable public loopback URL for "
+"these checks. Run them on a deployed public site."
+msgstr ""
+
+msgid "The site could not complete its local loopback request."
+msgstr ""
+
+msgid "The URL requires authentication or is not publicly accessible."
+msgstr ""
+
+#. translators: 1: diagnostic reason, 2: comma-separated list of active cache
+#. plugins.
+#, php-format
+msgid "%1$s Clear your site cache (%2$s) and run the checks again."
+msgstr ""
+
+#. translators: %s: diagnostic reason.
+#, php-format
+msgid "%s Clear your site or server page cache and run the checks again."
+msgstr ""
+
+msgid "Validated"
+msgstr ""
+
+msgid "Not available"
+msgstr "No disponible"
+
+msgid "Could not verify"
+msgstr ""
+
+msgid "Not applicable"
+msgstr ""
+
+msgid "No valid Agent Skills index was found."
+msgstr "No se encontró un índice válido de habilidades de agente."
+
+msgid "The Agent Skills index has an invalid skill entry."
+msgstr ""
+
+msgid "You are not allowed to manage the Markdown cache."
+msgstr ""
+
+msgid "You are not allowed to manage the API Catalog."
+msgstr ""
+
+msgid "You are not allowed to manage Markdown publication."
+msgstr ""
+
+msgid "Markdown support enabled."
+msgstr ""
+
+msgid "Markdown support disabled."
+msgstr ""
+
+msgid "General publication settings"
+msgstr ""
+
+msgid "Advanced Settings"
+msgstr "Ajustes avanzados"
+
+msgid "Excluded content types"
+msgstr ""
+
+msgid "Excluded URL paths"
+msgstr ""
+
+msgid "AI Discovery"
+msgstr ""
+
+msgid ""
+"Configure public discovery features and Markdown representation options."
+msgstr ""
+
+msgid ""
+"Exclude public content types or exact URL paths. Markdown otherwise applies "
+"to all supported public content."
+msgstr ""
+
+msgid "Disable Markdown support"
+msgstr ""
+
+msgid "Enable Markdown support"
+msgstr ""
+
+msgid "Enabled"
+msgstr "Activado"
+
+msgid "Disabled"
+msgstr "Desactivado"
+
+msgid ""
+"Enables Markdown negotiation for all public published content (Posts, Pages,"
+" Products, Custom Post Types) and public archives."
+msgstr ""
+
+msgid ""
+"One exact site path per line, such as /private-page/. Same-site full URLs "
+"are also accepted."
+msgstr ""
+
+msgid "Overview"
+msgstr "Resumen"
+
+msgid "Markdown"
+msgstr ""
+
+msgid "API Catalog"
+msgstr "Catálogo de API"
+
+msgid "Robots.txt"
+msgstr ""
+
+msgid "AI Files (llms.txt)"
+msgstr "Archivos de IA (llms.txt)"
+
+msgid "Help & Support"
+msgstr "Ayuda y soporte"
+
+msgid "Serfe AI Discovery sections"
+msgstr ""
+
+msgid "Save Advanced Settings"
+msgstr ""
+
+msgid "The Markdown setting could not be updated. Please try again."
+msgstr ""
+
+msgid "About Markdown negotiation"
+msgstr ""
+
+msgid ""
+"What it does: Returns an alternative Markdown representation of public "
+"content when a compatible client requests it."
+msgstr ""
+
+msgid ""
+"Why it helps: Removes unnecessary presentation markup while browsers "
+"continue receiving HTML."
+msgstr ""
+
+msgid ""
+"Important: HTML remains the canonical customer-facing version. Markdown "
+"availability does not guarantee crawler usage or AI citations."
+msgstr ""
+
+msgid "Enabled HTML and Markdown URLs"
+msgstr ""
+
+msgid "Markdown is disabled, so no URL is published."
+msgstr ""
+
+#. translators: %s: post type plural label.
+#, php-format
+msgid "%s archive"
+msgstr ""
+
+msgid "No item or archive currently passes the publication policy."
+msgstr ""
+
+msgid "Content"
+msgstr ""
+
+msgid "Shows the last 10 edited approved items."
+msgstr ""
+
+msgid ""
+"Publish a catalog of the public WordPress REST API at the standard discovery"
+" URL."
+msgstr ""
+
+msgid "API Catalog publication updated."
+msgstr ""
+
+msgid "API Catalog publication is disabled."
+msgstr ""
+
+msgid "Disable API Catalog"
+msgstr ""
+
+msgid "Enable API Catalog"
+msgstr ""
+
+msgid "Markdown Cache Management"
+msgstr ""
+
+msgid "Generated Markdown cache has been regenerated."
+msgstr ""
+
+msgid ""
+"Generated Markdown is stored on this server and invalidated automatically "
+"whenever content is saved or edited."
+msgstr ""
+
+#. translators: 1: date and time, 2: reason code.
+#, php-format
+msgid "Last cache invalidation: %1$s (reason: %2$s, generation: %3$d)"
+msgstr ""
+
+msgid "Regenerate Markdown Cache"
+msgstr ""
+
+msgid "Available"
+msgstr "Disponible"
+
+msgid "Needs review"
+msgstr ""
+
+msgid "Markdown Negotiation"
+msgstr "Negociación de Markdown"
+
+msgid "Enable Markdown negotiation in the Markdown tab."
+msgstr ""
+
+msgid "Run the discovery checks to verify a public Markdown response."
+msgstr ""
+
+msgid "XML Sitemap"
+msgstr "Mapa del sitio XML"
+
+msgid "Not validated"
+msgstr "Sin validar"
+
+msgid "Run the discovery checks."
+msgstr ""
+
+msgid "Create llms.txt and an XML sitemap, then run the discovery checks."
+msgstr ""
+
+msgid "Enable the API Catalog in the API Catalog tab."
+msgstr ""
+
+msgid "Run the discovery checks to verify its public response."
+msgstr ""
+
+msgid "Run the local discovery checks for an explicitly registered service."
+msgstr ""
+
+msgid ""
+"Run the local discovery checks to inspect this optional public resource."
+msgstr ""
+
+msgid "MCP Server Card"
+msgstr "Tarjeta de servidor MCP"
+
+msgid ""
+"Server Card configuration and publication are not available in this version."
+msgstr ""
+"La configuración y publicación de la tarjeta de servidor no están "
+"disponibles en esta versión."
+
+msgid "WordPress AI discovery overview"
+msgstr "Resumen de descubrimiento de IA de WordPress"
+
+msgid ""
+"Public discovery features are opt-in. Validation runs only when an "
+"administrator requests it."
+msgstr ""
+"Las funciones públicas de descubrimiento requieren activación. La validación"
+" solo se ejecuta cuando la solicita un administrador."
+
+msgid "State"
+msgstr "Estado"
+
+msgid "Last validation"
+msgstr "Última validación"
+
+msgid "Next action"
+msgstr "Siguiente acción"
+
+msgid ""
+"✅ ready · ⚠️ needs attention · ❌ not available · ➖ disabled, not validated "
+"or not applicable."
+msgstr ""
+"✅ listo · ⚠️ requiere atención · ❌ no disponible · ➖ desactivado, sin "
+"validar o no aplicable."
+
+msgid "Run checks again"
+msgstr "Ejecutar comprobaciones de nuevo"
+
+msgid ""
+"Validate the public response; WordPress or an SEO plugin may serve a virtual"
+" file."
+msgstr ""
+
+msgid "No physical file"
+msgstr "No hay archivo físico"
+
+msgid "External change"
+msgstr ""
+
+msgid "Review the current file and confirm takeover before publishing."
+msgstr ""
+
+msgid "Published and verified"
+msgstr "Publicado y verificado"
+
+msgid "Review the content after material site changes."
+msgstr ""
+
+msgid "Published; response needs review"
+msgstr ""
+
+msgid "Check the public URL and any web server or cache rules."
+msgstr ""
+
+msgid ""
+"Find help, report issues, and contribute to the Serfe AI Discovery open-"
+"source project."
+msgstr ""
+
+msgid "Community Support"
+msgstr ""
+
+msgid ""
+"Serfe AI Discovery is free and open source. Explore documentation, report "
+"bugs, suggest improvements, or contribute on GitHub."
+msgstr ""
+
+msgid "View on GitHub"
+msgstr ""
+
+msgid "Report an Issue"
+msgstr ""
+
+msgid "Security issues should be reported privately."
+msgstr ""
+
+msgid "Visit Serfe"
+msgstr ""
+
+msgid "Professional Services"
+msgstr ""
+
+msgid "Go beyond basic AI discovery."
+msgstr ""
+
+msgid ""
+"The plugin is a starting point. Serfe can assess your website's readiness "
+"for AI-driven search and agents, identify opportunities for improvement, and"
+" help define a practical implementation roadmap."
+msgstr ""
+
+msgid "Request a GEO Assessment"
+msgstr ""

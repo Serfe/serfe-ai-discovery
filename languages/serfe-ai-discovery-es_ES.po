@@ -672,7 +672,7 @@ msgid ""
 "The latest local results are shown below. Review any item marked unavailable"
 " or needing verification."
 msgstr ""
-"Los resultados locales más recientes se muestran a continuación. Revisá los "
+"Los resultados locales más recientes se muestran a continuación. Revisa los "
 "elementos marcados como no disponibles o que requieren verificación."
 
 #. translators: %s: date and time of the last capability check.
@@ -684,7 +684,7 @@ msgid ""
 "No checks have run yet. Select Run checks to inspect the public discovery "
 "resources for this site."
 msgstr ""
-"Aún no se ejecutaron comprobaciones. Seleccioná Ejecutar comprobaciones para"
+"Aún no se ejecutaron comprobaciones. Selecciona Ejecutar comprobaciones para"
 " inspeccionar los recursos públicos de descubrimiento de este sitio."
 
 msgid ""
