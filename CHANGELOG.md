@@ -4,6 +4,9 @@ Notable user-facing changes in public releases of Serfe AI Discovery.
 
 ## [Unreleased]
 
+### Changed
+- Clarified bundled Spanish and Portuguese translations and their fallback relationship with approved WordPress.org language packs.
+
 ## [1.1.1] - 2026-11-02
 
 ### Added

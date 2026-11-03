@@ -55,7 +55,9 @@ The optional Is It Agent-Ready button opens that external website in a new brows
 
 == Translations ==
 
-Serfe AI Discovery uses WordPress.org language packs. You can help translate the plugin or suggest improvements through the official translation projects:
+Serfe AI Discovery includes bundled local translations for Spanish (Spain), Spanish (Argentina), and Portuguese (Brazil). They work immediately when you select one of those WordPress site languages.
+
+When an approved WordPress.org language pack is available, WordPress uses that community-maintained translation in preference to the bundled fallback. You can help translate the plugin or suggest improvements through the official translation projects:
 
 * [Spanish](https://translate.wordpress.org/locale/es/default/wp-plugins/serfe-ai-discovery/)
 * [Spanish (Argentina)](https://translate.wordpress.org/locale/es-ar/default/wp-plugins/serfe-ai-discovery/)

@@ -58,6 +58,14 @@ Eligible HTML pages include a link to their Markdown alternative:
 
 ---
 
+## Translations
+
+Serfe AI Discovery uses English as its source language and includes local translation catalogs for Spanish (Spain), Spanish (Argentina), and Portuguese (Brazil). The bundled catalogs work immediately when the corresponding WordPress site language is selected.
+
+If WordPress.org provides an approved language pack for the active locale, WordPress gives that community-maintained translation priority; the bundled catalog remains the fallback. You can contribute through the official projects for [Spanish](https://translate.wordpress.org/locale/es/default/wp-plugins/serfe-ai-discovery/), [Spanish (Argentina)](https://translate.wordpress.org/locale/es-ar/default/wp-plugins/serfe-ai-discovery/), or [Portuguese (Brazil)](https://translate.wordpress.org/locale/pt-br/default/wp-plugins/serfe-ai-discovery/).
+
+---
+
 ## Supported Content
 
 | Content Type | Exposure Details |
