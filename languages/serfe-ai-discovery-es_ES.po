@@ -18,21 +18,23 @@ msgstr ""
 
 #. Plugin Name of the plugin
 msgid "Serfe AI Discovery"
-msgstr ""
+msgstr "Serfe AI Discovery"
 
 #. Description of the plugin
 msgid ""
 "Publishes approved public WordPress content as alternative Markdown and "
 "discovery signals."
 msgstr ""
+"Publica contenido aprobado de WordPress como Markdown alternativo y señales "
+"de descubrimiento."
 
 #. Author of the plugin
 msgid "Serfe"
-msgstr ""
+msgstr "Serfe"
 
 #. Author URI of the plugin
 msgid "https://www.serfe.com/en/"
-msgstr ""
+msgstr "https://www.serfe.com/en/"
 
 msgid "Previous page"
 msgstr "Página anterior"
