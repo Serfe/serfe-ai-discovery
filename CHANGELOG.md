@@ -6,10 +6,14 @@ Notable user-facing changes in public releases of Serfe AI Discovery.
 
 ## [1.1.1] - 2026-11-02
 
+### Added
+- Added bundled administration translations for Spanish (Spain), Spanish (Argentina), and Portuguese (Brazil).
+
 ### Changed
 - Prepared all dynamic administration messages for WordPress.org language packs, including the `robots.txt` and `llms.txt` controls.
 - Refined the WordPress.org listing summary, discovery tags, and public documentation to describe the plugin's AI discovery capabilities more clearly.
 - Clarified that AI Discovery supports the technical foundations of AEO and GEO as part of broader SEO, without guaranteeing model mentions or citations.
+- Updated the Help & Support Serfe services banner with a dark blue gradient.
 
 ## [1.1.0] - 2026-10-21
 
