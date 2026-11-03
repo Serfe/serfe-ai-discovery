@@ -35,28 +35,29 @@ msgid "https://www.serfe.com/en/"
 msgstr ""
 
 msgid "Previous page"
-msgstr ""
+msgstr "Página anterior"
 
 msgid "Next page"
-msgstr ""
+msgstr "Página siguiente"
 
 msgid "Shop"
-msgstr ""
+msgstr "Tienda"
 
 msgid "In stock"
-msgstr ""
+msgstr "En stock"
 
 msgid "Out of stock"
-msgstr ""
+msgstr "Agotado"
 
 msgid "Generating template…"
-msgstr ""
+msgstr "Generando plantilla…"
 
 msgid "Template inserted. Review it before publishing."
-msgstr ""
+msgstr "Plantilla insertada. Revísala antes de publicar."
 
 msgid "The template could not be generated. Try again or reload the page."
 msgstr ""
+"No se pudo generar la plantilla. Inténtalo de nuevo o recarga la página."
 
 msgid "Copy to clipboard"
 msgstr "Copiar al portapapeles"
@@ -68,66 +69,72 @@ msgid "Content copied to clipboard."
 msgstr "Contenido copiado al portapapeles."
 
 msgid "Protect section from AI-Train"
-msgstr ""
+msgstr "Proteger sección frente al entrenamiento de IA"
 
 msgid "Protection added"
-msgstr ""
+msgstr "Protección añadida"
 
 msgid "Enter a section path such as /blog/."
-msgstr ""
+msgstr "Introduce una ruta de sección como /blog/."
 
 msgid "Section protection added to the copyable block."
-msgstr ""
+msgstr "La protección de la sección se añadió al bloque que se puede copiar."
 
 msgid "Copy failed. Select the content and copy it manually."
-msgstr ""
+msgstr "No se pudo copiar. Seleccioná el contenido y cópialo manualmente."
 
 msgid "Insert starter template"
-msgstr ""
+msgstr "Insertar plantilla inicial"
 
 msgid "Template generation failed."
-msgstr ""
+msgstr "Falló la generación de la plantilla."
 
 msgid ""
 "Release Serfe control? The current file will not change, but Serfe metadata "
 "and backups will be removed."
 msgstr ""
+"¿Liberar el control de Serfe? El archivo actual no cambiará, pero se "
+"eliminarán los metadatos y las copias de seguridad de Serfe."
 
 msgid "You are not allowed to generate this template."
-msgstr ""
+msgstr "No tienes permiso para generar esta plantilla."
 
 msgid "You are not allowed to manage discovery files."
-msgstr ""
+msgstr "No tienes permiso para gestionar archivos de descubrimiento."
 
 msgid "Invalid discovery file action."
-msgstr ""
+msgstr "Acción de archivo de descubrimiento no válida."
 
 msgid ""
 "Starter template inserted into the editor only. Review it and select Publish"
 " file when you are ready to save it."
 msgstr ""
+"La plantilla inicial se insertó únicamente en el editor. Revísala y "
+"selecciona Publicar archivo cuando estés listo para guardarla."
 
 msgid "The current public file was checked."
-msgstr ""
+msgstr "Se comprobó el archivo público actual."
 
 msgid "The full llms.txt generation was scheduled."
-msgstr ""
+msgstr "Se programó la generación completa de llms.txt."
 
 msgid "The scheduled llms.txt generation was cancelled."
-msgstr ""
+msgstr "Se canceló la generación programada de llms.txt."
 
 msgid "Content Signals will be added to the virtual robots.txt response."
 msgstr ""
+"Las señales de contenido se añadirán a la respuesta virtual de robots.txt."
 
 msgid ""
 "Serfe no longer manages this file. Its current contents were not changed."
 msgstr ""
+"Serfe ya no gestiona este archivo. Su contenido actual no se modificó."
 
 msgid "The public file was written and checked."
-msgstr ""
+msgstr "El archivo público se escribió y comprobó."
 
 msgid "Why robots.txt matters"
-msgstr ""
+msgstr "Por qué es importante robots.txt"
 
 msgid ""
 "robots.txt communicates crawler access rules and can point crawlers to the "
@@ -135,28 +142,39 @@ msgid ""
 "or blocking a crawler does not guarantee crawling, training, indexing, or "
 "citation."
 msgstr ""
+"robots.txt comunica reglas de acceso para rastreadores y puede dirigirlos al"
+" mapa del sitio XML. Las reglas de acceso deben reflejar la política de tu "
+"organización. Permitir o bloquear un rastreador no garantiza el rastreo, el "
+"entrenamiento, la indexación ni las citas."
 
 msgid "About robots.txt"
-msgstr ""
+msgstr "Acerca de robots.txt"
 
 msgid ""
 "What it does: Defines crawler access rules and can declare the XML sitemap "
 "location."
 msgstr ""
+"Qué hace: define reglas de acceso para rastreadores y puede declarar la "
+"ubicación del mapa del sitio XML."
 
 msgid ""
 "Why it helps: Clarifies which public areas are intended for crawling and "
 "where public URLs can be discovered."
 msgstr ""
+"Por qué ayuda: aclara qué áreas públicas están destinadas al rastreo y dónde"
+" se pueden descubrir las URL públicas."
 
 msgid ""
 "Important: Rules must reflect your organization’s policy. Allowing or "
 "blocking a crawler does not guarantee crawling, training, indexing, or "
 "citation."
 msgstr ""
+"Importante: las reglas deben reflejar la política de tu organización. "
+"Permitir o bloquear un rastreador no garantiza el rastreo, el entrenamiento,"
+" la indexación ni las citas."
 
 msgid "Why llms.txt matters"
-msgstr ""
+msgstr "Por qué es importante llms.txt"
 
 msgid ""
 "llms.txt is an optional public guide containing curated context and links to"
@@ -164,60 +182,82 @@ msgid ""
 "complements the website, sitemap, structured content, and crawler policy; it"
 " does not replace them."
 msgstr ""
+"llms.txt es una guía pública opcional que contiene contexto seleccionado y "
+"enlaces a contenido público relevante. Incluye únicamente URL actuales, "
+"públicas y canónicas. Complementa el sitio web, el mapa del sitio, el "
+"contenido estructurado y la política de rastreadores; no los sustituye."
 
 msgid "About llms.txt"
-msgstr ""
+msgstr "Acerca de llms.txt"
 
 msgid ""
 "What it does: Provides an optional human-readable Markdown overview and "
 "curated links to relevant public content."
 msgstr ""
+"Qué hace: proporciona un resumen opcional en Markdown, legible por personas,"
+" y enlaces seleccionados a contenido público relevante."
 
 msgid ""
 "Why it helps: Makes approved information easier for AI systems and technical"
 " tools to identify and interpret."
 msgstr ""
+"Por qué ayuda: facilita que los sistemas de IA y las herramientas técnicas "
+"identifiquen e interpreten la información aprobada."
 
 msgid ""
 "Important: Include only current, public, canonical URLs. Never include "
 "private areas, customer pages, admin URLs, credentials, unsupported claims, "
 "or outdated offers."
 msgstr ""
+"Importante: incluye únicamente URL actuales, públicas y canónicas. Nunca "
+"incluyas áreas privadas, páginas de clientes, URL de administración, "
+"credenciales, afirmaciones sin respaldo u ofertas obsoletas."
 
 msgid ""
 "This file complements the website, sitemap, structured content, and crawler "
 "policy; it does not replace them."
 msgstr ""
+"Este archivo complementa el sitio web, el mapa del sitio, el contenido "
+"estructurado y la política de rastreadores; no los sustituye."
 
 msgid "Read more about it in"
-msgstr ""
+msgstr "Más información en"
 
 msgid ""
 "No physical file exists at the public root. A virtual public response might "
 "still be served. Select Validate public file to inspect it before publishing"
 " a physical file."
 msgstr ""
+"No existe un archivo físico en la raíz pública. Es posible que aún se sirva "
+"una respuesta pública virtual. Seleccioná Validar archivo público para "
+"inspeccionarla antes de publicar un archivo físico."
 
 msgid ""
 "This Multisite site stores and serves this discovery file virtually, without"
 " writing to the shared filesystem."
 msgstr ""
+"Este sitio Multisite almacena y sirve este archivo de descubrimiento de "
+"forma virtual, sin escribir en el sistema de archivos compartido."
 
 msgid ""
 "This public response is unmanaged or changed outside the plugin. Review its "
 "current content before taking control."
 msgstr ""
+"Esta respuesta pública no está gestionada o se modificó fuera del plugin. "
+"Revisá su contenido actual antes de tomar el control."
 
 msgid "Advanced file editor"
-msgstr ""
+msgstr "Editor avanzado de archivos"
 
 msgid ""
 "Open this editor when you want Serfe to manage and edit the file manually. "
 "Review the current public response before activating it."
 msgstr ""
+"Abre este editor cuando quieras que Serfe gestione y edite el archivo "
+"manualmente. Revisá la respuesta pública actual antes de activarlo."
 
 msgid "Open advanced file editor"
-msgstr ""
+msgstr "Abrir editor avanzado de archivos"
 
 msgid ""
 "Start with the site name and a concise description. Group current public "
@@ -225,101 +265,130 @@ msgid ""
 " Support, Documentation, and Legal. Review this guide after important "
 "content or URL changes."
 msgstr ""
+"Empieza con el nombre del sitio y una descripción concisa. Agrupa los "
+"enlaces canónicos públicos actuales bajo encabezados útiles como Productos, "
+"Servicios, Recursos, Soporte, Documentación y Legal. Revisá esta guía "
+"después de cambios importantes de contenido o URL."
 
 msgid "If your file is present, you could see content here:"
-msgstr ""
+msgstr "Si tu archivo está presente, puedes ver su contenido aquí:"
 
 #. translators: 1: date and time, 2: administrator ID.
 #, php-format
 msgid "Last published: %1$s by administrator %2$d."
-msgstr ""
+msgstr "Última publicación: %1$s por el administrador %2$d."
 
 msgid "Editor content"
-msgstr ""
+msgstr "Contenido del editor"
 
 msgid ""
 "I reviewed the current public file and confirm that this plugin may take "
 "control of it."
 msgstr ""
+"He revisado el archivo público actual y confirmo que este plugin puede tomar"
+" el control."
 
 msgid "Publish file"
 msgstr "Publicar archivo"
 
 msgid "Reset and load current"
-msgstr ""
+msgstr "Restablecer y cargar el actual"
 
 msgid "Restore previous version"
-msgstr ""
+msgstr "Restaurar versión anterior"
 
 msgid "Release control"
-msgstr ""
+msgstr "Liberar control"
 
 msgid ""
 "This keeps the current physical file unchanged but removes Serfe management "
 "data and backups. A plugin that requires a virtual robots.txt response may "
 "still require you to remove the physical file through your host."
 msgstr ""
+"Esto mantiene sin cambios el archivo físico actual, pero elimina los datos "
+"de gestión y las copias de seguridad de Serfe. Un plugin que requiera una "
+"respuesta virtual de robots.txt puede seguir requiriendo que elimines el "
+"archivo físico mediante tu proveedor de hosting."
 
 msgid ""
 "Scheduled generation only creates llms.txt when it is empty or missing. It "
 "will not overwrite existing content."
 msgstr ""
+"La generación programada solo crea llms.txt cuando está vacío o no existe. "
+"No sobrescribirá el contenido existente."
 
 msgid "A full llms.txt generation is already scheduled."
-msgstr ""
+msgstr "Ya hay una generación completa de llms.txt programada."
 
 msgid "The llms.txt generation could not be scheduled."
-msgstr ""
+msgstr "No se pudo programar la generación de llms.txt."
 
 msgid "No full llms.txt generation is currently scheduled for this site."
 msgstr ""
+"Actualmente no hay ninguna generación completa de llms.txt programada para "
+"este sitio."
 
 msgid "The scheduled llms.txt generation could not be cancelled."
-msgstr ""
+msgstr "No se pudo cancelar la generación programada de llms.txt."
 
 msgid ""
 "Scheduled llms.txt generation was skipped because the file already contains "
 "content."
 msgstr ""
+"Se omitió la generación programada de llms.txt porque el archivo ya contiene"
+" contenido."
 
 msgid "The scheduled llms.txt generation completed."
-msgstr ""
+msgstr "Se completó la generación programada de llms.txt."
 
 msgid "Generate full llms.txt asynchronously"
-msgstr ""
+msgstr "Generar llms.txt completo de forma asíncrona"
 
 msgid ""
 "Recommended for blogs or sites with more than 100 public pages. This creates"
 " a full inventory of eligible public content in a deferred WordPress action."
 msgstr ""
+"Recomendado para blogs o sitios con más de 100 páginas públicas. Esto crea "
+"un inventario completo del contenido público apto en una acción diferida de "
+"WordPress."
 
 msgid "A full llms.txt generation is currently scheduled for this site."
 msgstr ""
+"Hay una generación completa de llms.txt programada actualmente para este "
+"sitio."
 
 msgid "Cancel scheduled generation"
-msgstr ""
+msgstr "Cancelar generación programada"
 
 msgid "Schedule full llms.txt generation"
-msgstr ""
+msgstr "Programar generación completa de llms.txt"
 
 msgid ""
 "Scheduled generation only creates llms.txt when it is empty or missing. It "
 "will not overwrite existing content. Clear the editor and publish an empty "
 "file first if you want to use this option."
 msgstr ""
+"La generación programada solo crea llms.txt cuando está vacío o no existe. "
+"No sobrescribirá el contenido existente. Borra el editor y publica primero "
+"un archivo vacío si quieres usar esta opción."
 
 msgid ""
 "The action checks again when it runs. If llms.txt has content by then, it is"
 " skipped without changing the file."
 msgstr ""
+"La acción vuelve a comprobarlo cuando se ejecuta. Si llms.txt tiene "
+"contenido para entonces, se omite sin cambiar el archivo."
 
 msgid ""
 "The action runs later when WP-Cron is correctly configured. WP-Cron depends "
 "on site visits unless your host triggers it on a schedule."
 msgstr ""
+"La acción se ejecuta más tarde cuando WP-Cron está configurado "
+"correctamente. WP-Cron depende de las visitas al sitio, salvo que tu "
+"proveedor de hosting lo active mediante una programación."
 
 msgid "Learn how WP-Cron works"
-msgstr ""
+msgstr "Aprende cómo funciona WP-Cron"
 
 #. translators: 1: robots.txt or llms.txt filename, 2: canonical public root
 #. URL.
@@ -329,59 +398,78 @@ msgid ""
 " %2$s. Language paths such as /es/%1$s are not separate files and are not "
 "edited or validated."
 msgstr ""
+"Se detectó WPML. Este plugin siempre gestiona %1$s en la raíz pública de "
+"WordPress: %2$s. Las rutas de idioma como /es/%1$s no son archivos separados"
+" y no se editan ni validan."
 
 msgid ""
 "Loco Translate detected. It localizes plugin and theme strings but does not "
 "create a separate public discovery-file URL."
 msgstr ""
+"Se detectó Loco Translate. Localiza cadenas de plugins y temas, pero no crea"
+" una URL independiente de archivo público de descubrimiento."
 
 msgid "Add AI Content Signals to your robots.txt"
-msgstr ""
+msgstr "Añadir señales de contenido de IA a tu robots.txt"
 
 msgid ""
 "A physical robots.txt file exists. Use Advanced file management to edit it, "
 "or edit it in the plugin that generates it. Content Signals cannot be added "
 "dynamically while that file is served."
 msgstr ""
+"Existe un archivo robots.txt físico. Usa la gestión avanzada de archivos "
+"para editarlo o edítalo en el plugin que lo genera. Las señales de contenido"
+" no se pueden añadir dinámicamente mientras se sirve ese archivo."
 
 msgid "Content Signals are enabled for the virtual robots.txt response."
 msgstr ""
+"Las señales de contenido están activadas para la respuesta virtual de "
+"robots.txt."
 
 msgid ""
 "Validate the current virtual robots.txt response, then append the standard "
 "Serfe Content Signals block through WordPress without creating a physical "
 "file."
 msgstr ""
+"Validá la respuesta virtual actual de robots.txt y, después, añade el bloque"
+" estándar de señales de contenido de Serfe mediante WordPress sin crear un "
+"archivo físico."
 
 msgid "Update signals manually in your current robots.txt"
-msgstr ""
+msgstr "Actualizar señales manualmente en tu robots.txt actual"
 
 msgid ""
 "Copy this block into the robots.txt editor currently serving your site. This"
 " works with virtual files managed by Rank Math, Yoast SEO, and other SEO "
 "plugins without creating a physical file."
 msgstr ""
+"Copia este bloque en el editor de robots.txt que sirve actualmente tu sitio."
+" Funciona con archivos virtuales gestionados por Rank Math, Yoast SEO y "
+"otros plugins SEO sin crear un archivo físico."
 
 msgid "Section path"
-msgstr ""
+msgstr "Ruta de la sección"
 
 msgid ""
 "Enter one site path, such as /resources/. The rule applies to that section "
 "and URLs below it. To protect more sections, copy the generated section "
 "block and repeat it manually with each path."
 msgstr ""
+"Introduce una ruta del sitio, como /recursos/. La regla se aplica a esa "
+"sección y a las URL que contiene. Para proteger más secciones, copia el "
+"bloque de sección generado y repítelo manualmente con cada ruta."
 
 msgid "Learn more about Content Signals options"
-msgstr ""
+msgstr "Más información sobre las opciones de señales de contenido"
 
 msgid "Yoast SEO robots.txt guide"
-msgstr ""
+msgstr "Guía de robots.txt de Yoast SEO"
 
 msgid "Rank Math robots.txt guide"
-msgstr ""
+msgstr "Guía de robots.txt de Rank Math"
 
 msgid "AIOSEO robots.txt guide"
-msgstr ""
+msgstr "Guía de robots.txt de AIOSEO"
 
 #. translators: %1$s: Name of SEO plugin(s) (e.g. Yoast SEO, Rank Math).
 #, php-format
@@ -389,278 +477,331 @@ msgid ""
 "We detected %1$s. Paste the generated block in its robots.txt editor to keep"
 " that plugin in control of the virtual response."
 msgstr ""
+"Detectamos %1$s. Pega el bloque generado en su editor de robots.txt para que"
+" ese plugin mantenga el control de la respuesta virtual."
 
 msgid "Review current file, editor text, and previous backup"
 msgstr ""
+"Revisar archivo actual, texto del editor y copia de seguridad anterior"
 
 msgid "Current public response"
-msgstr ""
+msgstr "Respuesta pública actual"
 
 msgid "Previous backup"
-msgstr ""
+msgstr "Copia de seguridad anterior"
 
 msgid "No backup is available."
-msgstr ""
+msgstr "No hay ninguna copia de seguridad disponible."
 
 msgid "Validated content for manual deployment"
-msgstr ""
+msgstr "Contenido validado para implementación manual"
 
 msgid "Copy validated content"
-msgstr ""
+msgstr "Copiar contenido validado"
 
 msgid "No sitemap is declared in the current robots.txt file."
-msgstr ""
+msgstr "No se declara ningún mapa del sitio en el archivo robots.txt actual."
 
 msgid ""
 "A rule appears to block the entire public site. Review whether this matches "
 "your crawler policy."
 msgstr ""
+"Una regla parece bloquear todo el sitio público. Revisá si coincide con tu "
+"política de rastreadores."
 
 msgid "Website"
-msgstr ""
+msgstr "Sitio web"
 
 msgid "Public information and resources from this website."
-msgstr ""
+msgstr "Información y recursos públicos de este sitio web."
 
 msgid "Pages"
-msgstr ""
+msgstr "Páginas"
 
 msgid "Posts"
-msgstr ""
+msgstr "Entradas"
 
 msgid "Products"
-msgstr ""
+msgstr "Productos"
 
 msgid "Product categories"
-msgstr ""
+msgstr "Categorías de productos"
 
 msgid "Yoast SEO XML Sitemap"
-msgstr ""
+msgstr "Mapa del sitio XML de Yoast SEO"
 
 msgid "Rank Math XML Sitemap"
-msgstr ""
+msgstr "Mapa del sitio XML de Rank Math"
 
 msgid "All in One SEO XML Sitemap"
-msgstr ""
+msgstr "Mapa del sitio XML de All in One SEO"
 
 msgid "XML Sitemaps"
-msgstr ""
+msgstr "Mapas del sitio XML"
 
 msgid "Untitled"
-msgstr ""
+msgstr "Sin título"
 
 msgid "You are not allowed to manage Content Signals."
-msgstr ""
+msgstr "No tienes permiso para gestionar las señales de contenido."
 
 msgid ""
 "A physical robots.txt file exists. Edit it through Advanced file management "
 "or the plugin that manages it."
 msgstr ""
+"Existe un archivo robots.txt físico. Edítalo mediante la gestión avanzada de"
+" archivos o el plugin que lo gestiona."
 
 msgid ""
 "This site already serves a virtual robots.txt managed by Serfe. Edit its "
 "content through Advanced file management."
 msgstr ""
+"Este sitio ya sirve un robots.txt virtual gestionado por Serfe. Edita su "
+"contenido mediante la gestión avanzada de archivos."
 
 msgid ""
 "No virtual robots.txt response was found. Create or enable one before adding"
 " Content Signals automatically."
 msgstr ""
+"No se encontró ninguna respuesta virtual de robots.txt. Crea o activa una "
+"antes de añadir señales de contenido automáticamente."
 
 msgid "The public root cannot be mapped safely from the site URLs."
 msgstr ""
+"La raíz pública no se puede asignar de forma segura a partir de las URL del "
+"sitio."
 
 msgid "The WordPress URL is outside the public site URL."
-msgstr ""
+msgstr "La URL de WordPress está fuera de la URL pública del sitio."
 
 msgid "The WordPress directory cannot be verified."
-msgstr ""
+msgstr "No se puede verificar el directorio de WordPress."
 
 msgid "The WordPress directory does not match its public URL path."
-msgstr ""
+msgstr "El directorio de WordPress no coincide con su ruta URL pública."
 
 msgid "The public root is not an accessible directory."
-msgstr ""
+msgstr "La raíz pública no es un directorio accesible."
 
 msgid "The file must contain valid UTF-8 text."
-msgstr ""
+msgstr "El archivo debe contener texto UTF-8 válido."
 
 msgid "The file contains a non-permitted control character."
-msgstr ""
+msgstr "El archivo contiene un carácter de control no permitido."
 
 msgid "The file exceeds the configured size limit."
-msgstr ""
+msgstr "El archivo supera el límite de tamaño configurado."
 
 msgid "Only robots.txt and llms.txt can be published."
-msgstr ""
+msgstr "Solo se pueden publicar robots.txt y llms.txt."
 
 msgid "The public path is not a regular file."
-msgstr ""
+msgstr "La ruta pública no es un archivo normal."
 
 msgid "The public file could not be read."
-msgstr ""
+msgstr "No se pudo leer el archivo público."
 
 msgid "The existing public file is too large to manage safely."
 msgstr ""
+"El archivo público existente es demasiado grande para gestionarlo de forma "
+"segura."
 
 msgid "You are not allowed to inspect discovery files."
-msgstr ""
+msgstr "No tienes permiso para inspeccionar archivos de descubrimiento."
 
 msgid "The public response could not be checked. No root file was written."
 msgstr ""
+"No se pudo comprobar la respuesta pública. No se escribió ningún archivo en "
+"la raíz."
 
 msgid ""
 "The public response is not a bounded plain-text file. No root file was "
 "written."
 msgstr ""
+"La respuesta pública no es un archivo de texto sin formato con tamaño "
+"limitado. No se escribió ningún archivo en la raíz."
 
 msgid ""
 "The public response is not valid editable text. No root file was written."
 msgstr ""
+"La respuesta pública no es texto editable válido. No se escribió ningún "
+"archivo en la raíz."
 
 msgid "You are not allowed to publish discovery files."
-msgstr ""
+msgstr "No tienes permiso para publicar archivos de descubrimiento."
 
 msgid ""
 "The llms.txt file changed since this regeneration was scheduled. Review it "
 "before scheduling another update."
 msgstr ""
+"El archivo llms.txt cambió desde que se programó esta regeneración. Revísalo"
+" antes de programar otra actualización."
 
 msgid ""
 "The public file is unmanaged or has changed outside this plugin. Review it "
 "and confirm takeover before publishing."
 msgstr ""
+"El archivo público no está gestionado o cambió fuera de este plugin. "
+"Revísalo y confirma la toma de control antes de publicar."
 
 msgid ""
 "A virtual public response already exists. Inspect it and explicitly confirm "
 "takeover before creating a physical file."
 msgstr ""
+"Ya existe una respuesta pública virtual. Inspecciónala y confirma "
+"explícitamente la toma de control antes de crear un archivo físico."
 
 msgid ""
 "The public file changed since this editor was opened. Review the current "
 "content before publishing."
 msgstr ""
+"El archivo público cambió desde que se abrió este editor. Revisá el "
+"contenido actual antes de publicar."
 
 msgid "The public root is not writable by WordPress."
-msgstr ""
+msgstr "WordPress no puede escribir en la raíz pública."
 
 msgid "A temporary file could not be created in the public root."
-msgstr ""
+msgstr "No se pudo crear un archivo temporal en la raíz pública."
 
 msgid "The temporary file could not be written completely."
-msgstr ""
+msgstr "No se pudo escribir completamente el archivo temporal."
 
 msgid ""
 "The public file changed during publication. Review it before trying again."
 msgstr ""
+"El archivo público cambió durante la publicación. Revísalo antes de volver a"
+" intentarlo."
 
 msgid ""
 "The public response changed during publication. Review it before trying "
 "again."
 msgstr ""
+"La respuesta pública cambió durante la publicación. Revísala antes de volver"
+" a intentarlo."
 
 msgid "The public file could not be replaced atomically."
-msgstr ""
+msgstr "No se pudo reemplazar el archivo público de forma atómica."
 
 msgid "You are not allowed to validate discovery files."
-msgstr ""
+msgstr "No tienes permiso para validar archivos de descubrimiento."
 
 msgid ""
 "A virtual public response exists without a physical root file. Publishing "
 "here would replace the response served by WordPress or another plugin."
 msgstr ""
+"Existe una respuesta pública virtual sin un archivo físico en la raíz. "
+"Publicar aquí reemplazaría la respuesta servida por WordPress u otro plugin."
 
 msgid "No physical root file or public response was found."
-msgstr ""
+msgstr "No se encontró ningún archivo físico en la raíz ni respuesta pública."
 
 msgid ""
 "The public response does not match the current root file, or it could not be"
 " reached."
 msgstr ""
+"La respuesta pública no coincide con el archivo actual de la raíz o no se "
+"pudo acceder a ella."
 
 msgid "No sitemap is declared in robots.txt."
-msgstr ""
+msgstr "No se declara ningún mapa del sitio en robots.txt."
 
 msgid "A Sitemap URL is malformed. Review its absolute public URL."
 msgstr ""
+"Una URL de mapa del sitio tiene un formato incorrecto. Revisá su URL pública"
+" absoluta."
 
 msgid "A Sitemap URL points outside this site and was not checked."
 msgstr ""
+"Una URL de mapa del sitio apunta fuera de este sitio y no se comprobó."
 
 msgid "A Sitemap URL requires authentication or is not publicly accessible."
 msgstr ""
+"Una URL de mapa del sitio requiere autenticación o no es accesible "
+"públicamente."
 
 #. translators: %s: Sitemap URL from robots.txt.
 #, php-format
 msgid "The Sitemap URL could not be reached: %s"
-msgstr ""
+msgstr "No se pudo acceder a la URL del mapa del sitio: %s"
 
 msgid "No previous version is available."
-msgstr ""
+msgstr "No hay ninguna versión anterior disponible."
 
 msgid "You are not allowed to release discovery files."
-msgstr ""
+msgstr "No tienes permiso para liberar archivos de descubrimiento."
 
 msgid "Only robots.txt and llms.txt can be released."
-msgstr ""
+msgstr "Solo se pueden liberar robots.txt y llms.txt."
 
 msgid ""
 "This virtual file remains served by Serfe until its content is removed. "
 "Releasing it without changing the public response is not available."
 msgstr ""
+"Este archivo virtual seguirá siendo servido por Serfe hasta que se elimine "
+"su contenido. No es posible liberarlo sin cambiar la respuesta pública."
 
 msgid ""
 "The public file changed since Serfe last managed it. Review the current "
 "content before releasing control."
 msgstr ""
+"El archivo público cambió desde la última vez que Serfe lo gestionó. Revisá "
+"el contenido actual antes de liberar el control."
 
 msgid ""
 "The virtual public file changed outside this plugin. Review it and confirm "
 "takeover before publishing."
 msgstr ""
+"El archivo público virtual cambió fuera de este plugin. Revísalo y confirma "
+"la toma de control antes de publicar."
 
 msgid ""
 "A virtual public response already exists. Inspect it and explicitly confirm "
 "takeover before replacing it."
 msgstr ""
+"Ya existe una respuesta pública virtual. Inspecciónala y confirma "
+"explícitamente la toma de control antes de reemplazarla."
 
 msgid "A virtual public response exists but is not managed by this plugin."
 msgstr ""
+"Existe una respuesta pública virtual, pero este plugin no la gestiona."
 
 msgid "No virtual public response was found."
-msgstr ""
+msgstr "No se encontró ninguna respuesta pública virtual."
 
 msgid ""
 "The public response does not match the current virtual file, or it could not"
 " be reached."
 msgstr ""
+"La respuesta pública no coincide con el archivo virtual actual o no se pudo "
+"acceder a ella."
 
 msgid "Settings"
 msgstr "Ajustes"
 
 msgid "Community support"
-msgstr ""
+msgstr "Soporte de la comunidad"
 
 msgid "Price"
-msgstr ""
+msgstr "Precio"
 
 msgid "Regular Price"
-msgstr ""
+msgstr "Precio normal"
 
 msgid "Sale Price"
-msgstr ""
+msgstr "Precio rebajado"
 
 msgid "Variations"
-msgstr ""
+msgstr "Variaciones"
 
 msgid "Option"
-msgstr ""
+msgstr "Opción"
 
 msgid "Availability"
-msgstr ""
+msgstr "Disponibilidad"
 
 msgid "You are not allowed to run this check."
-msgstr ""
+msgstr "No tienes permiso para ejecutar esta comprobación."
 
 msgid "Discovery Checks"
 msgstr "Comprobaciones de descubrimiento"
@@ -783,7 +924,7 @@ msgid "Checks refreshed."
 msgstr "Comprobaciones actualizadas."
 
 msgid "Status"
-msgstr ""
+msgstr "Estado"
 
 msgid "Capability"
 msgstr "Capacidad"
@@ -819,7 +960,7 @@ msgstr ""
 "WordPress Playground. Prueba una URL pública después del despliegue."
 
 msgid "robots.txt"
-msgstr ""
+msgstr "robots.txt"
 
 msgid "A robots.txt response is available."
 msgstr "Hay una respuesta robots.txt disponible."
@@ -828,7 +969,7 @@ msgid "No valid robots.txt response was found."
 msgstr "No se encontró una respuesta robots.txt válida."
 
 msgid "XML sitemap"
-msgstr ""
+msgstr "Mapa del sitio XML"
 
 msgid "A valid XML sitemap was found."
 msgstr "Se encontró un mapa del sitio XML válido."
@@ -842,7 +983,7 @@ msgstr ""
 "SEO habituales."
 
 msgid "llms.txt"
-msgstr ""
+msgstr "llms.txt"
 
 msgid "A non-empty plain-text llms.txt response is available."
 msgstr ""
@@ -885,7 +1026,7 @@ msgstr ""
 " cabeceras Link."
 
 msgid "API catalog"
-msgstr ""
+msgstr "Catálogo de API"
 
 msgid "A valid RFC 9727 API catalog is available."
 msgstr "Hay disponible un catálogo de API RFC 9727 válido."
@@ -894,7 +1035,7 @@ msgid "No valid RFC 9727 API catalog was found."
 msgstr "No se encontró un catálogo de API RFC 9727 válido."
 
 msgid "Markdown negotiation"
-msgstr ""
+msgstr "Negociación de Markdown"
 
 msgid "Serfe AI Discovery is not active."
 msgstr "Serfe AI Discovery no está activo."
@@ -1024,12 +1165,14 @@ msgstr "No se encontró un índice válido de habilidades de agente."
 
 msgid "The Agent Skills index has an invalid skill entry."
 msgstr ""
+"El índice de habilidades de agente contiene una entrada de habilidad no "
+"válida."
 
 msgid "You are not allowed to manage the Markdown cache."
 msgstr "No tienes permiso para gestionar la caché de Markdown."
 
 msgid "You are not allowed to manage the API Catalog."
-msgstr ""
+msgstr "No tienes permiso para gestionar el catálogo de API."
 
 msgid "You are not allowed to manage Markdown publication."
 msgstr "No tienes permiso para gestionar la publicación de Markdown."
@@ -1053,7 +1196,7 @@ msgid "Excluded URL paths"
 msgstr "Rutas URL excluidas"
 
 msgid "AI Discovery"
-msgstr ""
+msgstr "Descubrimiento de IA"
 
 msgid ""
 "Configure public discovery features and Markdown representation options."
@@ -1099,13 +1242,13 @@ msgid "Overview"
 msgstr "Resumen"
 
 msgid "Markdown"
-msgstr ""
+msgstr "Markdown"
 
 msgid "API Catalog"
 msgstr "Catálogo de API"
 
 msgid "Robots.txt"
-msgstr ""
+msgstr "Robots.txt"
 
 msgid "AI Files (llms.txt)"
 msgstr "Archivos de IA (llms.txt)"
@@ -1163,7 +1306,7 @@ msgstr ""
 "Actualmente ningún elemento ni archivo cumple la política de publicación."
 
 msgid "Content"
-msgstr ""
+msgstr "Contenido"
 
 msgid "Shows the last 10 edited approved items."
 msgstr "Muestra los últimos 10 elementos aprobados editados."
@@ -1172,18 +1315,20 @@ msgid ""
 "Publish a catalog of the public WordPress REST API at the standard discovery"
 " URL."
 msgstr ""
+"Publica un catálogo de la API REST pública de WordPress en la URL de "
+"descubrimiento estándar."
 
 msgid "API Catalog publication updated."
-msgstr ""
+msgstr "Se actualizó la publicación del catálogo de API."
 
 msgid "API Catalog publication is disabled."
-msgstr ""
+msgstr "La publicación del catálogo de API está desactivada."
 
 msgid "Disable API Catalog"
-msgstr ""
+msgstr "Desactivar catálogo de API"
 
 msgid "Enable API Catalog"
-msgstr ""
+msgstr "Activar catálogo de API"
 
 msgid "Markdown Cache Management"
 msgstr "Gestión de caché de Markdown"
