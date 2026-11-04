@@ -76,6 +76,11 @@
 	.serfe-settings-tabs__indicator {
 		transition: none;
 	}
+
+	.serfe-help-contact-button,
+	.serfe-help-contact-button__arrow {
+		transition: none;
+	}
 }
 
 .serfe-markdown-toggle-control {
@@ -132,7 +137,8 @@
 }
 
 .serfe-help-contact-button {
-	display: inline-block;
+	display: inline-flex;
+	align-items: center;
 	padding: 9px 16px;
 	border-radius: 4px;
 	background: #fff;
@@ -142,11 +148,24 @@
 	transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
+.serfe-help-contact-button__arrow {
+	display: inline-block;
+	margin-left: 5px;
+	line-height: 1;
+	transform: translate( 0, 0 );
+	transition: transform 180ms ease;
+}
+
 .serfe-help-contact-button:hover,
 .serfe-help-contact-button:focus {
 	background: #dceeff;
 	color: #123b68 !important;
 	transform: translateY( -1px );
+}
+
+.serfe-help-contact-button:hover .serfe-help-contact-button__arrow,
+.serfe-help-contact-button:focus .serfe-help-contact-button__arrow {
+	transform: translate( 30%, -30% );
 }
 
 .serfe-help-contact-button:focus-visible {
