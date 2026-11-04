@@ -1,3 +1,83 @@
+.serfe-settings-tabs.nav-tab-wrapper {
+	position: relative;
+	display: flex;
+	gap: 0;
+	margin: 16px 0 20px;
+	padding: 0;
+	border-bottom: 1px solid #dcdcde;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scrollbar-width: thin;
+}
+
+.serfe-settings-tabs .serfe-settings-tabs__tab.nav-tab {
+	box-sizing: border-box;
+	flex: 0 0 auto;
+	margin: 0;
+	padding: 10px 12px 12px;
+	border: 0;
+	border-bottom: 3px solid transparent;
+	background: transparent;
+	color: #646970;
+	font-weight: 500;
+	line-height: 1.4;
+	white-space: nowrap;
+	transition: color 160ms ease;
+}
+
+.serfe-settings-tabs .serfe-settings-tabs__tab.nav-tab:hover,
+.serfe-settings-tabs .serfe-settings-tabs__tab.nav-tab:focus {
+	background: transparent;
+	color: #1d2327;
+}
+
+.serfe-settings-tabs .serfe-settings-tabs__tab.nav-tab.nav-tab-active {
+	border-bottom-color: #133f6f;
+	background: transparent;
+	color: #1d2327;
+	font-weight: 700;
+}
+
+.serfe-settings-tabs.is-ready .serfe-settings-tabs__tab.nav-tab.nav-tab-active {
+	border-bottom-color: transparent;
+}
+
+.serfe-settings-tabs .serfe-settings-tabs__tab.nav-tab:focus {
+	outline: 0;
+	box-shadow: none;
+}
+
+.serfe-settings-tabs .serfe-settings-tabs__tab.nav-tab:focus-visible {
+	outline: 2px solid #133f6f;
+	outline-offset: 2px;
+}
+
+@supports not selector( :focus-visible ) {
+	.serfe-settings-tabs .serfe-settings-tabs__tab.nav-tab:focus {
+		outline: 2px solid #133f6f;
+		outline-offset: 2px;
+	}
+}
+
+.serfe-settings-tabs__indicator {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	height: 3px;
+	border-radius: 3px 3px 0 0;
+	background: #133f6f;
+	pointer-events: none;
+	transform: translateX( 0 );
+	transition: width 220ms ease, transform 220ms ease;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.serfe-settings-tabs .serfe-settings-tabs__tab.nav-tab,
+	.serfe-settings-tabs__indicator {
+		transition: none;
+	}
+}
+
 .serfe-markdown-toggle-control {
 	display: flex;
 	align-items: center;

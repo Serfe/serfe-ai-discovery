@@ -362,7 +362,8 @@ final class Settings {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only navigation.
 		$requested = isset( $_GET['tab'] ) && is_string( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'overview';
 		$tab       = isset( $tabs[ $requested ] ) ? $requested : ( 'files' === $requested ? 'robots' : 'overview' );
-		echo '<div class="wrap"><h1>' . esc_html__( 'Serfe AI Discovery', 'serfe-ai-discovery' ) . '</h1><nav class="nav-tab-wrapper" aria-label="' . esc_attr__( 'Serfe AI Discovery sections', 'serfe-ai-discovery' ) . '">';
+		echo '<div class="wrap"><h1>' . esc_html__( 'Serfe AI Discovery', 'serfe-ai-discovery' ) . '</h1>';
+		echo '<nav class="nav-tab-wrapper serfe-settings-tabs" aria-label="' . esc_attr__( 'Serfe AI Discovery sections', 'serfe-ai-discovery' ) . '">';
 		foreach ( $tabs as $key => $label ) {
 			$url = add_query_arg(
 				array(
@@ -371,9 +372,9 @@ final class Settings {
 				),
 				admin_url( 'admin.php' )
 			);
-			printf( '<a class="nav-tab %s" href="%s" %s>%s</a>', esc_attr( $key === $tab ? 'nav-tab-active' : '' ), esc_url( $url ), $key === $tab ? 'aria-current="page"' : '', esc_html( $label ) );
+			printf( '<a class="nav-tab serfe-settings-tabs__tab %s" href="%s" %s>%s</a>', esc_attr( $key === $tab ? 'nav-tab-active' : '' ), esc_url( $url ), $key === $tab ? 'aria-current="page"' : '', esc_html( $label ) );
 		}
-		echo '</nav>';
+		echo '<span class="serfe-settings-tabs__indicator" aria-hidden="true"></span></nav>';
 		switch ( $tab ) {
 			case 'markdown':
 				$this->render_markdown_guidance();
