@@ -120,7 +120,7 @@ final class Readiness {
 			<?php endif; ?>
 
 			<?php if ( $has_checks ) : ?>
-			<table class="widefat striped" style="max-width: 1000px; margin-top: 16px;">
+			<div class="serfe-data-table-wrap"><table class="widefat striped serfe-data-table serfe-data-table--readiness">
 				<thead><tr>
 					<th scope="col" style="width: 52px;"><?php esc_html_e( 'Status', 'serfe-ai-discovery' ); ?></th>
 					<th scope="col" style="width: 230px;"><?php esc_html_e( 'Capability', 'serfe-ai-discovery' ); ?></th>
@@ -140,7 +140,7 @@ final class Readiness {
 						</tr>
 					<?php endforeach; ?>
 				</tbody>
-			</table>
+			</table></div>
 			<?php endif; ?>
 
 			<?php if ( $has_checks ) : ?>

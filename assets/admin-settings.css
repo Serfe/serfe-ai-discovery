@@ -71,6 +71,77 @@
 	transition: width 220ms ease, transform 220ms ease;
 }
 
+.serfe-data-table-wrap {
+	width: 100%;
+	margin: 16px 0;
+	overflow-x: auto;
+	border-radius: 6px 6px 0 0;
+}
+
+.serfe-data-table.widefat {
+	width: 100%;
+	margin: 0;
+	border: 0;
+	border-collapse: separate;
+	border-spacing: 0;
+	background: transparent;
+	box-shadow: none;
+}
+
+.serfe-data-table--overview {
+	min-width: 780px;
+}
+
+.serfe-data-table--readiness {
+	min-width: 640px;
+}
+
+.serfe-data-table--markdown {
+	min-width: 720px;
+}
+
+.serfe-data-table.widefat thead th {
+	padding: 12px 14px;
+	border: 0;
+	background: #133f6f;
+	color: #fff;
+	font-weight: 700;
+	line-height: 1.4;
+	text-shadow: none;
+}
+
+.serfe-data-table.widefat thead th:first-child {
+	border-top-left-radius: 6px;
+}
+
+.serfe-data-table.widefat thead th:last-child {
+	border-top-right-radius: 6px;
+}
+
+.serfe-data-table.widefat tbody td {
+	padding: 12px 14px;
+	border: 0;
+	border-bottom: 4px solid transparent;
+	background: #fff;
+	background-clip: padding-box;
+	color: #3c434a;
+	line-height: 1.5;
+	vertical-align: middle;
+	transition: background-color 160ms ease;
+}
+
+.serfe-data-table.widefat.striped > tbody > :nth-child( even ) > td {
+	background-color: #f5f7f9;
+}
+
+.serfe-data-table.widefat tbody tr:hover td {
+	background-color: #edf4fa;
+}
+
+.serfe-data-table.widefat tbody tr:last-child td {
+	border-bottom-width: 0;
+}
+
 @media ( prefers-reduced-motion: reduce ) {
 	.serfe-settings-tabs .serfe-settings-tabs__tab.nav-tab,
 	.serfe-settings-tabs__indicator {
@@ -79,6 +150,10 @@
 
 	.serfe-help-contact-button,
 	.serfe-help-contact-button__arrow {
+		transition: none;
+	}
+
+	.serfe-data-table.widefat tbody td {
 		transition: none;
 	}
 }

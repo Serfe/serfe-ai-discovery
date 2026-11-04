@@ -9,6 +9,7 @@ Notable user-facing changes in public releases of Serfe AI Discovery.
 
 ### Changed
 - Improved settings navigation and Help & Support interactions, including accessible tab focus states and clearer advanced Markdown controls.
+- Refined administration data tables with responsive full-width layouts, Serfe-branded headers, and clearer row separation.
 
 ## [1.1.1] - 2026-11-02
 

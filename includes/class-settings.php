@@ -482,12 +482,12 @@ final class Settings {
 		if ( ! $rows ) {
 			echo '<p>' . esc_html__( 'No item or archive currently passes the publication policy.', 'serfe-ai-discovery' ) . '</p>';
 		} else {
-			echo '<table class="widefat striped" style="max-width: 1000px;"><thead><tr><th>' . esc_html__( 'Content', 'serfe-ai-discovery' ) . '</th><th>HTML</th><th>Markdown</th></tr></thead><tbody>';
+			echo '<div class="serfe-data-table-wrap"><table class="widefat striped serfe-data-table serfe-data-table--markdown"><thead><tr><th>' . esc_html__( 'Content', 'serfe-ai-discovery' ) . '</th><th>HTML</th><th>Markdown</th></tr></thead><tbody>';
 			foreach ( $rows as $row ) {
 				$markdown = Discovery::markdown_url( $row[1] );
 				printf( '<tr><td>%s</td><td><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></td><td><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></td></tr>', esc_html( $row[0] ), esc_url( $row[1] ), esc_html( $row[1] ), esc_url( $markdown ), esc_html( $markdown ) );
 			}
-			echo '</tbody></table>';
+			echo '</tbody></table></div>';
 		}
 		echo '<p class="description">' . esc_html__( 'Shows the last 10 edited approved items.', 'serfe-ai-discovery' ) . '</p>';
 
@@ -695,7 +695,7 @@ final class Settings {
 			echo '<div class="notice notice-success inline"><p>' . esc_html__( 'Checks refreshed.', 'serfe-ai-discovery' ) . '</p></div>';
 		}
 		echo '<div class="notice notice-info inline"><p>' . esc_html__( 'Public discovery features are opt-in. Validation runs only when an administrator requests it.', 'serfe-ai-discovery' ) . '</p></div>';
-		echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Capability', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'State', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Last validation', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Next action', 'serfe-ai-discovery' ) . '</th></tr></thead><tbody>';
+		echo '<div class="serfe-data-table-wrap"><table class="widefat striped serfe-data-table serfe-data-table--overview"><thead><tr><th>' . esc_html__( 'Capability', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'State', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Last validation', 'serfe-ai-discovery' ) . '</th><th>' . esc_html__( 'Next action', 'serfe-ai-discovery' ) . '</th></tr></thead><tbody>';
 		foreach ( $this->overview_rows() as $row ) {
 			$validated = '' !== $row['validated'] ? $row['validated'] : __( 'Not validated', 'serfe-ai-discovery' );
 			printf(
@@ -707,7 +707,7 @@ final class Settings {
 				esc_html( $row['next'] )
 			);
 		}
-		echo '</tbody></table>';
+		echo '</tbody></table></div>';
 		echo '<p class="description" style="margin-top: 14px;">' . esc_html__( '✅ ready · ⚠️ needs attention · ❌ not available · ➖ disabled, not validated or not applicable.', 'serfe-ai-discovery' ) . '</p>';
 		printf( '<form method="post" action="%s" style="margin-top: 12px;"><input type="hidden" name="action" value="serfe_ai_discovery_readiness_refresh"><input type="hidden" name="return_tab" value="overview">', esc_url( admin_url( 'admin-post.php' ) ) );
 		wp_nonce_field( 'serfe_ai_discovery_readiness_refresh' );
