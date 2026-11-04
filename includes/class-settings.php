@@ -381,8 +381,8 @@ final class Settings {
 				echo '<form action="options.php" method="post">';
 				settings_fields( self::GROUP );
 				do_settings_sections( self::PAGE );
-				echo '</details>';
 				submit_button( __( 'Save Advanced Settings', 'serfe-ai-discovery' ) );
+				echo '</details>';
 				echo '</form>';
 				$this->render_markdown_urls();
 				break;
