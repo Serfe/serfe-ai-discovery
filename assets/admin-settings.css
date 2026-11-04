@@ -71,6 +71,55 @@
 	transition: width 220ms ease, transform 220ms ease;
 }
 
+.serfe-help-details {
+	margin: 16px 0;
+}
+
+.serfe-help-details > summary {
+	color: #1d2327;
+	cursor: pointer;
+	font-weight: 600;
+	transition: color 160ms ease;
+}
+
+.serfe-help-details > summary::marker {
+	color: #133f6f;
+}
+
+.serfe-help-details > summary:hover {
+	color: #133f6f;
+}
+
+.serfe-help-details > summary:focus {
+	outline: 0;
+}
+
+.serfe-help-details > summary:focus-visible {
+	outline: 2px solid #133f6f;
+	outline-offset: 3px;
+}
+
+.serfe-help-details[open] > summary {
+	margin-bottom: 10px;
+}
+
+.serfe-help-details--advanced {
+	margin-top: 24px;
+	padding: 12px 16px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.serfe-help-details--advanced > summary {
+	font-size: 1.1em;
+}
+
+.serfe-help-details__intro {
+	margin-top: 8px;
+	color: #646970;
+}
+
 .serfe-data-table-wrap {
 	width: 100%;
 	margin: 16px 0;
@@ -145,6 +194,10 @@
 @media ( prefers-reduced-motion: reduce ) {
 	.serfe-settings-tabs .serfe-settings-tabs__tab.nav-tab,
 	.serfe-settings-tabs__indicator {
+		transition: none;
+	}
+
+	.serfe-help-details > summary {
 		transition: none;
 	}
 

@@ -173,7 +173,7 @@ final class Discovery_Files_Admin {
 		delete_transient( self::notice_key() );
 		echo '<h2>' . esc_html__( 'Why robots.txt matters', 'serfe-ai-discovery' ) . '</h2>';
 		echo '<p>' . esc_html__( 'robots.txt communicates crawler access rules and can point crawlers to the XML sitemap. Access rules must reflect your organization’s policy. Allowing or blocking a crawler does not guarantee crawling, training, indexing, or citation.', 'serfe-ai-discovery' ) . '</p>';
-		echo '<details style="margin: 16px 0;"><summary>' . esc_html__( 'About robots.txt', 'serfe-ai-discovery' ) . '</summary>';
+		echo '<details class="serfe-help-details"><summary>' . esc_html__( 'About robots.txt', 'serfe-ai-discovery' ) . '</summary>';
 		echo '<p>' . esc_html__( 'What it does: Defines crawler access rules and can declare the XML sitemap location.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Why it helps: Clarifies which public areas are intended for crawling and where public URLs can be discovered.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Important: Rules must reflect your organization’s policy. Allowing or blocking a crawler does not guarantee crawling, training, indexing, or citation.', 'serfe-ai-discovery' ) . '</p></details>';
@@ -190,7 +190,7 @@ final class Discovery_Files_Admin {
 		delete_transient( self::notice_key() );
 		echo '<h2>' . esc_html__( 'Why llms.txt matters', 'serfe-ai-discovery' ) . '</h2>';
 		echo '<p>' . esc_html__( 'llms.txt is an optional public guide containing curated context and links to relevant public content. Include only current, public, canonical URLs. It complements the website, sitemap, structured content, and crawler policy; it does not replace them.', 'serfe-ai-discovery' ) . '</p>';
-		echo '<details style="margin: 16px 0;"><summary>' . esc_html__( 'About llms.txt', 'serfe-ai-discovery' ) . '</summary>';
+		echo '<details class="serfe-help-details"><summary>' . esc_html__( 'About llms.txt', 'serfe-ai-discovery' ) . '</summary>';
 		echo '<p>' . esc_html__( 'What it does: Provides an optional human-readable Markdown overview and curated links to relevant public content.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Why it helps: Makes approved information easier for AI systems and technical tools to identify and interpret.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Important: Include only current, public, canonical URLs. Never include private areas, customer pages, admin URLs, credentials, unsupported claims, or outdated offers.', 'serfe-ai-discovery' ) . '</p>';
@@ -283,7 +283,7 @@ final class Discovery_Files_Admin {
 		$managed = '' !== $known && $known === $state['checksum'];
 		echo '<section class="serfe-file-editor-introduction"><h3>' . esc_html__( 'Advanced file editor', 'serfe-ai-discovery' ) . '</h3>';
 		echo '<p>' . esc_html__( 'Open this editor when you want Serfe to manage and edit the file manually. Review the current public response before activating it.', 'serfe-ai-discovery' ) . '</p></section>';
-		printf( '<details class="serfe-file-advanced"%s><summary>%s</summary>', $managed ? ' open' : '', esc_html__( 'Open advanced file editor', 'serfe-ai-discovery' ) );
+		printf( '<details class="serfe-file-advanced serfe-help-details"%s><summary>%s</summary>', $managed ? ' open' : '', esc_html__( 'Open advanced file editor', 'serfe-ai-discovery' ) );
 		if ( 'llms.txt' === $name ) {
 			echo '<p>' . esc_html__( 'Start with the site name and a concise description. Group current public canonical links under useful headings such as Products, Services, Resources, Support, Documentation, and Legal. Review this guide after important content or URL changes.', 'serfe-ai-discovery' ) . '</p>';
 		}
@@ -312,7 +312,7 @@ final class Discovery_Files_Admin {
 		}
 		if ( $managed && empty( $state['virtual'] ) ) {
 			echo ' <button type="submit" name="mode" value="release" class="button" formnovalidate data-serfe-release-control>' . esc_html__( 'Release control', 'serfe-ai-discovery' ) . '</button>';
-			echo '<br><span class="description">' . esc_html__( 'This keeps the current physical file unchanged but removes Serfe management data and backups. A plugin that requires a virtual robots.txt response may still require you to remove the physical file through your host.', 'serfe-ai-discovery' ) . '</span>';
+			echo '<br><br><small class="description">' . esc_html__( 'This keeps the current physical file unchanged but removes Serfe management data and backups. A plugin that requires a virtual robots.txt response may still require you to remove the physical file through your host.', 'serfe-ai-discovery' ) . '</small>';
 		}
 		echo '</p></form>';
 		if ( 'llms.txt' === $name ) {
@@ -514,7 +514,7 @@ final class Discovery_Files_Admin {
 
 	/** Show all versions needed to make an informed takeover or manual deployment. */
 	private function render_review( $name, $state, $editor ) {
-		echo '<details><summary>' . esc_html__( 'Review current file, editor text, and previous backup', 'serfe-ai-discovery' ) . '</summary>';
+		echo '<details class="serfe-help-details"><summary>' . esc_html__( 'Review current file, editor text, and previous backup', 'serfe-ai-discovery' ) . '</summary>';
 		$validated = Discovery_Files::normalize_content( $editor );
 		foreach ( array(
 			__( 'Current public response', 'serfe-ai-discovery' ) => $state['content'],

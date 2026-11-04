@@ -306,11 +306,11 @@ final class Settings {
 		$has_custom = ! empty( $choices['blocked_post_types'] ) || ! empty( $choices['blocked_paths'] );
 		$open_attr  = $has_custom ? 'open' : '';
 		printf(
-			'<details %s style="margin-top: 24px; padding: 12px 16px; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px;"><summary style="font-size: 1.1em; font-weight: 600; cursor: pointer; color: #1d2327;">%s</summary>',
+			'<details class="serfe-help-details serfe-help-details--advanced" %s><summary>%s</summary>',
 			esc_attr( $open_attr ),
 			esc_html__( 'Advanced Settings', 'serfe-ai-discovery' )
 		);
-		echo '<p style="margin-top: 8px; color: #646970;">' . esc_html__( 'Exclude public content types or exact URL paths. Markdown otherwise applies to all supported public content.', 'serfe-ai-discovery' ) . '</p>';
+		echo '<p class="serfe-help-details__intro">' . esc_html__( 'Exclude public content types or exact URL paths. Markdown otherwise applies to all supported public content.', 'serfe-ai-discovery' ) . '</p>';
 	}
 
 	/** Render the Markdown master switch. */
@@ -432,7 +432,7 @@ final class Settings {
 
 	/** Explain Markdown publication before an administrator changes its switches. */
 	private function render_markdown_guidance() {
-		echo '<details style="margin: 16px 0;"><summary>' . esc_html__( 'About Markdown negotiation', 'serfe-ai-discovery' ) . '</summary>';
+		echo '<details class="serfe-help-details"><summary>' . esc_html__( 'About Markdown negotiation', 'serfe-ai-discovery' ) . '</summary>';
 		echo '<p>' . esc_html__( 'What it does: Returns an alternative Markdown representation of public content when a compatible client requests it.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Why it helps: Removes unnecessary presentation markup while browsers continue receiving HTML.', 'serfe-ai-discovery' ) . '</p>';
 		echo '<p>' . esc_html__( 'Important: HTML remains the canonical customer-facing version. Markdown availability does not guarantee crawler usage or AI citations.', 'serfe-ai-discovery' ) . '</p></details>';

@@ -100,7 +100,7 @@ final class Readiness {
 					<?php /* translators: %s: comma-separated list of active page-cache plugins. */ ?>
 					<p class="description"><?php echo esc_html( sprintf( __( 'Active page cache detected: %s. If cached HTML pages were generated before updating discovery settings, purge the site cache before re-running checks.', 'serfe-ai-discovery' ), implode( ', ', $cache_plugins ) ) ); ?></p>
 				<?php endif; ?>
-				<details style="margin: 16px 0;"><summary><?php esc_html_e( 'About XML Sitemaps', 'serfe-ai-discovery' ); ?></summary>
+				<details class="serfe-help-details"><summary><?php esc_html_e( 'About XML Sitemaps', 'serfe-ai-discovery' ); ?></summary>
 					<p><?php esc_html_e( 'An XML sitemap lists canonical public URLs in a machine-readable format, helping crawlers and technical tools find the right pages.', 'serfe-ai-discovery' ); ?></p>
 					<p><?php esc_html_e( 'Include live public URLs only. Exclude redirects, noindex content, duplicates, private pages, search pages, cart, checkout, and account pages.', 'serfe-ai-discovery' ); ?></p>
 				</details>
