@@ -10,8 +10,7 @@ Notable user-facing changes in public releases of Serfe AI Discovery.
 - Added Docker loopback support for local discovery-file publication and checks when canonical localhost URLs use explicit ports.
 
 ### Changed
-- Improved settings navigation and Help & Support interactions, including accessible tab focus states and clearer advanced Markdown controls.
-- Refined administration data tables with responsive full-width layouts, Serfe-branded headers, and clearer row separation.
+- Refined plugin administration with accessible navigation, clearer advanced Markdown controls, and responsive data tables.
 - Clarified that "Is It Agent-Ready" is an optional external validation tool.
 
 ## [1.1.1] - 2026-11-02
