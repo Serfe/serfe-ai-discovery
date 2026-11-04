@@ -557,31 +557,13 @@ final class Readiness {
 				'detail'       => __( 'WordPress Playground does not provide a reliable public loopback URL for these checks. Run them on a deployed public site.', 'serfe-ai-discovery' ),
 			);
 		}
-		$request_url = esc_url_raw( $url );
-		$args        = array(
+		$args     = array(
 			'timeout'             => 5,
 			'redirection'         => 0,
 			'limit_response_size' => 524288,
 			'headers'             => $headers,
 		);
-		$response    = wp_safe_remote_get( $request_url, $args );
-
-		/*
-		 * Docker development hosts such as WordPress.localhost resolve on the
-		 * browser host but not necessarily in the WordPress container. Retry only
-		 * these local hostnames through Apache's loopback address, preserving Host.
-		 */
-		if ( is_wp_error( $response ) && self::is_local_hostname( $request_url ) ) {
-			$parts                    = wp_parse_url( $request_url );
-			$host                     = $parts['host'];
-			$host_header              = isset( $parts['port'] ) ? $host . ':' . $parts['port'] : $host;
-			$path                     = isset( $parts['path'] ) ? $parts['path'] : '/';
-			$path                    .= isset( $parts['query'] ) ? '?' . $parts['query'] : '';
-			$loopback_headers         = $headers;
-			$loopback_headers['Host'] = $host_header;
-			$args['headers']          = $loopback_headers;
-			$response                 = wp_remote_get( 'http://127.0.0.1' . $path, $args );
-		}
+		$response = Discovery_Files::loopback_get( $url, $args );
 
 		if ( is_wp_error( $response ) ) {
 			return array(
@@ -671,12 +653,6 @@ final class Readiness {
 	public static function is_wordpress_playground_url( $url ) {
 		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
 		return 'playground.wordpress.net' === $host || substr( $host, -25 ) === '.playground.wordpress.net';
-	}
-
-	/** @return bool */
-	private static function is_local_hostname( $url ) {
-		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
-		return 'localhost' === $host || substr( $host, -10 ) === '.localhost' || substr( $host, -5 ) === '.test';
 	}
 
 	/** @return array<string, string> */

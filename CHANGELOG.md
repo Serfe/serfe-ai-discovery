@@ -4,6 +4,9 @@ Notable user-facing changes in public releases of Serfe AI Discovery.
 
 ## [Unreleased]
 
+### Fixed
+- Added Docker loopback support for local discovery-file publication and checks when canonical localhost URLs use explicit ports.
+
 ## [1.1.1] - 2026-11-02
 
 ### Added

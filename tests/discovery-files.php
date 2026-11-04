@@ -31,6 +31,10 @@ function wp_parse_url( $url, $component = -1 ) {
 	return parse_url( $url, $component );
 }
 
+function esc_url_raw( $url ) {
+	return $url;
+}
+
 function wp_unslash( $value ) {
 	return is_string( $value ) ? stripslashes( $value ) : $value;
 }
@@ -94,6 +98,9 @@ function get_main_site_id() {
 }
 
 function wp_safe_remote_get( $url, $args ) {
+	if ( ! empty( $GLOBALS['test_loopback_safe_error'] ) && false !== strpos( $url, 'localhost' ) ) {
+		return new WP_Error( 'http_request_failed', 'Connection refused' );
+	}
 	if ( false !== strpos( $url, 'sitemap.xml' ) ) {
 		$GLOBALS['test_sitemap_gets'][] = $url;
 		return array( 'code' => 200, 'body' => '<urlset/>' );
@@ -110,6 +117,14 @@ function wp_safe_remote_get( $url, $args ) {
 			: array( 'code' => 404, 'body' => '', 'content_type' => 'text/html' );
 	}
 	return array( 'code' => 200, 'body' => ! empty( $GLOBALS['test_public_mismatch'] ) ? 'stale cache' : file_get_contents( $path ), 'content_type' => 'text/plain; charset=utf-8' );
+}
+
+function wp_remote_get( $url, $args ) {
+	$GLOBALS['test_loopback_gets'][] = array(
+		'url'  => $url,
+		'args' => $args,
+	);
+	return array( 'code' => 404, 'body' => '', 'content_type' => 'text/html' );
 }
 
 function wp_safe_remote_head( $url, $args ) {
@@ -171,6 +186,14 @@ $_SERVER['REQUEST_URI'] = '/any/public-directory/robots.txt';
 $assert_same( 'robots.txt', $requested_file->invoke( null ), 'Recognizes the canonical discovery-file path below the WordPress home path' );
 $GLOBALS['test_options']['home'] = 'https://example.com:8443/any/public-directory/?ignored=query';
 $assert_same( 'https://example.com:8443/any/public-directory/llms.txt', Discovery_Files::root_url( 'llms.txt' ), 'Preserves a configured port and ignores a home URL query string' );
+$GLOBALS['test_loopback_gets']       = array();
+$GLOBALS['test_loopback_safe_error'] = true;
+$loopback_response                   = Discovery_Files::loopback_get( 'http://localhost:8000/llms.txt?preview=1', array( 'headers' => array( 'Accept' => 'text/plain' ) ) );
+$assert_same( 404, $loopback_response['code'], 'Retries a failed localhost request through the Apache loopback address' );
+$assert_same( 'http://127.0.0.1/llms.txt?preview=1', $GLOBALS['test_loopback_gets'][0]['url'], 'Does not forward the browser-facing localhost port to Apache' );
+$assert_same( 'localhost:8000', $GLOBALS['test_loopback_gets'][0]['args']['headers']['Host'], 'Preserves the original host and port in the loopback request' );
+$assert_same( 'text/plain', $GLOBALS['test_loopback_gets'][0]['args']['headers']['Accept'], 'Preserves existing request headers in the loopback retry' );
+unset( $GLOBALS['test_loopback_safe_error'] );
 $_SERVER['REQUEST_URI'] = '/any/public-directory/es/robots.txt';
 $assert_same( '', $requested_file->invoke( null ), 'Does not treat a WPML language path as a separate robots.txt file' );
 unset( $_SERVER['REQUEST_URI'] );

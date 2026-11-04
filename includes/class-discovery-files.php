@@ -33,6 +33,48 @@ final class Discovery_Files {
 		return rtrim( $base, '/' ) . '/' . ltrim( $path, '/' );
 	}
 
+	/**
+	 * Request a canonical local URL, retrying Docker development hosts through Apache.
+	 *
+	 * Browser-facing hosts such as localhost:8000 may not resolve from the
+	 * WordPress container. The retry deliberately connects to Apache's internal
+	 * port while retaining the public Host header that WordPress uses for URLs.
+	 *
+	 * @param string               $url  Canonical URL to request.
+	 * @param array<string, mixed> $args Request arguments.
+	 * @return array|\WP_Error HTTP response or request error.
+	 */
+	public static function loopback_get( $url, $args = array() ) {
+		$request_url = esc_url_raw( $url );
+		$response    = wp_safe_remote_get( $request_url, $args );
+		if ( ! is_wp_error( $response ) || ! self::is_local_hostname( $request_url ) ) {
+			return $response;
+		}
+
+		$parts = wp_parse_url( $request_url );
+		if ( ! is_array( $parts ) || empty( $parts['host'] ) ) {
+			return $response;
+		}
+
+		$host_header = $parts['host'];
+		if ( isset( $parts['port'] ) ) {
+			$host_header .= ':' . (int) $parts['port'];
+		}
+		$path            = isset( $parts['path'] ) ? $parts['path'] : '/';
+		$path           .= isset( $parts['query'] ) ? '?' . $parts['query'] : '';
+		$headers         = isset( $args['headers'] ) && is_array( $args['headers'] ) ? $args['headers'] : array();
+		$headers['Host'] = $host_header;
+		$args['headers'] = $headers;
+
+		return wp_remote_get( 'http://127.0.0.1' . $path, $args );
+	}
+
+	/** @return bool */
+	private static function is_local_hostname( $url ) {
+		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+		return 'localhost' === $host || substr( $host, -10 ) === '.localhost' || substr( $host, -5 ) === '.test';
+	}
+
 	/** Register virtual public files before WordPress renders a 404 or core robots response. */
 	public static function register_hooks() {
 		add_action( 'template_redirect', array( __CLASS__, 'serve_virtual_file' ), -100 );
@@ -229,7 +271,7 @@ final class Discovery_Files {
 		if ( ! in_array( $name, array( 'robots.txt', 'llms.txt' ), true ) || ( ! $trusted && ! current_user_can( 'manage_options' ) ) ) {
 			return new \WP_Error( 'forbidden', __( 'You are not allowed to inspect discovery files.', 'serfe-ai-discovery' ) );
 		}
-		$response = wp_safe_remote_get(
+		$response = self::loopback_get(
 			self::root_url( '/' . $name ),
 			array(
 				'redirection'         => 0,
@@ -453,7 +495,7 @@ final class Discovery_Files {
 			);
 		}
 		$url      = self::root_url( '/' . $name );
-		$response = wp_safe_remote_get(
+		$response = self::loopback_get(
 			$url,
 			array(
 				'redirection'         => 0,
@@ -654,7 +696,7 @@ final class Discovery_Files {
 				'checksum' => $public['checksum'],
 			);
 		}
-		$response = wp_safe_remote_get(
+		$response = self::loopback_get(
 			self::root_url( '/' . $name ),
 			array(
 				'redirection'         => 0,
