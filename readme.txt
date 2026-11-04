@@ -51,7 +51,7 @@ Markdown is disabled by default and only eligible public content is published. Y
 
 This plugin does not require, contact, or send site content to any third-party service. Discovery Checks make bounded loopback requests only to public URLs on your own website, such as `robots.txt`, `llms.txt`, sitemaps, Markdown responses, and any same-origin agent endpoint that you explicitly configure. Each URL must be publicly reachable without authentication; private, password-protected, or login-restricted sites cannot be validated by these checks.
 
-The optional Is It Agent-Ready button opens that external website in a new browser tab only after you select it. The plugin does not make that request or transmit data to the service; review that website's own terms and privacy policy before using it.
+The optional "Is It Agent-Ready" button opens that external website in a new browser tab only after you select it. The plugin does not make that request or transmit data to the service; review that website's own terms and privacy policy before using it.
 
 == Translations ==
 
@@ -113,7 +113,7 @@ It focuses on foundational AI Discovery capabilities and does not implement an M
 
 = How can I check whether my website is ready for AI agents? =
 
-Start with Discovery Checks to confirm public discovery files, Link headers, Markdown responses, and optional resources. You can also use [Is It Agent-Ready](https://isitagentready.com/) for a publicly deployed website; external tools cannot inspect local or private environments.
+Start with Discovery Checks to confirm public discovery files, Link headers, Markdown responses, and optional resources. You can also use ["Is It Agent-Ready"](https://isitagentready.com/) for a publicly deployed website; external tools cannot inspect local or private environments.
 
 = Where can I get support or professional assistance? =
 

@@ -151,9 +151,9 @@ final class Readiness {
 			<?php $scanner = Discovery_Files_Admin::agent_ready_target( Discovery_Files::root_url( '/' ), wp_get_environment_type() ); ?>
 			<div class="card" style="max-width: 1000px; padding: 16px 24px; margin: 16px 0;">
 				<h3 style="margin-top: 0;"><?php esc_html_e( 'Optional external validation', 'serfe-ai-discovery' ); ?></h3>
-				<p><?php esc_html_e( 'Open Is It Agent-Ready in a new tab to check the publicly deployed site. No request is sent until you select this button.', 'serfe-ai-discovery' ); ?></p>
+				<p><?php esc_html_e( 'Open "Is It Agent-Ready" in a new tab to check the publicly deployed site. No request is sent until you select this button.', 'serfe-ai-discovery' ); ?></p>
 				<?php if ( $scanner['public'] ) : ?>
-					<p><a class="button button-secondary" href="<?php echo esc_url( $scanner['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Check this site with Is It Agent-Ready', 'serfe-ai-discovery' ); ?></a></p>
+					<p><a class="button button-secondary" href="<?php echo esc_url( $scanner['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Check this site with "Is It Agent-Ready"', 'serfe-ai-discovery' ); ?></a></p>
 				<?php else : ?>
 					<p class="description"><?php esc_html_e( 'External scanners cannot access local, private, or WordPress Playground environments. Test a public URL after deployment.', 'serfe-ai-discovery' ); ?></p>
 				<?php endif; ?>
